@@ -1,20 +1,16 @@
-#include "raylib.h"
+#include "drawing.h"
 
 int main(void)
 {
-    const int screenWidth = 1024;
-    const int screenHeight = 768;
-    InitWindow(screenWidth, screenHeight, "MetroidCube");
-    SetTargetFPS(60);    
+    std::vector <Object*> objList;
+    Player* pl = new Player(20, 20);
+    Player* pl2 = new Player(511, 222);
+    objList.push_back(pl);
+    objList.push_back(pl2);
+    initScreen();
     while (!WindowShouldClose())  
     {
-        BeginDrawing();
-
-        ClearBackground(RAYWHITE);
-
-        DrawText("Congrats! You created your first window!", 190, 200, 20, LIGHTGRAY);
-
-        EndDrawing();
+        mainDraw(objList);
     }
     CloseWindow(); 
     return 0;
