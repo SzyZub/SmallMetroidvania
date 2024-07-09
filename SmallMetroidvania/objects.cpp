@@ -7,7 +7,7 @@ bool Object::checkCol(Object a, Object b) {
 Player::Player(int lx, int ly) {
 		 x = lx;
 		 y = ly;
-		 width = 55;
-		 height = 55;
+		 width = 40;
+		 height = 40;
 		 label = enLabel::player;
 }
