@@ -133,9 +133,11 @@
     <ClCompile Include="Source.cpp" />
     <ClCompile Include="drawing.cpp" />
     <ClCompile Include="objects.cpp" />
+    <ClCompile Include="maps.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="drawing.h" />
+    <ClInclude Include="maps.h" />
     <ClInclude Include="objects.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

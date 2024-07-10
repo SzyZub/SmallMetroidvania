@@ -1,16 +1,19 @@
 #include "drawing.h"
+#include "maps.h"
 
 int main(void)
 {
     std::vector <Object*> objList;
-    Player* pl = new Player(20, 20);
-    Player* pl2 = new Player(511, 222);
-    objList.push_back(pl);
-    objList.push_back(pl2);
+    loadmap(1, objList);
     initScreen();
     while (!WindowShouldClose())  
     {
         mainDraw(objList);
+        for (std::vector <Object*>::iterator it = objList.begin(); it != objList.end(); it++) {
+            if (enLabel::player == (*it)->label) {
+                (*it)->move(objList);
+            }
+        }
     }
     CloseWindow(); 
     return 0;
