@@ -5,7 +5,7 @@
 #define SCREENW 1024
 #define SCREENH 768
 
-typedef enum class enLabel {
+typedef enum enLabel {
 	player = 0,
 	wall
 }enLabel;
@@ -21,9 +21,11 @@ public:
 class Player : public Object {
 private:
 	int moveX, moveY;
+	bool jumped;
 public:
 	Player(int lx, int ly);
 	void move(std::vector <Object*> objList);
+	void collision(std::vector <Object*> objList);
 };
 
 class BackgroundWall : public Object {

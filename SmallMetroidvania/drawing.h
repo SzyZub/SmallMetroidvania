@@ -1,9 +1,17 @@
 #pragma once
 #include "objects.h"
+#include "maps.h"
 
-#define BACKGROUNDCOLOR {200, 200, 200, 255}
+#define BACKGROUNDCOLOR {225, 225, 225, 255}
 #define PLAYERCOLOR {122, 122, 200, 255}
 #define WALLCOLOR {0, 0, 0, 255}
 
+typedef enum EnScene {
+    game = 0,
+    title
+}EnScene;
+
 void initScreen();
-void mainDraw(std::vector <Object*> objList);
+void mainDraw(std::vector <Object*>& objList);
+void gameDraw(std::vector <Object*>& objList);
+void titleDraw(std::vector <Object*>& objList);

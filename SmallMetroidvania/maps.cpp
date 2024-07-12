@@ -8,11 +8,38 @@ void deloadmap(std::vector <Object*>& objList) {
 }
 
 void loadmap(int level, std::vector <Object*>& objList) {
-    objList.push_back(new BackgroundWall(0, 0, 32, SCREENH));
-    objList.push_back(new BackgroundWall(0, 0, SCREENW, 32));
-    objList.push_back(new BackgroundWall(0, 736, SCREENW, 32));
-    objList.push_back(new BackgroundWall(994, 0, 32, 680));
-    objList.push_back(new BackgroundWall(500, 640, 32, 50));
-    objList.push_back(new BackgroundWall(400, 640, 32, 200));
-    objList.push_back(new Player(40, 704));
+    std::string mapData;
+    int temp;
+    int val1, val2, val3, val4;
+    std::ifstream readFile("Maps/1.txt");
+    while (std::getline(readFile, mapData)) {
+        std::size_t pos = mapData.find(' ');
+        std::size_t prevPos = pos + 1;
+        temp = std::stoi(mapData.substr(0, pos));
+        switch (temp) {
+        case 0:
+            pos = mapData.find(' ', prevPos);
+            val1 = std::stoi(mapData.substr(prevPos, pos));
+            prevPos = pos + 1;
+            pos = mapData.find(' ', prevPos);
+            val2 = std::stoi(mapData.substr(prevPos, pos));
+            prevPos = pos + 1;
+            pos = mapData.find(' ', prevPos);
+            val3 = std::stoi(mapData.substr(prevPos, pos));
+            prevPos = pos + 1;
+            pos = mapData.find(' ', prevPos);
+            val4 = std::stoi(mapData.substr(prevPos, pos));
+            objList.push_back(new BackgroundWall(val1, val2, val3, val4));
+            break;
+        case 1:
+            pos = mapData.find(' ', prevPos);
+            val1 = std::stoi(mapData.substr(prevPos, pos));
+            prevPos = pos + 1;
+            pos = mapData.find(' ', prevPos);
+            val2 = std::stoi(mapData.substr(prevPos, pos));
+            objList.push_back(new Player(val1, val2));
+            break;
+        }
+    }
+    readFile.close();
 }
