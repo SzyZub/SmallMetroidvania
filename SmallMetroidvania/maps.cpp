@@ -11,7 +11,7 @@ void loadmap(int col, int row, std::vector <Object*>& objList) {
     std::string mapData;
     int temp;
     int val1, val2, val3, val4;
-    std::ifstream readFile("Maps/1.txt");
+    std::ifstream readFile("Maps/Campaign/1.txt");
     while (std::getline(readFile, mapData)) {
         std::size_t pos = mapData.find(' ');
         std::size_t prevPos = pos + 1;

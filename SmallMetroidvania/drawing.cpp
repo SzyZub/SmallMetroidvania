@@ -18,6 +18,9 @@ void mainDraw(std::vector <Object*>& objList, EnScene& programScene) {
     case options:
         optionsDraw(programScene);
         break;
+    case edit:
+        editorDraw(programScene);
+        break;
     }
     EndDrawing();
 }
@@ -69,7 +72,6 @@ void optionsDraw(EnScene& programScene) {
         int x = GetMouseX();
         if (y > 120 && y < 210) {
             if (x < SCREENW / 2) {
-                int monitor = GetCurrentMonitor();
                 SetWindowState(FLAG_FULLSCREEN_MODE);
             }
             else {

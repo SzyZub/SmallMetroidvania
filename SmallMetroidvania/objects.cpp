@@ -8,6 +8,7 @@ Object::Object() {
 	label = enLabel::wall;
 	rotation = 0;
 }
+
 Player::Player(int lx, int ly) {
 		 x = lx;
 		 y = ly;
@@ -76,6 +77,7 @@ BackgroundWall::BackgroundWall(int lx, int ly, int lwidth, int lheight) {
 	rotation = 0;
 	label = enLabel::wall;
 }
+
 BackgroundWall::BackgroundWall(int lx, int ly, int lwidth, int lheight, int lrotation) {
 	x = lx;
 	y = ly;
