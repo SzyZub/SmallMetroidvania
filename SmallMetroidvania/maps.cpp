@@ -7,7 +7,7 @@ void deloadmap(std::vector <Object*>& objList) {
     objList.clear();
 }
 
-void loadmap(int level, std::vector <Object*>& objList) {
+void loadmap(int col, int row, std::vector <Object*>& objList) {
     std::string mapData;
     int temp;
     int val1, val2, val3, val4;

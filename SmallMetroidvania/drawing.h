@@ -18,3 +18,5 @@ void initScreen();
 void mainDraw(std::vector <Object*>& objList, EnScene &programScene);
 void gameDraw(std::vector <Object*>& objList, EnScene &programScene);
 void titleDraw(std::vector <Object*>& objList, EnScene &programScene);
+void optionsDraw(EnScene& programScene);
+void editorDraw(EnScene& programScene);

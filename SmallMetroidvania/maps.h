@@ -5,4 +5,4 @@
 #include <string>
 
 void deloadmap(std::vector <Object*>&);
-void loadmap(int, std::vector <Object*>&);
+void loadmap(int col, int row, std::vector <Object*>&);

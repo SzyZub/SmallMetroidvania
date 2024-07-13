@@ -15,6 +15,9 @@ void mainDraw(std::vector <Object*>& objList, EnScene& programScene) {
     case title:
         titleDraw(objList, programScene);
         break;
+    case options:
+        optionsDraw(programScene);
+        break;
     }
     EndDrawing();
 }
@@ -40,18 +43,46 @@ void titleDraw(std::vector <Object*>& objList, EnScene& programScene) {
     DrawText("Exit", (SCREENW - MeasureText("Exit", 64)) / 2, 610, 64, DARKGREEN);
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
         int y = GetMouseY();
-        if (y < 160) {
+        if (y < 192) {
             programScene = game;
-            loadmap(1, objList);
+            loadmap(1, 1, objList);
         }
-        else if (y >= 160 && y < 340) {
+        else if (y >= 192 && y < 372) {
             programScene = edit;
         }
-        else if (y >= 340 && y < 520) {
+        else if (y >= 372 && y < 562) {
             programScene = options;
         }
-        else if (y > 520){
+        else if (y > 562){
             programScene = ext;
         }
     }
+}
+
+void optionsDraw(EnScene& programScene) {
+    DrawText("Window", (SCREENW - MeasureText("Window", 48)) / 2, 48, 48, DARKGREEN);
+    DrawText("Fullscreen", (SCREENW - MeasureText("Fullscreen", 35)) / 4, 150, 35, IsWindowState(FLAG_FULLSCREEN_MODE) ? GREEN : RED);
+    DrawText("Windowed", (SCREENW - MeasureText("Windowed", 35)) / 4* 3, 150, 35, IsWindowState(FLAG_FULLSCREEN_MODE) ? RED : GREEN);
+    DrawText("Exit", (SCREENW - MeasureText("Exit", 48)) / 2, 672, 48, DARKGREEN);
+    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+        int y = GetMouseY();
+        int x = GetMouseX();
+        if (y > 120 && y < 210) {
+            if (x < SCREENW / 2) {
+                int monitor = GetCurrentMonitor();
+                SetWindowState(FLAG_FULLSCREEN_MODE);
+            }
+            else {
+                ClearWindowState(FLAG_FULLSCREEN_MODE);
+                SetWindowSize(SCREENW, SCREENH);
+            }
+        }
+        else if (y > 624){
+            programScene = title;
+        }
+    }
+}
+
+void editorDraw(EnScene& programScene) {
+
 }
