@@ -8,10 +8,13 @@
 
 typedef enum EnScene {
     game = 0,
-    title
+    title,
+    edit,
+    options,
+    ext
 }EnScene;
 
 void initScreen();
-void mainDraw(std::vector <Object*>& objList);
-void gameDraw(std::vector <Object*>& objList);
-void titleDraw(std::vector <Object*>& objList);
+void mainDraw(std::vector <Object*>& objList, EnScene &programScene);
+void gameDraw(std::vector <Object*>& objList, EnScene &programScene);
+void titleDraw(std::vector <Object*>& objList, EnScene &programScene);

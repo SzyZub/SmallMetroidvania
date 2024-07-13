@@ -3,10 +3,11 @@
 int main(void)
 {
     std::vector <Object*> objList;
+    EnScene programScene = title;
     initScreen();
-    while (!WindowShouldClose())  
+    while (!WindowShouldClose() && programScene != ext)  
     {
-        mainDraw(objList);
+        mainDraw(objList, programScene);
     }
     CloseWindow(); 
     return 0;
