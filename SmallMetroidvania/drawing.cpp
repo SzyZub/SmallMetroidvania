@@ -19,7 +19,8 @@ void mainDraw(std::vector <Object*>& objList, EnScene& programScene) {
         optionsDraw(programScene);
         break;
     case edit:
-        editorDraw(programScene);
+        static Drawer draw;
+        draw.editDraw(objList, programScene);
         break;
     }
     EndDrawing();
@@ -85,6 +86,88 @@ void optionsDraw(EnScene& programScene) {
     }
 }
 
-void editorDraw(EnScene& programScene) {
+void Drawer::editDraw(std::vector <Object*>& objList, EnScene& programScene) {
+    if (editMode) {
+        for (int i = 0; i < SCREENW; i += 32) {
+            DrawLine(i, 0, i, SCREENH, BLACK);
+        }
+        for (int i = 0; i < SCREENH; i += 32) {
+            DrawLine(0, i, SCREENW, i, BLACK);
+        }
+        int x = GetMouseX();
+        int y = GetMouseY();
+        for (std::vector <Object*>::iterator it = objList.begin(); it != objList.end(); it++) {
+            switch ((*it)->label) {
+            case enLabel::player:
+                DrawRectangle((*it)->x, (*it)->y, (*it)->width, (*it)->height, PLAYERCOLOR);
+                break;
+            case enLabel::wall:
+                DrawRectangle((*it)->x, (*it)->y, (*it)->width, (*it)->height, WALLCOLOR);
+                break;
+            }
+        }
+        if (measure) {
+            DrawLineEx({ (float)x, (float)y }, { (float)x, (float)y - 105 }, 3, BLACK);
+            DrawLineEx({ (float)x, (float)y }, { (float)x + 112, (float)y }, 3, BLACK);
+            DrawLineEx({ (float)x, (float)y }, { (float)x - 112, (float)y }, 3, BLACK);
+        }
+        if (drawBlock) {
+            DrawCircle(prevX, prevY, 5, RED);
+            DrawLineEx({ (float) prevX, (float) prevY }, { (float) prevX, (float) prevY - 105 }, 3, BLACK);
+            DrawLineEx( {(float) prevX, (float)prevY}, {(float) prevX + 112, (float) prevY}, 3, BLACK);
+            DrawLineEx( {(float) prevX, (float)prevY }, {(float) prevX - 112, (float) prevY },3, BLACK);
+        }
+        if (IsKeyPressed(KEY_COMMA))
+            measure = !measure;
+        else if (IsKeyPressed(KEY_ONE))
+            editMaterial = wall;
+        else if (IsKeyPressed(KEY_PERIOD))
+            drawBlock = false;
+        else if (IsKeyPressed(KEY_U))
+            if(objList.size() != 0)
+                objList.pop_back();
+        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && drawBlock == false) {
+            prevX = x;
+            prevY = y;
+            drawBlock = true;
+        } else if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && drawBlock == true) {
+            switch (editMaterial) {
+            case wall:
+                objList.push_back(new BackgroundWall(prevX > x ? x - 2 : prevX - 2, prevY > y ? y - 2 : prevY - 2, abs(x - prevX) + 2, abs(y - prevY)+2));
+            }
+            drawBlock = false;
+        }
+    }
+    else {
+        DrawText("Press e to toggle between helper and edit", 20, 20, 32, BLACK);
+        DrawText("Press , to bring up a measure of how high player will jump", 20, 80, 32, BLACK);
+        DrawText("Press . to undo pressing the mouse", 20, 140, 32, BLACK);
+        DrawText("Press s to save the map", 20, 200, 32, BLACK);
+        DrawText("Press g to exit without saving the map", 20, 260, 32, BLACK);
+        DrawText("Press U to undo placing the recent object", 20, 320, 32, BLACK);
+        DrawText("Press 1 to choose wall", 20, 380, 32, BLACK);
+    }
+    if (IsKeyPressed(KEY_E))
+        editMode = !editMode;  
+    else if (IsKeyPressed(KEY_G)) {
+        programScene = title;
+        editMode = false;
+        drawBlock = false;
+        measure = false;
+        editMaterial = wall;
+        prevX = prevY = 0;
+        deloadmap(objList);
+    }
+    else if (IsKeyPressed(KEY_S)) {
+        savemap(objList);
+    }
 
+}
+
+Drawer::Drawer() {
+    editMode = false;
+    drawBlock = false;
+    measure = false;
+    editMaterial = wall;
+    prevX = prevY = 0;
 }

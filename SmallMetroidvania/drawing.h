@@ -19,4 +19,13 @@ void mainDraw(std::vector <Object*>& objList, EnScene &programScene);
 void gameDraw(std::vector <Object*>& objList, EnScene &programScene);
 void titleDraw(std::vector <Object*>& objList, EnScene &programScene);
 void optionsDraw(EnScene& programScene);
-void editorDraw(EnScene& programScene);
+
+class Drawer {
+private:
+    bool editMode, drawBlock, measure;
+    enLabel editMaterial;
+    short int prevX, prevY;
+public:
+    Drawer();
+    void editDraw(std::vector <Object*>& objList, EnScene& programScene);
+};

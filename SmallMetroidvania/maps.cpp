@@ -11,7 +11,7 @@ void loadmap(int col, int row, std::vector <Object*>& objList) {
     std::string mapData;
     int temp;
     int val1, val2, val3, val4;
-    std::ifstream readFile("Maps/Campaign/1.txt");
+    std::ifstream readFile("Maps/Campaign/11.txt");
     while (std::getline(readFile, mapData)) {
         std::size_t pos = mapData.find(' ');
         std::size_t prevPos = pos + 1;
@@ -42,4 +42,15 @@ void loadmap(int col, int row, std::vector <Object*>& objList) {
         }
     }
     readFile.close();
+}
+
+void savemap(std::vector <Object*>& objList) {
+    std::ofstream writeFile("Maps/Test/Custom.txt");
+    for (std::vector <Object*>::iterator it = objList.begin(); it != objList.end(); it++) {
+        switch ((*it)->label) {
+        case wall:
+            writeFile << 0 << ' ' << (*it)->x << ' ' << (*it)->y << ' ' << (*it)->width << ' ' << (*it)->height << '\n';
+        }
+    }
+    writeFile.close();
 }

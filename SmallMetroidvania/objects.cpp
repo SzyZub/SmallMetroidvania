@@ -70,7 +70,7 @@ void Player::collision(std::vector <Object*> objList) {
 }
 
 BackgroundWall::BackgroundWall(int lx, int ly, int lwidth, int lheight) {
-	x = lx;
+	x = lx ;
 	y = ly;
 	width = lwidth;
 	height = lheight;
