@@ -98,9 +98,6 @@ void Drawer::editDraw(std::vector <Object*>& objList, EnScene& programScene) {
         int y = GetMouseY();
         for (std::vector <Object*>::iterator it = objList.begin(); it != objList.end(); it++) {
             switch ((*it)->label) {
-            case enLabel::player:
-                DrawRectangle((*it)->x, (*it)->y, (*it)->width, (*it)->height, PLAYERCOLOR);
-                break;
             case enLabel::wall:
                 DrawRectangle((*it)->x, (*it)->y, (*it)->width, (*it)->height, WALLCOLOR);
                 break;
@@ -123,29 +120,62 @@ void Drawer::editDraw(std::vector <Object*>& objList, EnScene& programScene) {
             editMaterial = wall;
         else if (IsKeyPressed(KEY_PERIOD))
             drawBlock = false;
-        else if (IsKeyPressed(KEY_U))
-            if(objList.size() != 0)
+        else if (IsKeyPressed(KEY_U)) {
+            if (objList.size() != 0)
                 objList.pop_back();
-        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && drawBlock == false) {
-            prevX = x;
-            prevY = y;
-            drawBlock = true;
-        } else if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && drawBlock == true) {
-            switch (editMaterial) {
-            case wall:
-                objList.push_back(new BackgroundWall(prevX > x ? x - 2 : prevX - 2, prevY > y ? y - 2 : prevY - 2, abs(x - prevX) + 2, abs(y - prevY)+2));
+        }
+        else if (IsKeyPressed(KEY_D)) {
+            for (std::vector <Object*>::iterator it = objList.begin(); it != objList.end(); it++) {
+                if (CheckCollisionPointRec({(float) x, (float) y}, {(float) (*it)->x, (float) (*it)->y, (float) (*it)->x+(*it)->width, (float) (*it)->y+(*it)->height})) {
+                    delete *it;
+                    objList.erase(it);
+                    break;
+                }
             }
-            drawBlock = false;
+        }
+        else if (IsKeyPressed(KEY_Q))
+            exitView = !exitView;
+        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+            if (exitView){
+                if (CheckCollisionPointRec({ (float)x, (float)y }, { 0, 0, SCREENW, 32 }))
+                    exitStruct.up = !exitStruct.up;
+                else if (CheckCollisionPointRec({ (float)x, (float)y }, { 0, SCREENH - 32, SCREENW, 32 }))
+                    exitStruct.down = !exitStruct.down;
+                else if (CheckCollisionPointRec({ (float)x, (float)y }, { 0, 0, 32, SCREENH }))
+                    exitStruct.left = !exitStruct.left;
+                else if (CheckCollisionPointRec({ (float)x, (float)y }, { SCREENW - 32, 0, 32, SCREENH }))
+                    exitStruct.right = !exitStruct.right;
+            }
+            else if (drawBlock == false) {
+                prevX = x;
+                prevY = y;
+                drawBlock = true;
+            }
+            else if (drawBlock == true) {
+                switch (editMaterial) {
+                case wall:
+                    objList.push_back(new BackgroundWall(prevX > x ? x - 2 : prevX - 2, prevY > y ? y - 2 : prevY - 2, abs(x - prevX) + 2, abs(y - prevY) + 2));
+                }
+                drawBlock = false;
+            }
+        }
+        if (exitView) {
+            DrawRectangle(0, 0, SCREENW, 32, exitStruct.up ? GREEN : RED);
+            DrawRectangle(0, SCREENH - 32, SCREENW, 32, exitStruct.down ? GREEN : RED);
+            DrawRectangle(0, 0, 32, SCREENH, exitStruct.left ? GREEN : RED);
+            DrawRectangle(SCREENW - 32, 0, 32, SCREENH, exitStruct.right ? GREEN : RED);
         }
     }
     else {
-        DrawText("Press e to toggle between helper and edit", 20, 20, 32, BLACK);
-        DrawText("Press , to bring up a measure of how high player will jump", 20, 80, 32, BLACK);
-        DrawText("Press . to undo pressing the mouse", 20, 140, 32, BLACK);
-        DrawText("Press s to save the map", 20, 200, 32, BLACK);
-        DrawText("Press g to exit without saving the map", 20, 260, 32, BLACK);
-        DrawText("Press U to undo placing the recent object", 20, 320, 32, BLACK);
-        DrawText("Press 1 to choose wall", 20, 380, 32, BLACK);
+        DrawText("Press e to toggle between helper and edit", 20, 20, 30, BLACK);
+        DrawText("Press , to bring up a measure of how high player will jump", 20, 80, 30, BLACK);
+        DrawText("Press . to undo pressing the mouse", 20, 140, 30, BLACK);
+        DrawText("Press s to save the map", 20, 200, 30, BLACK);
+        DrawText("Press g to exit without saving the map", 20, 260, 30, BLACK);
+        DrawText("Press u to undo placing the recent object", 20, 320, 30, BLACK);
+        DrawText("Press d to delete a selected object", 20, 380, 30, BLACK);
+        DrawText("Press q to toggle exits view and press left mouse \n\nto select which ones exist", 20, 440, 30, BLACK);
+        DrawText("Press 1 to choose wall", 20, 510, 30, BLACK);
     }
     if (IsKeyPressed(KEY_E))
         editMode = !editMode;  
@@ -159,7 +189,7 @@ void Drawer::editDraw(std::vector <Object*>& objList, EnScene& programScene) {
         deloadmap(objList);
     }
     else if (IsKeyPressed(KEY_S)) {
-        savemap(objList);
+        savemap(objList, exitStruct);
     }
 
 }
@@ -168,6 +198,7 @@ Drawer::Drawer() {
     editMode = false;
     drawBlock = false;
     measure = false;
+    exitView = false;
     editMaterial = wall;
     prevX = prevY = 0;
 }

@@ -22,9 +22,10 @@ void optionsDraw(EnScene& programScene);
 
 class Drawer {
 private:
-    bool editMode, drawBlock, measure;
+    bool editMode, drawBlock, exitView, measure;
     enLabel editMaterial;
     short int prevX, prevY;
+    exits exitStruct;
 public:
     Drawer();
     void editDraw(std::vector <Object*>& objList, EnScene& programScene);

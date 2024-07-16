@@ -5,6 +5,10 @@
 #define SCREENW 1024
 #define SCREENH 768
 
+typedef struct exits {
+	bool left, right, down, up;
+}exits;
+
 typedef enum enLabel {
 	player = 0,
 	wall

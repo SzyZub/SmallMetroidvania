@@ -2,7 +2,7 @@
 
 void deloadmap(std::vector <Object*>& objList) {
     for (std::vector <Object*>::iterator it = objList.begin(); it != objList.end(); it++) {
-        free(*it);
+        delete* it;
     }
     objList.clear();
 }
@@ -44,7 +44,7 @@ void loadmap(int col, int row, std::vector <Object*>& objList) {
     readFile.close();
 }
 
-void savemap(std::vector <Object*>& objList) {
+void savemap(std::vector <Object*>& objList, exits exitStruct) {
     std::ofstream writeFile("Maps/Test/Custom.txt");
     for (std::vector <Object*>::iterator it = objList.begin(); it != objList.end(); it++) {
         switch ((*it)->label) {
@@ -52,5 +52,6 @@ void savemap(std::vector <Object*>& objList) {
             writeFile << 0 << ' ' << (*it)->x << ' ' << (*it)->y << ' ' << (*it)->width << ' ' << (*it)->height << '\n';
         }
     }
+    writeFile << 99 << ' ' << exitStruct.up << ' ' << exitStruct.down << ' ' << exitStruct.left << ' ' << exitStruct.right << '\n';
     writeFile.close();
 }
