@@ -11,10 +11,12 @@ typedef enum EnScene {
     title,
     edit,
     options,
-    ext
+    ext,
+    choosing
 }EnScene;
 
 void initScreen();
+void chooseMap(std::vector <Object*>& objList, EnScene& programScene);
 void mainDraw(std::vector <Object*>& objList, EnScene &programScene);
 void gameDraw(std::vector <Object*>& objList, EnScene &programScene);
 void titleDraw(std::vector <Object*>& objList, EnScene &programScene);

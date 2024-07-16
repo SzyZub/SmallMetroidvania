@@ -7,11 +7,23 @@ void deloadmap(std::vector <Object*>& objList) {
     objList.clear();
 }
 
-void loadmap(int col, int row, std::vector <Object*>& objList) {
+bool loadmap(int col, int row, std::vector <Object*>& objList, int mode) {
     std::string mapData;
     int temp;
     int val1, val2, val3, val4;
-    std::ifstream readFile("Maps/Campaign/11.txt");
+    std::ifstream readFile;
+    if (mode == 0) {
+        readFile.open("Maps/Campaign/11.txt");
+    }
+    else if (mode == 1) {
+        readFile.open("Maps/Custom/11.txt");
+    }
+    else {
+        readFile.open("Maps/Test/Custom.txt");
+    }
+    if (!readFile.is_open()) {
+        return false;
+    }
     while (std::getline(readFile, mapData)) {
         std::size_t pos = mapData.find(' ');
         std::size_t prevPos = pos + 1;
@@ -31,17 +43,10 @@ void loadmap(int col, int row, std::vector <Object*>& objList) {
             val4 = std::stoi(mapData.substr(prevPos, pos));
             objList.push_back(new BackgroundWall(val1, val2, val3, val4));
             break;
-        case 1:
-            pos = mapData.find(' ', prevPos);
-            val1 = std::stoi(mapData.substr(prevPos, pos));
-            prevPos = pos + 1;
-            pos = mapData.find(' ', prevPos);
-            val2 = std::stoi(mapData.substr(prevPos, pos));
-            objList.push_back(new Player(val1, val2));
-            break;
         }
     }
     readFile.close();
+    return true;
 }
 
 void savemap(std::vector <Object*>& objList, exits exitStruct) {

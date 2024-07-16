@@ -5,5 +5,5 @@
 #include <string>
 
 void deloadmap(std::vector <Object*>&);
-void loadmap(int col, int row, std::vector <Object*>&);
+bool loadmap(int col, int row, std::vector <Object*>&, int mode);
 void savemap(std::vector <Object*>& objList, exits exitStruct);

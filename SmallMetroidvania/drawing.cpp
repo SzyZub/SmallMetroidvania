@@ -18,12 +18,44 @@ void mainDraw(std::vector <Object*>& objList, EnScene& programScene) {
     case options:
         optionsDraw(programScene);
         break;
+    case choosing:
+        chooseMap(objList, programScene);
+        break;
     case edit:
         static Drawer draw;
         draw.editDraw(objList, programScene);
         break;
     }
     EndDrawing();
+}
+
+void chooseMap(std::vector <Object*>& objList, EnScene& programScene) {
+    DrawText("Main Campaign", (SCREENW-MeasureText("Main Campaign", 64))/2, 70, 64, BLACK);
+    DrawText("Custom Campaign", (SCREENW - MeasureText("Custom Campaign", 64)) / 2, 250, 64, BLACK);
+    DrawText("Test Map", (SCREENW - MeasureText("Test Map", 64)) / 2, 430, 64, BLACK);
+    DrawText("Exit", (SCREENW - MeasureText("Exit", 64)) / 2, 610, 64, BLACK);
+    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+        int y = GetMouseY();
+        if (y < 192) {
+            if (loadmap(1, 1, objList, 0)) {
+                programScene = game;
+                objList.push_back(new Player(40, 704));
+            }
+        }
+        else if (y < 372) {
+            if (loadmap(1, 1, objList, 1)) {
+                programScene = game;
+                objList.push_back(new Player(40, 704));
+            }
+        }
+        else if (y < 562) {
+            if (loadmap(1, 1, objList, 2))
+                programScene = game;
+        }
+        else {
+            programScene = title;
+        }
+    }
 }
 
 void gameDraw(std::vector <Object*>& objList, EnScene& programScene) {
@@ -41,33 +73,32 @@ void gameDraw(std::vector <Object*>& objList, EnScene& programScene) {
 }
 
 void titleDraw(std::vector <Object*>& objList, EnScene& programScene) {
-    DrawText("Start the game", (SCREENW - MeasureText("Start the game", 64))/2, 70, 64, DARKGREEN);
-    DrawText("Editor", (SCREENW - MeasureText("Editor", 64)) / 2, 250, 64, DARKGREEN);
-    DrawText("Options", (SCREENW - MeasureText("Options", 64)) / 2, 430, 64, DARKGREEN);
-    DrawText("Exit", (SCREENW - MeasureText("Exit", 64)) / 2, 610, 64, DARKGREEN);
+    DrawText("Start the game", (SCREENW - MeasureText("Start the game", 64))/2, 70, 64, BLACK);
+    DrawText("Editor", (SCREENW - MeasureText("Editor", 64)) / 2, 250, 64, BLACK);
+    DrawText("Options", (SCREENW - MeasureText("Options", 64)) / 2, 430, 64, BLACK);
+    DrawText("Exit", (SCREENW - MeasureText("Exit", 64)) / 2, 610, 64, BLACK);
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
         int y = GetMouseY();
         if (y < 192) {
-            programScene = game;
-            loadmap(1, 1, objList);
+            programScene = choosing;
         }
-        else if (y >= 192 && y < 372) {
+        else if (y < 372) {
             programScene = edit;
         }
-        else if (y >= 372 && y < 562) {
+        else if (y < 562) {
             programScene = options;
         }
-        else if (y > 562){
+        else{
             programScene = ext;
         }
     }
 }
 
 void optionsDraw(EnScene& programScene) {
-    DrawText("Window", (SCREENW - MeasureText("Window", 48)) / 2, 48, 48, DARKGREEN);
+    DrawText("Window", (SCREENW - MeasureText("Window", 48)) / 2, 48, 48, BLACK);
     DrawText("Fullscreen", (SCREENW - MeasureText("Fullscreen", 35)) / 4, 150, 35, IsWindowState(FLAG_FULLSCREEN_MODE) ? GREEN : RED);
     DrawText("Windowed", (SCREENW - MeasureText("Windowed", 35)) / 4* 3, 150, 35, IsWindowState(FLAG_FULLSCREEN_MODE) ? RED : GREEN);
-    DrawText("Exit", (SCREENW - MeasureText("Exit", 48)) / 2, 672, 48, DARKGREEN);
+    DrawText("Exit", (SCREENW - MeasureText("Exit", 48)) / 2, 672, 48, BLACK);
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
         int y = GetMouseY();
         int x = GetMouseX();
@@ -199,6 +230,7 @@ Drawer::Drawer() {
     drawBlock = false;
     measure = false;
     exitView = false;
+    exitStruct.up = exitStruct.down = exitStruct.left = exitStruct.right = false;
     editMaterial = wall;
     prevX = prevY = 0;
 }
