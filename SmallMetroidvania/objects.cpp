@@ -54,13 +54,13 @@ void Player::collision(std::vector <Object*> objList) {
 					break;			
 			}
 			while (moveY) {
+				jumped = true;
 				if (moveY != 0 && CheckCollisionRecs({ (float)(*it)->x, (float)(*it)->y, (float)(*it)->width, (float)(*it)->height }, { (float)x, (float)y + moveY, (float)width, (float)height })) {
 					if (moveY > 0)
 						moveY--;
 					else
 						moveY++;
-					if (moveY >= 0)
-						jumped = false;
+					jumped = false;
 				}
 				else 
 					break;
