@@ -1,5 +1,7 @@
 #include "drawing.h"
 
+bool isTest = false;
+
 void initScreen() {
     InitWindow(SCREENW, SCREENH, "MetroidCube");
     SetTargetFPS(60);
@@ -39,18 +41,20 @@ void chooseMap(std::vector <Object*>& objList, EnScene& programScene) {
         if (y < 192) {
             if (loadmap(1, 1, objList, 0)) {
                 programScene = game;
-                objList.push_back(new Player(40, 704));
+                objList.insert(objList.begin(), new Player(40, 704));
             }
         }
         else if (y < 372) {
             if (loadmap(1, 1, objList, 1)) {
                 programScene = game;
-                objList.push_back(new Player(40, 704));
+                objList.insert(objList.begin(), new Player(40, 704));
             }
         }
         else if (y < 562) {
-            if (loadmap(1, 1, objList, 2))
+            if (loadmap(1, 1, objList, 2)) {
                 programScene = game;
+                isTest = true;
+            }           
         }
         else {
             programScene = title;
@@ -60,6 +64,14 @@ void chooseMap(std::vector <Object*>& objList, EnScene& programScene) {
 
 void gameDraw(std::vector <Object*>& objList, EnScene& programScene) {
     objList[0]->move(objList);
+    if (isTest) {
+        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+            if ((*objList.begin())->label == player) {
+                objList.erase(objList.begin());
+            }
+            objList.insert(objList.begin(), new Player(GetMouseX(), GetMouseY()));
+        }
+    }
     for (std::vector <Object*>::iterator it = objList.begin(); it != objList.end(); it++) {
         switch ((*it)->label) {
         case enLabel::player:
