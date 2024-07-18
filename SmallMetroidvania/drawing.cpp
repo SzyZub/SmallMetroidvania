@@ -23,6 +23,9 @@ void mainDraw(std::vector <Object*>& objList, EnScene& programScene) {
     case choosing:
         chooseMap(objList, programScene);
         break;
+    case menu:
+        menuDraw(objList, programScene);
+        break;
     case edit:
         static Drawer draw;
         draw.editDraw(objList, programScene);
@@ -72,6 +75,9 @@ void gameDraw(std::vector <Object*>& objList, EnScene& programScene) {
             objList.insert(objList.begin(), new Player(GetMouseX(), GetMouseY()));
         }
     }
+    if (IsKeyPressed(KEY_TAB)) {
+        programScene = menu;
+    }
     for (std::vector <Object*>::iterator it = objList.begin(); it != objList.end(); it++) {
         switch ((*it)->label) {
         case enLabel::player:
@@ -102,6 +108,22 @@ void titleDraw(std::vector <Object*>& objList, EnScene& programScene) {
         }
         else{
             programScene = ext;
+        }
+    }
+}
+
+void menuDraw(std::vector <Object*>& objList, EnScene& programScene) {
+    DrawText("Resume the game", (SCREENW - MeasureText("Resume the game", 40)) / 2, SCREENH/4, 40, BLACK);
+    DrawText("Exit to the title", (SCREENW - MeasureText("Exit to the title", 40)) / 2, SCREENH/4 * 3, 40, BLACK);
+    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+        int y = GetMouseY();
+        if (y > SCREENH/2) {
+            deloadmap(objList);
+            programScene = title;
+            isTest = false;
+        }
+        else {
+            programScene = game;
         }
     }
 }
@@ -197,7 +219,7 @@ void Drawer::editDraw(std::vector <Object*>& objList, EnScene& programScene) {
             else if (drawBlock == true) {
                 switch (editMaterial) {
                 case wall:
-                    objList.push_back(new BackgroundWall(prevX > x ? x - 2 : prevX - 2, prevY > y ? y - 2 : prevY - 2, abs(x - prevX) + 2, abs(y - prevY) + 2));
+                    objList.push_back(new BackgroundWall(prevX > x ? x - 2 : prevX - 2, prevY > y ? y - 2 : prevY - 2, abs(x - prevX) + 4, abs(y - prevY) + 4));
                 }
                 drawBlock = false;
             }
