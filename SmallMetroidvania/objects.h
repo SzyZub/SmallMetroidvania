@@ -11,30 +11,36 @@ typedef struct exits {
 
 typedef enum enLabel {
 	player = 0,
-	wall
+	wall,
+	damageZone
 }enLabel;
 
 class Object {
 public:
-	Object();
 	int x, y, width, height, rotation;
 	enLabel label;
-	virtual void move(std::vector <Object*> objList) {};
+	virtual void move(std::vector <Object*>& objList) {};
+	virtual void die(std::vector <Object*>& objList) {};
 };
 
 class Player : public Object {
 private:
-	int moveX, moveY;
+	int moveX, moveY, spawnX, spawnY, spawnMoveX, spawnMoveY;
 	bool jumped;
 public:
-	Player(int lx, int ly);
-	void move(std::vector <Object*> objList);
-	void collisionX(std::vector <Object*> objList);
-	void collisionY(std::vector <Object*> objList);
+	Player(int sx, int sy, int smX, int smY);
+	void move(std::vector <Object*>& objList);
+	void die(std::vector <Object*>& objList);
+	void collisionX(std::vector <Object*>& objList);
+	void collisionY(std::vector <Object*>& objList);
 };
 
 class BackgroundWall : public Object {
 public:
-	BackgroundWall(int lx, int ly, int lwidth, int lheight);
 	BackgroundWall(int lx, int ly, int lwidth, int lheight, int lrotation);
+};
+
+class DamageZone : public Object {
+public:
+	DamageZone(int lx, int ly, int lwidth, int lheight, int lrotation);
 };

@@ -44,13 +44,13 @@ void chooseMap(std::vector <Object*>& objList, EnScene& programScene) {
         if (y < 192) {
             if (loadmap(1, 1, objList, 0)) {
                 programScene = game;
-                objList.insert(objList.begin(), new Player(40, 704));
+                objList.insert(objList.begin(), new Player(40, 704, 0, 0));
             }
         }
         else if (y < 372) {
             if (loadmap(1, 1, objList, 1)) {
                 programScene = game;
-                objList.insert(objList.begin(), new Player(40, 704));
+                objList.insert(objList.begin(), new Player(40, 704, 0, 0));
             }
         }
         else if (y < 562) {
@@ -72,7 +72,7 @@ void gameDraw(std::vector <Object*>& objList, EnScene& programScene) {
             if ((*objList.begin())->label == player) {
                 objList.erase(objList.begin());
             }
-            objList.insert(objList.begin(), new Player(GetMouseX(), GetMouseY()));
+            objList.insert(objList.begin(), new Player(GetMouseX(), GetMouseY(), 0 , 0));
         }
     }
     if (IsKeyPressed(KEY_TAB)) {
@@ -80,11 +80,14 @@ void gameDraw(std::vector <Object*>& objList, EnScene& programScene) {
     }
     for (std::vector <Object*>::iterator it = objList.begin(); it != objList.end(); it++) {
         switch ((*it)->label) {
-        case enLabel::player:
+        case player:
             DrawRectangle((*it)->x, (*it)->y, (*it)->width, (*it)->height, PLAYERCOLOR);
             break;
-        case enLabel::wall:
+        case wall:
             DrawRectangle((*it)->x, (*it)->y, (*it)->width, (*it)->height, WALLCOLOR);
+            break;
+        case damageZone:
+            DrawRectangle((*it)->x, (*it)->y, (*it)->width, (*it)->height, DAMAGEZONECOLOR);
             break;
         }
     }
@@ -153,18 +156,21 @@ void optionsDraw(EnScene& programScene) {
 
 void Drawer::editDraw(std::vector <Object*>& objList, EnScene& programScene) {
     if (editMode) {
+        int x = GetMouseX();
+        int y = GetMouseY();
         for (int i = 0; i < SCREENW; i += 32) {
             DrawLine(i, 0, i, SCREENH, BLACK);
         }
         for (int i = 0; i < SCREENH; i += 32) {
             DrawLine(0, i, SCREENW, i, BLACK);
         }
-        int x = GetMouseX();
-        int y = GetMouseY();
         for (std::vector <Object*>::iterator it = objList.begin(); it != objList.end(); it++) {
             switch ((*it)->label) {
-            case enLabel::wall:
+            case wall:
                 DrawRectangle((*it)->x, (*it)->y, (*it)->width, (*it)->height, WALLCOLOR);
+                break;
+            case damageZone:
+                DrawRectangle((*it)->x, (*it)->y, (*it)->width, (*it)->height, DAMAGEZONECOLOR);
                 break;
             }
         }
@@ -183,6 +189,8 @@ void Drawer::editDraw(std::vector <Object*>& objList, EnScene& programScene) {
             measure = !measure;
         else if (IsKeyPressed(KEY_ONE))
             editMaterial = wall;
+        else if (IsKeyPressed(KEY_TWO))
+            editMaterial = damageZone;
         else if (IsKeyPressed(KEY_PERIOD))
             drawBlock = false;
         else if (IsKeyPressed(KEY_U)) {
@@ -219,7 +227,11 @@ void Drawer::editDraw(std::vector <Object*>& objList, EnScene& programScene) {
             else if (drawBlock == true) {
                 switch (editMaterial) {
                 case wall:
-                    objList.push_back(new BackgroundWall(prevX > x ? x - 2 : prevX - 2, prevY > y ? y - 2 : prevY - 2, abs(x - prevX) + 4, abs(y - prevY) + 4));
+                    objList.push_back(new BackgroundWall(prevX > x ? x - 2 : prevX - 2, prevY > y ? y - 2 : prevY - 2, abs(x - prevX) + 4, abs(y - prevY) + 4, 0));
+                    break;
+                case damageZone:
+                    objList.push_back(new DamageZone(prevX > x ? x - 2 : prevX - 2, prevY > y ? y - 2 : prevY - 2, abs(x - prevX) + 4, abs(y - prevY) + 4, 0));
+                    break;
                 }
                 drawBlock = false;
             }
@@ -233,14 +245,15 @@ void Drawer::editDraw(std::vector <Object*>& objList, EnScene& programScene) {
     }
     else {
         DrawText("Press e to toggle between helper and edit", 20, 20, 30, BLACK);
-        DrawText("Press , to bring up a measure of how high player will jump", 20, 80, 30, BLACK);
-        DrawText("Press . to undo pressing the mouse", 20, 140, 30, BLACK);
-        DrawText("Press s to save the map", 20, 200, 30, BLACK);
-        DrawText("Press g to exit without saving the map", 20, 260, 30, BLACK);
-        DrawText("Press u to undo placing the recent object", 20, 320, 30, BLACK);
-        DrawText("Press d to delete a selected object", 20, 380, 30, BLACK);
-        DrawText("Press q to toggle exits view and press left mouse \n\nto select which ones exist", 20, 440, 30, BLACK);
-        DrawText("Press 1 to choose wall", 20, 510, 30, BLACK);
+        DrawText("Press , to bring up a measure of how high player will jump", 20, 70, 30, BLACK);
+        DrawText("Press . to undo pressing the mouse", 20, 120, 30, BLACK);
+        DrawText("Press s to save the map", 20, 170, 30, BLACK);
+        DrawText("Press g to exit without saving the map", 20, 220, 30, BLACK);
+        DrawText("Press u to undo placing the recent object", 20, 270, 30, BLACK);
+        DrawText("Press d to delete a selected object", 20, 320, 30, BLACK);
+        DrawText("Press q to toggle exit view and press left mouse to toggle them", 20, 370, 30, BLACK);
+        DrawText("Press 1 to choose wall", 20, 420, 30, BLACK);
+        DrawText("Press 2 to choose danger zone", 20, 470, 30, BLACK);
     }
     if (IsKeyPressed(KEY_E))
         editMode = !editMode;  

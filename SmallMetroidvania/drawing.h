@@ -5,6 +5,7 @@
 #define BACKGROUNDCOLOR {225, 225, 225, 255}
 #define PLAYERCOLOR {122, 122, 200, 255}
 #define WALLCOLOR {0, 0, 0, 255}
+#define DAMAGEZONECOLOR {200, 50, 50, 255}
 
 typedef enum EnScene {
     game = 0,
