@@ -22,8 +22,9 @@ Player::Player(int lx, int ly) {
 }
 
 void Player::move(std::vector <Object*> objList) {
-	collision(objList);
+	collisionX(objList);
 	x += moveX;
+	collisionY(objList);
 	y += moveY;
 	moveY += 1;
 	if (IsKeyDown(KEY_RIGHT) && moveX < 8)
@@ -39,30 +40,40 @@ void Player::move(std::vector <Object*> objList) {
 
 }
 
-void Player::collision(std::vector <Object*> objList) {
+void Player::collisionX(std::vector <Object*> objList) {
 	for (std::vector <Object*>::iterator it = objList.begin(); it != objList.end(); it++) {
-		if (moveX == 0 && moveY == 0)
+		if (moveX == 0)
 			return;
 		if (enLabel::wall == (*it)->label) {
 			while (moveX) {
-				if (moveX != 0 && CheckCollisionRecs({ (float)(*it)->x, (float)(*it)->y, (float)(*it)->width, (float)(*it)->height }, { (float)x + moveX, (float)y, (float)width, (float)height }))
+				if (CheckCollisionRecs({ (float)(*it)->x, (float)(*it)->y, (float)(*it)->width, (float)(*it)->height }, { (float)x + moveX, (float)y, (float)width, (float)height })) {
 					if (moveX > 0)
 						moveX--;
 					else
 						moveX++;
+				}
 				else 
 					break;			
 			}
+		}
+	}
+}
+
+void Player::collisionY(std::vector <Object*> objList) {
+	for (std::vector <Object*>::iterator it = objList.begin(); it != objList.end(); it++) {
+		if (moveY == 0)
+			return;
+		if (enLabel::wall == (*it)->label) {
 			while (moveY) {
 				jumped = true;
-				if (moveY != 0 && CheckCollisionRecs({ (float)(*it)->x, (float)(*it)->y, (float)(*it)->width, (float)(*it)->height }, { (float)x, (float)y + moveY, (float)width, (float)height })) {
+				if (CheckCollisionRecs({ (float)(*it)->x, (float)(*it)->y, (float)(*it)->width, (float)(*it)->height }, { (float)x, (float)y + moveY, (float)width, (float)height })) {
 					if (moveY > 0)
 						moveY--;
 					else
 						moveY++;
 					jumped = false;
 				}
-				else 
+				else
 					break;
 			}
 		}

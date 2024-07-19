@@ -29,7 +29,8 @@ private:
 public:
 	Player(int lx, int ly);
 	void move(std::vector <Object*> objList);
-	void collision(std::vector <Object*> objList);
+	void collisionX(std::vector <Object*> objList);
+	void collisionY(std::vector <Object*> objList);
 };
 
 class BackgroundWall : public Object {
