@@ -41,6 +41,7 @@ private:
 	bool jumped;
 public:
 	Player();
+	void setSpawn(int lx, int ly);
 	void move(std::vector <BackgroundWall> WallArr, std::vector <DamageZone> DamageArr);
 	void respawn();
 	void collisionX(std::vector <BackgroundWall> WallArr, std::vector <DamageZone> DamageArr);
@@ -49,7 +50,7 @@ public:
 
 class GameManager {
 public:
-	int originalW, originalH;
+	int originalW, originalH, framerate;
 	EnScene sceneLabel;
 public:
 	Player player;

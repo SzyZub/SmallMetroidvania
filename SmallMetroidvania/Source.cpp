@@ -2,12 +2,12 @@
 
 int main(void)
 {
-    std::vector <Object*> objList;
-    EnScene programScene = title;
-    initScreen();
-    while (!WindowShouldClose() && programScene != ext)  
+    GameManager GM;
+    MapManager MM;
+    initScreen(GM);
+    while (!WindowShouldClose() && GM.sceneLabel != ext)  
     {
-        mainDraw(objList, programScene);
+        mainDraw(GM, MM);
     }
     CloseWindow(); 
     return 0;

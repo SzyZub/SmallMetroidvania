@@ -13,8 +13,8 @@ typedef enum gameType {
 class MapManager {
 private:
 	int row, col;
-	gameType type;
 public:
+	gameType type;
 	MapManager();
 	void changeType(gameType temp);
 	void deloadmap(GameManager& temp);

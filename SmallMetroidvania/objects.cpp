@@ -19,8 +19,10 @@ DamageZone::DamageZone(int lx, int ly, int lwidth, int lheight, int lrotation) {
 }
 
 Player::Player() {
-	spawnX = 60;
-	spawnY = 600;
+	spawnX = -50;
+	spawnY = -50;
+	x = -50;
+	y = -50;
 	moveX = 0;
 	moveY = 0;
 	width = 32;
@@ -28,6 +30,11 @@ Player::Player() {
 	rotation = 0;
 	jumped = false;
 	label = player;
+}
+
+void Player::setSpawn(int lx, int ly) {
+	spawnX = lx;
+	spawnY = ly;
 }
 
 void Player::move(std::vector <BackgroundWall> WallArr, std::vector <DamageZone> DamageArr) {
@@ -90,7 +97,9 @@ void Player::collisionY(std::vector <BackgroundWall> WallArr, std::vector <Damag
 		}
 		for (std::vector <BackgroundWall>::iterator it = WallArr.begin(); it != WallArr.end(); it++) {
 			while (moveY) {
+				jumped = true;
 				if (CheckCollisionRecs({ (float)it->x, (float)it->y, (float)it->width, (float)it->height }, { (float)x, (float)y + moveY, (float)width, (float)height })) {
+					jumped = false;
 					if (moveY > 0)
 						moveY--;
 					else if (moveY < 0)
@@ -107,8 +116,9 @@ void Player::collisionY(std::vector <BackgroundWall> WallArr, std::vector <Damag
 }
 
 GameManager::GameManager() {
-	originalH = 360;
-	originalW = 640;
+	originalH = 720;
+	originalW = 1280;
+	framerate = 60;
 	sceneLabel = title;
 }
 

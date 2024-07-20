@@ -1,178 +1,152 @@
 #include "drawing.h"
 
-bool isTest = false;
-
-void initScreen() {
-    InitWindow(SCREENW, SCREENH, "MetroidCube");
-    SetTargetFPS(60);
+void initScreen(GameManager GM) {
+    InitWindow(GM.originalW, GM.originalH, "MetroidCube");
+    SetTargetFPS(GM.framerate);
 }
 
-void mainDraw(std::vector <Object*>& objList, EnScene& programScene) {
+void mainDraw(GameManager& GM, MapManager& MM) {
     BeginDrawing();
     ClearBackground(BACKGROUNDCOLOR);
-    switch (programScene) {
+    switch (GM.sceneLabel) {
     case game: 
-        gameDraw(objList, programScene);
+        gameDraw(GM, MM);
         break;
     case title:
-        titleDraw(objList, programScene);
+        titleDraw(GM);
         break;
     case options:
-        optionsDraw(programScene);
+        optionsDraw(GM);
         break;
     case choosing:
-        chooseMap(objList, programScene);
+        chooseMap(GM, MM);
         break;
     case menu:
-        menuDraw(objList, programScene);
+        menuDraw(GM, MM);
         break;
     case edit:
-        static Drawer draw;
-        draw.editDraw(objList, programScene);
+        static EditorDrawer draw;
+        draw.editDraw(GM, MM);
         break;
     }
     EndDrawing();
 }
 
-void chooseMap(std::vector <Object*>& objList, EnScene& programScene) {
-    DrawText("Main Campaign", (SCREENW-MeasureText("Main Campaign", 64))/2, 70, 64, BLACK);
-    DrawText("Custom Campaign", (SCREENW - MeasureText("Custom Campaign", 64)) / 2, 250, 64, BLACK);
-    DrawText("Test Map", (SCREENW - MeasureText("Test Map", 64)) / 2, 430, 64, BLACK);
-    DrawText("Exit", (SCREENW - MeasureText("Exit", 64)) / 2, 610, 64, BLACK);
+void chooseMap(GameManager& GM, MapManager& MM) {
+    DrawText("Main Campaign", (GM.originalW-MeasureText("Main Campaign", MENUFONT))/2, GM.originalH/8-MENUFONT/2, MENUFONT, BLACK);
+    DrawText("Custom Campaign", (GM.originalW - MeasureText("Custom Campaign", MENUFONT)) / 2, GM.originalH * 3/8 - MENUFONT / 2, MENUFONT, BLACK);
+    DrawText("Test Map", (GM.originalW - MeasureText("Test Map", MENUFONT)) / 2, GM.originalH * 5/ 8 - MENUFONT / 2, MENUFONT, BLACK);
+    DrawText("Exit", (GM.originalW - MeasureText("Exit", MENUFONT)) / 2, GM.originalH * 7/ 8 - MENUFONT / 2, MENUFONT, BLACK);
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
         int y = GetMouseY();
-        if (y < 192) {
-            if (loadmap(1, 1, objList, 0)) {
-                programScene = game;
-                objList.insert(objList.begin(), new Player(40, 704, 0, 0));
+        if (y < GM.originalH* 3 / 4) {
+            if (y < GM.originalH / 4) 
+                MM.changeType(campaign);
+            else if (y < GM.originalH / 2) 
+                MM.changeType(customCampaign);
+            else
+                MM.changeType(test);
+            if (MM.loadmap(GM)) {
+                GM.sceneLabel = game;
             }
-        }
-        else if (y < 372) {
-            if (loadmap(1, 1, objList, 1)) {
-                programScene = game;
-                objList.insert(objList.begin(), new Player(40, 704, 0, 0));
-            }
-        }
-        else if (y < 562) {
-            if (loadmap(1, 1, objList, 2)) {
-                programScene = game;
-                isTest = true;
-            }           
         }
         else {
-            programScene = title;
+            GM.sceneLabel = title;
         }
     }
 }
 
-void gameDraw(std::vector <Object*>& objList, EnScene& programScene) {
-    objList[0]->move(objList);
-    if (isTest) {
-        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-            if ((*objList.begin())->label == player) {
-                objList.erase(objList.begin());
-            }
-            objList.insert(objList.begin(), new Player(GetMouseX(), GetMouseY(), 0 , 0));
+void gameDraw(GameManager& GM, MapManager MM) {
+    GM.player.move(GM.WallArr, GM.DamageArr);
+    if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+        if (MM.type == test) {
+            GM.player.setSpawn(GetMouseX(), GetMouseY());
+            GM.player.respawn();
         }
     }
     if (IsKeyPressed(KEY_TAB)) {
-        programScene = menu;
+        GM.sceneLabel = menu;
     }
-    for (std::vector <Object*>::iterator it = objList.begin(); it != objList.end(); it++) {
-        switch ((*it)->label) {
-        case player:
-            DrawRectangle((*it)->x, (*it)->y, (*it)->width, (*it)->height, PLAYERCOLOR);
-            break;
-        case wall:
-            DrawRectangle((*it)->x, (*it)->y, (*it)->width, (*it)->height, WALLCOLOR);
-            break;
-        case damageZone:
-            DrawRectangle((*it)->x, (*it)->y, (*it)->width, (*it)->height, DAMAGEZONECOLOR);
-            break;
-        }
+    for (std::vector <DamageZone>::iterator it = GM.DamageArr.begin(); it != GM.DamageArr.end(); it++) {
+        DrawRectangle(it->x, it->y, it->width, it->height, DAMAGEZONECOLOR);
+    }
+    for (std::vector <BackgroundWall>::iterator it = GM.WallArr.begin(); it != GM.WallArr.end(); it++) {
+        DrawRectangle(it->x, it->y, it->width, it->height, WALLCOLOR);
+    }
+    DrawRectangle(GM.player.x, GM.player.y, GM.player.width, GM.player.height, PLAYERCOLOR);
+}
+
+void titleDraw(GameManager& GM) {
+    DrawText("Start the game", (GM.originalW - MeasureText("Start the game", MENUFONT))/2, GM.originalH / 8 - MENUFONT / 2, MENUFONT, BLACK);
+    DrawText("Editor", (GM.originalW - MeasureText("Editor", MENUFONT)) / 2, GM.originalH * 3 / 8 - MENUFONT / 2, MENUFONT, BLACK);
+    DrawText("Options", (GM.originalW - MeasureText("Options", MENUFONT)) / 2, GM.originalH * 5 / 8 - MENUFONT / 2, MENUFONT, BLACK);
+    DrawText("Exit", (GM.originalW - MeasureText("Exit", MENUFONT)) / 2, GM.originalH * 7 / 8 - MENUFONT / 2, MENUFONT, BLACK);
+    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+        int y = GetMouseY();
+        if (y < GM.originalH / 4) 
+            GM.sceneLabel = choosing;       
+        else if (y < GM.originalH /2) 
+            GM.sceneLabel = edit;      
+        else if (y < GM.originalH * 3 / 4) 
+            GM.sceneLabel = options;      
+        else 
+            GM.sceneLabel = ext;        
     }
 }
 
-void titleDraw(std::vector <Object*>& objList, EnScene& programScene) {
-    DrawText("Start the game", (SCREENW - MeasureText("Start the game", 64))/2, 70, 64, BLACK);
-    DrawText("Editor", (SCREENW - MeasureText("Editor", 64)) / 2, 250, 64, BLACK);
-    DrawText("Options", (SCREENW - MeasureText("Options", 64)) / 2, 430, 64, BLACK);
-    DrawText("Exit", (SCREENW - MeasureText("Exit", 64)) / 2, 610, 64, BLACK);
+void menuDraw(GameManager& GM, MapManager MM) {
+    DrawText("Resume the game", (GM.originalW - MeasureText("Resume the game", MENUFONT)) / 2, GM.originalH/4 - MENUFONT / 2, MENUFONT, BLACK);
+    DrawText("Exit to the title", (GM.originalW - MeasureText("Exit to the title", MENUFONT)) / 2, GM.originalH*3/4 - MENUFONT / 2, MENUFONT, BLACK);
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
         int y = GetMouseY();
-        if (y < 192) {
-            programScene = choosing;
-        }
-        else if (y < 372) {
-            programScene = edit;
-        }
-        else if (y < 562) {
-            programScene = options;
-        }
-        else{
-            programScene = ext;
-        }
-    }
-}
-
-void menuDraw(std::vector <Object*>& objList, EnScene& programScene) {
-    DrawText("Resume the game", (SCREENW - MeasureText("Resume the game", 40)) / 2, SCREENH/4, 40, BLACK);
-    DrawText("Exit to the title", (SCREENW - MeasureText("Exit to the title", 40)) / 2, SCREENH/4 * 3, 40, BLACK);
-    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-        int y = GetMouseY();
-        if (y > SCREENH/2) {
-            deloadmap(objList);
-            programScene = title;
-            isTest = false;
+        if (y > GM.originalH/2) {
+            MM.deloadmap(GM);
+            GM.sceneLabel = title;
         }
         else {
-            programScene = game;
+            GM.sceneLabel = game;
         }
     }
 }
 
-void optionsDraw(EnScene& programScene) {
-    DrawText("Window", (SCREENW - MeasureText("Window", 48)) / 2, 48, 48, BLACK);
-    DrawText("Fullscreen", (SCREENW - MeasureText("Fullscreen", 35)) / 4, 150, 35, IsWindowState(FLAG_FULLSCREEN_MODE) ? GREEN : RED);
-    DrawText("Windowed", (SCREENW - MeasureText("Windowed", 35)) / 4* 3, 150, 35, IsWindowState(FLAG_FULLSCREEN_MODE) ? RED : GREEN);
-    DrawText("Exit", (SCREENW - MeasureText("Exit", 48)) / 2, 672, 48, BLACK);
+void optionsDraw(GameManager& GM) {
+    DrawText("Window", (GM.originalW - MeasureText("Window", MENUFONT)) / 2, GM.originalH/10 - MENUFONT / 2, MENUFONT, BLACK);
+    DrawText("Fullscreen", (GM.originalW - MeasureText("Fullscreen", MENUFONT*3/4)) / 4, GM.originalH * 2/ 10 - MENUFONT / 2, MENUFONT * 3 / 4, IsWindowState(FLAG_FULLSCREEN_MODE) ? GREEN : RED);
+    DrawText("Windowed", (GM.originalW - MeasureText("Windowed", MENUFONT * 3 / 4)) / 4* 3, GM.originalH * 2/ 10 - MENUFONT / 2, MENUFONT * 3 / 4, IsWindowState(FLAG_FULLSCREEN_MODE) ? RED : GREEN);
+    DrawText("Exit", (GM.originalW - MeasureText("Exit", MENUFONT)) / 2, GM.originalH * 7 / 8 - MENUFONT / 2, MENUFONT, BLACK);
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
         int y = GetMouseY();
         int x = GetMouseX();
-        if (y > 120 && y < 210) {
-            if (x < SCREENW / 2) {
+        if (y > GM.originalH * 5 / 40 && y < GM.originalH * 6 / 20) {
+            if (x < GM.originalW / 2) {
                 SetWindowState(FLAG_FULLSCREEN_MODE);
             }
             else {
                 ClearWindowState(FLAG_FULLSCREEN_MODE);
-                SetWindowSize(SCREENW, SCREENH);
             }
+            SetWindowSize(GM.originalW, GM.originalH);
         }
-        else if (y > 624){
-            programScene = title;
+        else if (y > GM.originalH*3/4){
+            GM.sceneLabel = title;
         }
     }
 }
 
-void Drawer::editDraw(std::vector <Object*>& objList, EnScene& programScene) {
+void EditorDrawer::editDraw(GameManager& GM, MapManager MM) {
     if (editMode) {
         int x = GetMouseX();
         int y = GetMouseY();
-        for (int i = 0; i < SCREENW; i += 32) {
-            DrawLine(i, 0, i, SCREENH, BLACK);
+        for (int i = 0; i < GM.originalW; i += 18) {
+            DrawLine(i, 0, i, GM.originalH, BLACK);
         }
-        for (int i = 0; i < SCREENH; i += 32) {
-            DrawLine(0, i, SCREENW, i, BLACK);
+        for (int i = 0; i < GM.originalH; i += 18) {
+            DrawLine(0, i, GM.originalW, i, BLACK);
         }
-        for (std::vector <Object*>::iterator it = objList.begin(); it != objList.end(); it++) {
-            switch ((*it)->label) {
-            case wall:
-                DrawRectangle((*it)->x, (*it)->y, (*it)->width, (*it)->height, WALLCOLOR);
-                break;
-            case damageZone:
-                DrawRectangle((*it)->x, (*it)->y, (*it)->width, (*it)->height, DAMAGEZONECOLOR);
-                break;
-            }
+        for (std::vector <DamageZone>::iterator it = GM.DamageArr.begin(); it != GM.DamageArr.end(); it++) {
+            DrawRectangle(it->x, it->y, it->width, it->height, DAMAGEZONECOLOR);
+        }
+        for (std::vector <BackgroundWall>::iterator it = GM.WallArr.begin(); it != GM.WallArr.end(); it++) {
+            DrawRectangle(it->x, it->y, it->width, it->height, WALLCOLOR);
         }
         if (measure) {
             DrawLineEx({ (float)x, (float)y }, { (float)x, (float)y - 105 }, 3, BLACK);
@@ -193,33 +167,24 @@ void Drawer::editDraw(std::vector <Object*>& objList, EnScene& programScene) {
             editMaterial = damageZone;
         else if (IsKeyPressed(KEY_PERIOD))
             drawBlock = false;
-        else if (IsKeyPressed(KEY_U)) {
-            if (objList.size() != 0)
-                objList.pop_back();
-        }
         else if (IsKeyPressed(KEY_D)) {
-            for (std::vector <Object*>::iterator it = objList.begin(); it != objList.end(); it++) {
-                if (CheckCollisionPointRec({(float) x, (float) y}, {(float) (*it)->x, (float) (*it)->y, (float) (*it)->x+(*it)->width, (float) (*it)->y+(*it)->height})) {
-                    delete *it;
-                    objList.erase(it);
-                    break;
+            for (std::vector <DamageZone>::iterator it = GM.DamageArr.begin(); it != GM.DamageArr.end(); it++) {
+                if (CheckCollisionPointRec({ (float)x, (float)y }, { (float)it->x, (float)it->y, (float)it->x + it->width, (float)it->y + it->height })) {
+                    GM.DamageArr.erase(it);
+                    return;
+                }
+            }
+            for (std::vector <BackgroundWall>::iterator it = GM.WallArr.begin(); it != GM.WallArr.end(); it++) {
+                if (CheckCollisionPointRec({ (float)x, (float)y }, { (float)it->x, (float)it->y, (float)it->x + it->width, (float)it->y + it->height })) {
+                    GM.WallArr.erase(it);
+                    return;
                 }
             }
         }
         else if (IsKeyPressed(KEY_Q))
             exitView = !exitView;
         if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-            if (exitView){
-                if (CheckCollisionPointRec({ (float)x, (float)y }, { 0, 0, SCREENW, 32 }))
-                    exitStruct.up = !exitStruct.up;
-                else if (CheckCollisionPointRec({ (float)x, (float)y }, { 0, SCREENH - 32, SCREENW, 32 }))
-                    exitStruct.down = !exitStruct.down;
-                else if (CheckCollisionPointRec({ (float)x, (float)y }, { 0, 0, 32, SCREENH }))
-                    exitStruct.left = !exitStruct.left;
-                else if (CheckCollisionPointRec({ (float)x, (float)y }, { SCREENW - 32, 0, 32, SCREENH }))
-                    exitStruct.right = !exitStruct.right;
-            }
-            else if (drawBlock == false) {
+            if (drawBlock == false) {
                 prevX = x;
                 prevY = y;
                 drawBlock = true;
@@ -227,57 +192,48 @@ void Drawer::editDraw(std::vector <Object*>& objList, EnScene& programScene) {
             else if (drawBlock == true) {
                 switch (editMaterial) {
                 case wall:
-                    objList.push_back(new BackgroundWall(prevX > x ? x - 2 : prevX - 2, prevY > y ? y - 2 : prevY - 2, abs(x - prevX) + 4, abs(y - prevY) + 4, 0));
+                    GM.WallArr.push_back(BackgroundWall(prevX > x ? x - 2 : prevX - 2, prevY > y ? y - 2 : prevY - 2, abs(x - prevX) + 4, abs(y - prevY) + 4, 0));
                     break;
                 case damageZone:
-                    objList.push_back(new DamageZone(prevX > x ? x - 2 : prevX - 2, prevY > y ? y - 2 : prevY - 2, abs(x - prevX) + 4, abs(y - prevY) + 4, 0));
+                    GM.DamageArr.push_back(DamageZone(prevX > x ? x - 2 : prevX - 2, prevY > y ? y - 2 : prevY - 2, abs(x - prevX) + 4, abs(y - prevY) + 4, 0));
                     break;
                 }
                 drawBlock = false;
             }
         }
-        if (exitView) {
-            DrawRectangle(0, 0, SCREENW, 32, exitStruct.up ? GREEN : RED);
-            DrawRectangle(0, SCREENH - 32, SCREENW, 32, exitStruct.down ? GREEN : RED);
-            DrawRectangle(0, 0, 32, SCREENH, exitStruct.left ? GREEN : RED);
-            DrawRectangle(SCREENW - 32, 0, 32, SCREENH, exitStruct.right ? GREEN : RED);
-        }
     }
     else {
-        DrawText("Press e to toggle between helper and edit", 20, 20, 30, BLACK);
-        DrawText("Press , to bring up a measure of how high player will jump", 20, 70, 30, BLACK);
-        DrawText("Press . to undo pressing the mouse", 20, 120, 30, BLACK);
-        DrawText("Press s to save the map", 20, 170, 30, BLACK);
-        DrawText("Press g to exit without saving the map", 20, 220, 30, BLACK);
-        DrawText("Press u to undo placing the recent object", 20, 270, 30, BLACK);
-        DrawText("Press d to delete a selected object", 20, 320, 30, BLACK);
-        DrawText("Press q to toggle exit view and press left mouse to toggle them", 20, 370, 30, BLACK);
-        DrawText("Press 1 to choose wall", 20, 420, 30, BLACK);
-        DrawText("Press 2 to choose danger zone", 20, 470, 30, BLACK);
+        DrawText("Press e to toggle between helper and edit", GM.originalW/40, GM.originalH/16 - MENUFONT / 2, MENUFONT/2, BLACK);
+        DrawText("Press , to bring up a measure of how high player will jump", GM.originalW / 40, GM.originalH * 3 / 16 - MENUFONT / 2, MENUFONT / 2, BLACK);
+        DrawText("Press . to undo pressing the mouse", GM.originalW / 40, GM.originalH * 5 / 16 - MENUFONT / 2, MENUFONT / 2, BLACK);
+        DrawText("Press s to save the map", GM.originalW / 40, GM.originalH * 7 / 16 - MENUFONT / 2, MENUFONT / 2, BLACK);
+        DrawText("Press g to exit without saving the map", GM.originalW / 40, GM.originalH * 9 / 16 - MENUFONT / 2, MENUFONT / 2, BLACK);
+        DrawText("Press d to delete a selected object", GM.originalW / 40, GM.originalH * 11 / 16 - MENUFONT / 2, MENUFONT / 2, BLACK);
+        DrawText("Press 1 to choose wall", GM.originalW / 40, GM.originalH * 13 / 16 - MENUFONT / 2, MENUFONT / 2, BLACK);
+        DrawText("Press 2 to choose danger zone", GM.originalW / 40, GM.originalH * 15 / 16 - MENUFONT / 2, MENUFONT / 2, BLACK);
     }
     if (IsKeyPressed(KEY_E))
         editMode = !editMode;  
     else if (IsKeyPressed(KEY_G)) {
-        programScene = title;
+        GM.sceneLabel = title;
         editMode = false;
         drawBlock = false;
         measure = false;
         editMaterial = wall;
         prevX = prevY = 0;
-        deloadmap(objList);
+        MM.deloadmap(GM);
     }
     else if (IsKeyPressed(KEY_S)) {
-        savemap(objList, exitStruct);
+        MM.savemap(GM);
     }
 
 }
 
-Drawer::Drawer() {
+EditorDrawer::EditorDrawer() {
     editMode = false;
     drawBlock = false;
     measure = false;
     exitView = false;
-    exitStruct.up = exitStruct.down = exitStruct.left = exitStruct.right = false;
     editMaterial = wall;
     prevX = prevY = 0;
 }
