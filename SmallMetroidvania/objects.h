@@ -2,37 +2,26 @@
 #include "raylib.h"
 #include <vector>
 
-#define SCREENW 1024
-#define SCREENH 768
+typedef enum EnScene {
+	game = 0,
+	title,
+	edit,
+	options,
+	ext,
+	choosing,
+	menu
+}EnScene;
 
-typedef struct exits {
-	bool left, right, down, up;
-}exits;
-
-typedef enum enLabel {
+typedef enum EnLabel {
 	player = 0,
 	wall,
 	damageZone
-}enLabel;
+}EnLabel;
 
 class Object {
 public:
 	int x, y, width, height, rotation;
-	enLabel label;
-	virtual void move(std::vector <Object*>& objList) {};
-	virtual void die(std::vector <Object*>& objList) {};
-};
-
-class Player : public Object {
-private:
-	int moveX, moveY, spawnX, spawnY, spawnMoveX, spawnMoveY;
-	bool jumped;
-public:
-	Player(int sx, int sy, int smX, int smY);
-	void move(std::vector <Object*>& objList);
-	void die(std::vector <Object*>& objList);
-	void collisionX(std::vector <Object*>& objList);
-	void collisionY(std::vector <Object*>& objList);
+	EnLabel label;
 };
 
 class BackgroundWall : public Object {
@@ -43,4 +32,29 @@ public:
 class DamageZone : public Object {
 public:
 	DamageZone(int lx, int ly, int lwidth, int lheight, int lrotation);
+};
+
+class Player : public Object {
+private:
+	int moveX, moveY;
+	int spawnX, spawnY;
+	bool jumped;
+public:
+	Player();
+	void move(std::vector <BackgroundWall> WallArr, std::vector <DamageZone> DamageArr);
+	void respawn();
+	void collisionX(std::vector <BackgroundWall> WallArr, std::vector <DamageZone> DamageArr);
+	void collisionY(std::vector <BackgroundWall> WallArr, std::vector <DamageZone> DamageArr);
+};
+
+class GameManager {
+public:
+	int originalW, originalH;
+	EnScene sceneLabel;
+public:
+	Player player;
+	std::vector <BackgroundWall> WallArr;
+	std::vector <DamageZone> DamageArr;
+	void changeScene(EnScene temp);
+	GameManager();
 };

@@ -4,6 +4,20 @@
 #include <fstream>
 #include <string>
 
-void deloadmap(std::vector <Object*>&);
-bool loadmap(int col, int row, std::vector <Object*>&, int mode);
-void savemap(std::vector <Object*>& objList, exits exitStruct);
+typedef enum gameType {
+	campaign = 0,
+	customCampaign,
+	test
+}gameType;
+
+class MapManager {
+private:
+	int row, col;
+	gameType type;
+public:
+	MapManager();
+	void changeType(gameType temp);
+	void deloadmap(GameManager& temp);
+	bool loadmap(GameManager& temp);
+	void savemap(GameManager temp);
+};

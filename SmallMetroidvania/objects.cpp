@@ -1,25 +1,39 @@
 #include "objects.h"
 
-Player::Player(int sx, int sy, int smX, int smY) {
-		 x = sx;
-		 y = sy;
-		 spawnX = sx;
-		 spawnY = sy;
-		 moveX = smX;
-		 moveY = smY;
-		 spawnMoveX = smX;
-		 spawnMoveY = smY;
-		 width = 32;
-		 height = 32;
-		 rotation = 0;
-		 jumped = false;
-		 label = enLabel::player;
+BackgroundWall::BackgroundWall(int lx, int ly, int lwidth, int lheight, int lrotation) {
+	x = lx;
+	y = ly;
+	width = lwidth;
+	height = lheight;
+	rotation = lrotation;
+	label = wall;
 }
 
-void Player::move(std::vector <Object*>& objList) {
-	collisionX(objList);
+DamageZone::DamageZone(int lx, int ly, int lwidth, int lheight, int lrotation) {
+	x = lx;
+	y = ly;
+	width = lwidth;
+	height = lheight;
+	rotation = lrotation;
+	label = damageZone;
+}
+
+Player::Player() {
+	spawnX = 60;
+	spawnY = 600;
+	moveX = 0;
+	moveY = 0;
+	width = 32;
+	height = 32;
+	rotation = 0;
+	jumped = false;
+	label = player;
+}
+
+void Player::move(std::vector <BackgroundWall> WallArr, std::vector <DamageZone> DamageArr) {
+	collisionX(WallArr, DamageArr);
 	x += moveX;
-	collisionY(objList);
+	collisionY(WallArr, DamageArr);
 	y += moveY;
 	moveY += 1;
 	if (IsKeyDown(KEY_RIGHT) && moveX < 8)
@@ -35,80 +49,69 @@ void Player::move(std::vector <Object*>& objList) {
 
 }
 
-void Player::die(std::vector <Object*>& objList) {
+void Player::respawn() {
 	x = spawnX;
 	y = spawnY;
-	moveX = spawnMoveX;
-	moveY = spawnMoveY;
+	moveX = 0;
+	moveY = 0;
+	jumped = false;
+	rotation = 0;
 }
 
-void Player::collisionX(std::vector <Object*>& objList) {
-	for (std::vector <Object*>::iterator it = objList.begin(); it != objList.end(); it++) {
-		if (moveX == 0)
-			return;
-		switch((*it)->label) {
-			case enLabel::wall:
-				while (moveX) {
-					if (CheckCollisionRecs({ (float)(*it)->x, (float)(*it)->y, (float)(*it)->width, (float)(*it)->height }, { (float)x + moveX, (float)y, (float)width, (float)height })) {
-						if (moveX > 0)
-							moveX--;
-						else
-							moveX++;
+void Player::collisionX(std::vector <BackgroundWall> WallArr, std::vector <DamageZone> DamageArr) {
+	if (moveX != 0) {
+		for (std::vector <DamageZone>::iterator it = DamageArr.begin(); it != DamageArr.end(); it++) {
+			if (CheckCollisionRecs({ (float)it->x, (float)it->y, (float)it->width, (float)it->height }, { (float)x + moveX, (float)y, (float)width, (float)height }))
+				respawn();
+		}
+		for (std::vector <BackgroundWall>::iterator it = WallArr.begin(); it != WallArr.end(); it++) {
+			while (moveX) {
+				if (CheckCollisionRecs({ (float)it->x, (float)it->y, (float)it->width, (float)it->height }, { (float)x + moveX, (float)y, (float)width, (float)height })) {
+					if (moveX > 0)
+						moveX--;
+					else if (moveX < 0)
+						moveX++;
+					else {
+						return;
 					}
-					else 
-						break;			
 				}
-				break;
-			case enLabel::damageZone:
-				if (CheckCollisionRecs({ (float)(*it)->x, (float)(*it)->y, (float)(*it)->width, (float)(*it)->height }, { (float)x + moveX, (float)y, (float)width, (float)height })) {
-					die(objList);
-				}
-				break;
+				else
+					break;
+			}
 		}
 	}
 }
 
-void Player::collisionY(std::vector <Object*>& objList) {
-	for (std::vector <Object*>::iterator it = objList.begin(); it != objList.end(); it++) {
-		if (moveY == 0)
-			return;
-		switch ((*it)->label) {
-			case enLabel::wall:
-				while (moveY) {
-					jumped = true;
-					if (CheckCollisionRecs({ (float)(*it)->x, (float)(*it)->y, (float)(*it)->width, (float)(*it)->height }, { (float)x, (float)y + moveY, (float)width, (float)height })) {
-						if (moveY > 0)
-							moveY--;
-						else
-							moveY++;
-						jumped = false;
+void Player::collisionY(std::vector <BackgroundWall> WallArr, std::vector <DamageZone> DamageArr) {
+	if (moveY != 0) {
+		for (std::vector <DamageZone>::iterator it = DamageArr.begin(); it != DamageArr.end(); it++) {
+			if (CheckCollisionRecs({ (float)it->x, (float)it->y, (float)it->width, (float)it->height }, { (float)x, (float)y + moveY, (float)width, (float)height }))
+				respawn();
+		}
+		for (std::vector <BackgroundWall>::iterator it = WallArr.begin(); it != WallArr.end(); it++) {
+			while (moveY) {
+				if (CheckCollisionRecs({ (float)it->x, (float)it->y, (float)it->width, (float)it->height }, { (float)x, (float)y + moveY, (float)width, (float)height })) {
+					if (moveY > 0)
+						moveY--;
+					else if (moveY < 0)
+						moveY++;
+					else {
+						return;
 					}
-					else
-						break;
 				}
-			case enLabel::damageZone:
-				if (CheckCollisionRecs({ (float)(*it)->x, (float)(*it)->y, (float)(*it)->width, (float)(*it)->height }, { (float)x, (float)y + moveY, (float)width, (float)height })) {
-					die(objList);
-				}
-				break;
+				else
+					break;
+			}
 		}
 	}
 }
 
-BackgroundWall::BackgroundWall(int lx, int ly, int lwidth, int lheight, int lrotation) {
-	x = lx;
-	y = ly;
-	width = lwidth;
-	height = lheight;
-	rotation = lrotation;
-	label = enLabel::wall;
+GameManager::GameManager() {
+	originalH = 360;
+	originalW = 640;
+	sceneLabel = title;
 }
 
-DamageZone::DamageZone(int lx, int ly, int lwidth, int lheight, int lrotation) {
-	x = lx;
-	y = ly;
-	width = lwidth;
-	height = lheight;
-	rotation = lrotation;
-	label = enLabel::damageZone;
+void GameManager::changeScene(EnScene temp) {
+	sceneLabel = temp;
 }

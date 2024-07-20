@@ -7,16 +7,6 @@
 #define WALLCOLOR {0, 0, 0, 255}
 #define DAMAGEZONECOLOR {200, 50, 50, 255}
 
-typedef enum EnScene {
-    game = 0,
-    title,
-    edit,
-    options,
-    ext,
-    choosing,
-    menu
-}EnScene;
-
 void initScreen();
 void chooseMap(std::vector <Object*>& objList, EnScene& programScene);
 void mainDraw(std::vector <Object*>& objList, EnScene &programScene);
