@@ -136,17 +136,17 @@ void EditorDrawer::editDraw(GameManager& GM, MapManager MM) {
     if (editMode) {
         int x = GetMouseX();
         int y = GetMouseY();
-        for (int i = 0; i < GM.originalW; i += 18) {
-            DrawLine(i, 0, i, GM.originalH, BLACK);
-        }
-        for (int i = 0; i < GM.originalH; i += 18) {
-            DrawLine(0, i, GM.originalW, i, BLACK);
-        }
         for (std::vector <DamageZone>::iterator it = GM.DamageArr.begin(); it != GM.DamageArr.end(); it++) {
             DrawRectangle(it->x, it->y, it->width, it->height, DAMAGEZONECOLOR);
         }
         for (std::vector <BackgroundWall>::iterator it = GM.WallArr.begin(); it != GM.WallArr.end(); it++) {
             DrawRectangle(it->x, it->y, it->width, it->height, WALLCOLOR);
+        }
+        for (int i = 0; i < GM.originalW; i += 20) {
+            DrawLine(i, 0, i, GM.originalH, { 0, 0, 0, 100 });
+        }
+        for (int i = 0; i < GM.originalH; i += 20) {
+            DrawLine(0, i, GM.originalW, i, { 0, 0, 0, 100 });
         }
         if (measure) {
             DrawLineEx({ (float)x, (float)y }, { (float)x, (float)y - 105 }, 3, BLACK);
