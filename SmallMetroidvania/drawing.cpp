@@ -3,6 +3,7 @@
 void initScreen(GameManager GM) {
     InitWindow(GM.originalW, GM.originalH, "MetroidCube");
     SetTargetFPS(GM.framerate);
+    SetExitKey(KEY_GRAVE);
 }
 
 void mainDraw(GameManager& GM, MapManager& MM) {
@@ -133,6 +134,8 @@ void optionsDraw(GameManager& GM) {
 }
 
 void EditorDrawer::editDraw(GameManager& GM, MapManager MM) {
+    static short int spawnPointInc = 0;
+    static Vector2 spawnPoints[4];
     if (editMode) {
         int x = GetMouseX();
         int y = GetMouseY();
@@ -141,6 +144,9 @@ void EditorDrawer::editDraw(GameManager& GM, MapManager MM) {
         }
         for (std::vector <BackgroundWall>::iterator it = GM.WallArr.begin(); it != GM.WallArr.end(); it++) {
             DrawRectangle(it->x, it->y, it->width, it->height, WALLCOLOR);
+        }
+        for (int i = 0; i < spawnPointInc; i++) {
+            DrawRectangle((int) spawnPoints[i].x, (int) spawnPoints[i].y, 32, 32, PLAYERCOLOR);
         }
         for (int i = 0; i < GM.originalW; i += 20) {
             DrawLine(i, 0, i, GM.originalH, { 0, 0, 0, 100 });
@@ -167,6 +173,10 @@ void EditorDrawer::editDraw(GameManager& GM, MapManager MM) {
             editMaterial = damageZone;
         else if (IsKeyPressed(KEY_PERIOD))
             drawBlock = false;
+        else if (IsKeyPressed(KEY_P)) {
+            drawBlock = false;
+            makeRespawn = !makeRespawn;
+        }
         else if (IsKeyPressed(KEY_D)) {
             for (std::vector <DamageZone>::iterator it = GM.DamageArr.begin(); it != GM.DamageArr.end(); it++) {
                 if (CheckCollisionPointRec({ (float)x, (float)y }, { (float)it->x, (float)it->y, (float)it->x + it->width, (float)it->y + it->height })) {
@@ -180,14 +190,30 @@ void EditorDrawer::editDraw(GameManager& GM, MapManager MM) {
                     return;
                 }
             }
+            for (int i = 0; i < spawnPointInc; i++) {
+                if (CheckCollisionPointRec({ (float)x, (float)y }, { spawnPoints[i].x, spawnPoints[i].y, 32, 32 })) {
+                    for (; i < spawnPointInc - 1; i++) {
+                        spawnPoints[i].x = spawnPoints[i + 1].x;
+                        spawnPoints[i].y = spawnPoints[i + 1].y;
+                    }
+                    spawnPointInc--;
+                }
+            }
         }
         else if (IsKeyPressed(KEY_Q))
             exitView = !exitView;
         if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
             if (drawBlock == false) {
-                prevX = x;
-                prevY = y;
-                drawBlock = true;
+                if (!makeRespawn) {
+                    prevX = x;
+                    prevY = y;
+                    drawBlock = true;
+                }
+                else if (spawnPointInc < 4){
+                    spawnPoints[spawnPointInc].x = (float) x;
+                    spawnPoints[spawnPointInc].y = (float) y;
+                    spawnPointInc++;
+                }
             }
             else if (drawBlock == true) {
                 switch (editMaterial) {
@@ -203,14 +229,15 @@ void EditorDrawer::editDraw(GameManager& GM, MapManager MM) {
         }
     }
     else {
-        DrawText("Press e to toggle between helper and edit", GM.originalW/40, GM.originalH/16 - MENUFONT / 2, MENUFONT/2, BLACK);
-        DrawText("Press , to bring up a measure of how high player will jump", GM.originalW / 40, GM.originalH * 3 / 16 - MENUFONT / 2, MENUFONT / 2, BLACK);
-        DrawText("Press . to undo pressing the mouse", GM.originalW / 40, GM.originalH * 5 / 16 - MENUFONT / 2, MENUFONT / 2, BLACK);
-        DrawText("Press s to save the map", GM.originalW / 40, GM.originalH * 7 / 16 - MENUFONT / 2, MENUFONT / 2, BLACK);
-        DrawText("Press g to exit without saving the map", GM.originalW / 40, GM.originalH * 9 / 16 - MENUFONT / 2, MENUFONT / 2, BLACK);
-        DrawText("Press d to delete a selected object", GM.originalW / 40, GM.originalH * 11 / 16 - MENUFONT / 2, MENUFONT / 2, BLACK);
-        DrawText("Press 1 to choose wall", GM.originalW / 40, GM.originalH * 13 / 16 - MENUFONT / 2, MENUFONT / 2, BLACK);
-        DrawText("Press 2 to choose danger zone", GM.originalW / 40, GM.originalH * 15 / 16 - MENUFONT / 2, MENUFONT / 2, BLACK);
+        DrawText("Press e to toggle between helper and edit", GM.originalW/40, GM.originalH/18 - MENUFONT / 2, MENUFONT/2, BLACK);
+        DrawText("Press , to bring up a measure of how high player will jump", GM.originalW / 40, GM.originalH * 3 / 18 - MENUFONT / 2, MENUFONT / 2, BLACK);
+        DrawText("Press . to undo pressing the mouse", GM.originalW / 40, GM.originalH * 5 / 18 - MENUFONT / 2, MENUFONT / 2, BLACK);
+        DrawText("Press s to save the map and exit", GM.originalW / 40, GM.originalH * 7 / 18 - MENUFONT / 2, MENUFONT / 2, BLACK);
+        DrawText("Press g to exit without saving the map", GM.originalW / 40, GM.originalH * 9 / 18 - MENUFONT / 2, MENUFONT / 2, BLACK);
+        DrawText("Press d to delete a selected object", GM.originalW / 40, GM.originalH * 11 / 18 - MENUFONT / 2, MENUFONT / 2, BLACK);
+        DrawText("Press p to place respawn points", GM.originalW / 40, GM.originalH * 13 / 18 - MENUFONT / 2, MENUFONT / 2, BLACK);
+        DrawText("Press 1 to choose wall", GM.originalW / 40, GM.originalH * 15 / 18 - MENUFONT / 2, MENUFONT / 2, BLACK);
+        DrawText("Press 2 to choose danger zone", GM.originalW / 40, GM.originalH * 17 / 18 - MENUFONT / 2, MENUFONT / 2, BLACK);
     }
     if (IsKeyPressed(KEY_E))
         editMode = !editMode;  
@@ -222,9 +249,18 @@ void EditorDrawer::editDraw(GameManager& GM, MapManager MM) {
         editMaterial = wall;
         prevX = prevY = 0;
         MM.deloadmap(GM);
+        spawnPointInc = 0;
     }
     else if (IsKeyPressed(KEY_S)) {
-        MM.savemap(GM);
+        MM.savemap(GM, spawnPoints, spawnPointInc);
+        GM.sceneLabel = title;
+        editMode = false;
+        drawBlock = false;
+        measure = false;
+        editMaterial = wall;
+        prevX = prevY = 0;
+        MM.deloadmap(GM);
+        spawnPointInc = 0;
     }
 
 }
@@ -234,6 +270,7 @@ EditorDrawer::EditorDrawer() {
     drawBlock = false;
     measure = false;
     exitView = false;
+    makeRespawn = false;
     editMaterial = wall;
     prevX = prevY = 0;
 }

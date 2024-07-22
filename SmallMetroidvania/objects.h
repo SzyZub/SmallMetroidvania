@@ -37,7 +37,7 @@ public:
 class Player : public Object {
 private:
 	int moveX, moveY;
-	int spawnX, spawnY;
+	Vector2 spawnPoint;
 	bool jumped;
 public:
 	Player();

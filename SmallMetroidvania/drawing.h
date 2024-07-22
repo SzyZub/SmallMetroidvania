@@ -18,7 +18,7 @@ void optionsDraw(GameManager& GM);
 
 class EditorDrawer {
 private:
-    bool editMode, drawBlock, exitView, measure;
+    bool editMode, drawBlock, exitView, measure, makeRespawn;
     EnLabel editMaterial;
     short int prevX, prevY;
 public:

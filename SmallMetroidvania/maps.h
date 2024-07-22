@@ -19,5 +19,5 @@ public:
 	void changeType(gameType temp);
 	void deloadmap(GameManager& temp);
 	bool loadmap(GameManager& temp);
-	void savemap(GameManager temp);
+	void savemap(GameManager temp, Vector2 spawnPoints[4], int spawnPointsNum);
 };

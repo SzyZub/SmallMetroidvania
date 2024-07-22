@@ -19,8 +19,7 @@ DamageZone::DamageZone(int lx, int ly, int lwidth, int lheight, int lrotation) {
 }
 
 Player::Player() {
-	spawnX = -50;
-	spawnY = -50;
+	spawnPoint = { -50, -50 };
 	x = -50;
 	y = -50;
 	moveX = 0;
@@ -33,8 +32,8 @@ Player::Player() {
 }
 
 void Player::setSpawn(int lx, int ly) {
-	spawnX = lx;
-	spawnY = ly;
+	spawnPoint.x = (float) lx;
+	spawnPoint.y = (float) ly;
 }
 
 void Player::move(std::vector <BackgroundWall> WallArr, std::vector <DamageZone> DamageArr) {
@@ -57,8 +56,8 @@ void Player::move(std::vector <BackgroundWall> WallArr, std::vector <DamageZone>
 }
 
 void Player::respawn() {
-	x = spawnX;
-	y = spawnY;
+	x = spawnPoint.x;
+	y = spawnPoint.y;
 	moveX = 0;
 	moveY = 0;
 	jumped = false;
