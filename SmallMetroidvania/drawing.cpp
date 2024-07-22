@@ -74,7 +74,12 @@ void gameDraw(GameManager& GM, MapManager MM) {
     for (std::vector <BackgroundWall>::iterator it = GM.WallArr.begin(); it != GM.WallArr.end(); it++) {
         DrawRectangle(it->x, it->y, it->width, it->height, WALLCOLOR);
     }
-    DrawRectangle(GM.player.x, GM.player.y, GM.player.width, GM.player.height, PLAYERCOLOR);
+    if (!GM.player.respawning) {
+        DrawRectangle(GM.player.x, GM.player.y, GM.player.width, GM.player.height, PLAYERCOLOR);
+    }
+    else {
+        DrawText(TextFormat("Respawning in: %i", (int)(GM.player.respawnTime + 4 - GetTime())), (GM.originalW - MeasureText(TextFormat("Respawning in: %d", (int) (GM.player.respawnTime + 4 - GetTime())), 40))/2, GM.originalH / 10, 40, BLACK);
+    }
 }
 
 void titleDraw(GameManager& GM) {

@@ -40,6 +40,8 @@ private:
 	Vector2 spawnPoint;
 	bool jumped;
 public:
+	bool respawning;
+	double respawnTime;
 	Player();
 	void setSpawn(int lx, int ly);
 	void move(std::vector <BackgroundWall> WallArr, std::vector <DamageZone> DamageArr);

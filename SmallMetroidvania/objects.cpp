@@ -29,6 +29,8 @@ Player::Player() {
 	rotation = 0;
 	jumped = false;
 	label = player;
+	respawning = false;
+	respawnTime = 0;
 }
 
 void Player::setSpawn(int lx, int ly) {
@@ -37,20 +39,32 @@ void Player::setSpawn(int lx, int ly) {
 }
 
 void Player::move(std::vector <BackgroundWall> WallArr, std::vector <DamageZone> DamageArr) {
-	collisionX(WallArr, DamageArr);
-	x += moveX;
-	collisionY(WallArr, DamageArr);
-	y += moveY;
-	moveY += 1;
-	if (IsKeyDown(KEY_RIGHT) && moveX < 8)
-		moveX += 4;
-	else if (IsKeyDown(KEY_LEFT) && moveX > -8)
-		moveX -= 4;
-	else 
-		moveX /= 2;
-	if ((IsKeyPressed(KEY_UP) || IsKeyPressed(KEY_SPACE)) && !jumped) {
-		moveY = -14;
-		jumped = true;
+	if (respawning){
+		if (respawnTime + 3 < GetTime()) {
+			respawning = false;
+			respawn();
+		}
+	}
+	else {
+		collisionX(WallArr, DamageArr);
+		x += moveX;
+		collisionY(WallArr, DamageArr);
+		y += moveY;
+		moveY += 1;
+		if (IsKeyDown(KEY_RIGHT) && moveX < 8)
+			moveX += 4;
+		else if (IsKeyDown(KEY_LEFT) && moveX > -8)
+			moveX -= 4;
+		else
+			moveX /= 2;
+		if (IsKeyDown(KEY_R)) {
+			respawning = true;
+			respawnTime = GetTime();
+		}
+		if ((IsKeyPressed(KEY_UP) || IsKeyPressed(KEY_SPACE)) && !jumped) {
+			moveY = -14;
+			jumped = true;
+		}
 	}
 
 }
@@ -68,7 +82,8 @@ void Player::collisionX(std::vector <BackgroundWall> WallArr, std::vector <Damag
 	if (moveX != 0) {
 		for (std::vector <DamageZone>::iterator it = DamageArr.begin(); it != DamageArr.end(); it++) {
 			if (CheckCollisionRecs({ (float)it->x, (float)it->y, (float)it->width, (float)it->height }, { (float)x + moveX, (float)y, (float)width, (float)height }))
-				respawn();
+				respawning = true;
+				respawnTime = GetTime();
 		}
 		for (std::vector <BackgroundWall>::iterator it = WallArr.begin(); it != WallArr.end(); it++) {
 			while (moveX) {
@@ -92,7 +107,8 @@ void Player::collisionY(std::vector <BackgroundWall> WallArr, std::vector <Damag
 	if (moveY != 0) {
 		for (std::vector <DamageZone>::iterator it = DamageArr.begin(); it != DamageArr.end(); it++) {
 			if (CheckCollisionRecs({ (float)it->x, (float)it->y, (float)it->width, (float)it->height }, { (float)x, (float)y + moveY, (float)width, (float)height }))
-				respawn();
+				respawning = true;
+				respawnTime = GetTime();
 		}
 		for (std::vector <BackgroundWall>::iterator it = WallArr.begin(); it != WallArr.end(); it++) {
 			while (moveY) {
