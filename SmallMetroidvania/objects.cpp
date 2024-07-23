@@ -62,7 +62,7 @@ void Player::move(std::vector <BackgroundWall> WallArr, std::vector <DamageZone>
 			respawnTime = GetTime();
 		}
 		if ((IsKeyPressed(KEY_UP) || IsKeyPressed(KEY_SPACE)) && !jumped) {
-			moveY = -14;
+			moveY = -15;
 			jumped = true;
 		}
 	}

@@ -124,7 +124,7 @@ void gameDraw(GameManager& GM, MapManager& MM) {
         DrawRectangle(GM.player.x, GM.player.y, GM.player.width, GM.player.height, PLAYERCOLOR);
     }
     else {
-        DrawText(TextFormat("Respawning in: %i", (int)(GM.player.respawnTime + 4 - GetTime())), (GM.originalW - MeasureText(TextFormat("Respawning in: %d", (int) (GM.player.respawnTime + 4 - GetTime())), 40))/2, GM.originalH / 10, 40, BLACK);
+        DrawText(TextFormat("Respawning in: %i", (int)(GM.player.respawnTime + 4 - GetTime())), (GM.originalW - MeasureText(TextFormat("Respawning in: %d", (int) (GM.player.respawnTime + 4 - GetTime())), 40))/2, GM.originalH / 10, 40, WHITE);
     }
     checkBorders(GM, MM);
 }
@@ -262,6 +262,16 @@ void EditorDrawer::editDraw(GameManager& GM, MapManager MM) {
                     drawBlock = true;
                 }
                 else if (spawnPointInc < 4){
+                    for (std::vector <DamageZone>::iterator it = GM.DamageArr.begin(); it != GM.DamageArr.end(); it++) {
+                        if (CheckCollisionRecs({ (float)x, (float)y, 32, 32 }, { (float)it->x, (float)it->y, (float)it->x + it->width, (float)it->y + it->height })) {
+                            return;
+                        }
+                    }
+                    for (std::vector <BackgroundWall>::iterator it = GM.WallArr.begin(); it != GM.WallArr.end(); it++) {
+                        if (CheckCollisionRecs({ (float)x + 1, (float)y + 1, 31, 31 }, { (float)it->x, (float)it->y, (float)it->x + it->width, (float)it->y + it->height })) {
+                            return;
+                        }
+                    }
                     spawnPoints[spawnPointInc].x = (float) x;
                     spawnPoints[spawnPointInc].y = (float) y;
                     spawnPointInc++;
