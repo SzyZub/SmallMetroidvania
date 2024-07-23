@@ -124,7 +124,7 @@ void gameDraw(GameManager& GM, MapManager& MM) {
         DrawRectangle(GM.player.x, GM.player.y, GM.player.width, GM.player.height, PLAYERCOLOR);
     }
     else {
-        DrawText(TextFormat("Respawning in: %i", (int)(GM.player.respawnTime + 4 - GetTime())), (GM.originalW - MeasureText(TextFormat("Respawning in: %d", (int) (GM.player.respawnTime + 4 - GetTime())), 40))/2, GM.originalH / 10, 40, WHITE);
+        DrawText(TextFormat("Respawning in: %i", (int)(GM.player.respawnTime + 4 - GetTime())), (GM.originalW - MeasureText(TextFormat("Respawning in: %d", (int) (GM.player.respawnTime + 4 - GetTime())), 40))/2, GM.originalH / 10, 40, BLACK);
     }
     checkBorders(GM, MM);
 }
@@ -188,6 +188,9 @@ void optionsDraw(GameManager& GM) {
 void EditorDrawer::editDraw(GameManager& GM, MapManager MM) {
     static short int spawnPointInc = 0;
     static Vector2 spawnPoints[4];
+    if (GM.player.respawnTime + 2 > GetTime() && GetTime() > 2) {
+        DrawText("You didn't place any respawn points", (GM.originalW - MeasureText("You didn't place any respawn points", MENUFONT)) / 2, GM.originalH * 1 / 8 - MENUFONT / 2, MENUFONT, BLACK);
+    }
     if (editMode) {
         int x = GetMouseX();
         int y = GetMouseY();
@@ -313,16 +316,21 @@ void EditorDrawer::editDraw(GameManager& GM, MapManager MM) {
         MM.deloadmap(GM);
         spawnPointInc = 0;
     }
-    else if (IsKeyPressed(KEY_S)) {
-        MM.savemap(GM, spawnPoints, spawnPointInc);
-        GM.sceneLabel = title;
-        editMode = false;
-        drawBlock = false;
-        measure = false;
-        editMaterial = wall;
-        prevX = prevY = 0;
-        MM.deloadmap(GM);
-        spawnPointInc = 0;
+    else if (IsKeyPressed(KEY_S)) { 
+        if (spawnPointInc < 1) {
+            GM.player.respawnTime = GetTime();
+        }
+        else {
+            MM.savemap(GM, spawnPoints, spawnPointInc);
+            GM.sceneLabel = title;
+            editMode = false;
+            drawBlock = false;
+            measure = false;
+            editMaterial = wall;
+            prevX = prevY = 0;
+            MM.deloadmap(GM);
+            spawnPointInc = 0;
+        }
     }
 
 }
