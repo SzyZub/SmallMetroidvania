@@ -12,8 +12,8 @@ typedef enum gameType {
 
 class MapManager {
 private:
-	int row, col;
 public:
+	int row, col;
 	gameType type;
 	MapManager();
 	void changeType(gameType temp);

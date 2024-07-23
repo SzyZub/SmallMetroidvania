@@ -9,7 +9,8 @@ typedef enum EnScene {
 	options,
 	ext,
 	choosing,
-	menu
+	menu,
+	errorLoad
 }EnScene;
 
 typedef enum EnLabel {

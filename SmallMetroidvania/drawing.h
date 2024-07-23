@@ -10,8 +10,10 @@
 
 void initScreen(GameManager GM);
 void mainDraw(GameManager& GM, MapManager& MM);
+void errorLoadDraw(GameManager& GM, MapManager& MM);
 void chooseMap(GameManager& GM, MapManager& MM);
-void gameDraw(GameManager& GM, MapManager MM);
+void checkBorders(GameManager& Gm, MapManager& MM);
+void gameDraw(GameManager& GM, MapManager& MM);
 void titleDraw(GameManager& GM);
 void menuDraw(GameManager& GM, MapManager MM);
 void optionsDraw(GameManager& GM);

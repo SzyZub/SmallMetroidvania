@@ -94,7 +94,6 @@ bool MapManager::loadmap(GameManager& temp) {
         }
     }
     temp.player.setSpawn(spawnPoints->x, spawnPoints->y);
-    temp.player.respawn();
     readFile.close();
     return true;
 }

@@ -25,6 +25,9 @@ void mainDraw(GameManager& GM, MapManager& MM) {
     case menu:
         menuDraw(GM, MM);
         break;
+    case errorLoad:
+        errorLoadDraw(GM, MM);
+        break;
     case edit:
         static EditorDrawer draw;
         draw.editDraw(GM, MM);
@@ -33,22 +36,35 @@ void mainDraw(GameManager& GM, MapManager& MM) {
     EndDrawing();
 }
 
+void errorLoadDraw(GameManager& GM, MapManager& MM) {
+    DrawText(TextFormat("Couldn't draw map %i %i", MM.row, MM.col), (GM.originalW - MeasureText(TextFormat("Couldn't draw map %i %i", MM.row, MM.col), 40)) / 2, GM.originalH / 10, 40, BLACK);
+    DrawText("Press Tab to go back to menu", (GM.originalW - MeasureText("Press Tab to go back to menu", 40)) / 2, GM.originalH * 3 / 10, 40, BLACK);
+    if (IsKeyPressed(KEY_TAB)) {
+        MM.deloadmap(GM);
+        GM.sceneLabel = title;
+    }
+}
+
 void chooseMap(GameManager& GM, MapManager& MM) {
     DrawText("Main Campaign", (GM.originalW-MeasureText("Main Campaign", MENUFONT))/2, GM.originalH/8-MENUFONT/2, MENUFONT, BLACK);
     DrawText("Custom Campaign", (GM.originalW - MeasureText("Custom Campaign", MENUFONT)) / 2, GM.originalH * 3/8 - MENUFONT / 2, MENUFONT, BLACK);
     DrawText("Test Map", (GM.originalW - MeasureText("Test Map", MENUFONT)) / 2, GM.originalH * 5/ 8 - MENUFONT / 2, MENUFONT, BLACK);
     DrawText("Exit", (GM.originalW - MeasureText("Exit", MENUFONT)) / 2, GM.originalH * 7/ 8 - MENUFONT / 2, MENUFONT, BLACK);
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+        MM.row = 1;
+        MM.col = 1;
         int y = GetMouseY();
         if (y < GM.originalH* 3 / 4) {
-            if (y < GM.originalH / 4) 
+            if (y < GM.originalH / 4) {
                 MM.changeType(campaign);
+            }
             else if (y < GM.originalH / 2) 
                 MM.changeType(customCampaign);
             else
                 MM.changeType(test);
             if (MM.loadmap(GM)) {
                 GM.sceneLabel = game;
+                GM.player.respawn();
             }
         }
         else {
@@ -57,7 +73,37 @@ void chooseMap(GameManager& GM, MapManager& MM) {
     }
 }
 
-void gameDraw(GameManager& GM, MapManager MM) {
+void checkBorders(GameManager& GM, MapManager& MM) {
+    if (GM.player.x > GM.originalW - 8) {
+        MM.deloadmap(GM);
+        MM.col++;
+        GM.player.x = 16;
+        if(!MM.loadmap(GM))
+            GM.changeScene(errorLoad);
+    }
+    else if (GM.player.x + 8 < 0) {
+        MM.deloadmap(GM);
+        MM.col--;
+        GM.player.x = GM.originalW - 16;
+        if (!MM.loadmap(GM))
+            GM.changeScene(errorLoad);
+    }
+    else if (GM.player.y + 8 < 0) {
+        MM.deloadmap(GM);
+        MM.row--;
+        GM.player.y = GM.originalH - 16;;
+        if (!MM.loadmap(GM))
+            GM.changeScene(errorLoad);
+    } else if (GM.player.y > GM.originalH - 8) {
+        MM.deloadmap(GM);
+        MM.row++;
+        GM.player.y = 16;
+        if (!MM.loadmap(GM))
+            GM.changeScene(errorLoad);
+    }
+}
+
+void gameDraw(GameManager& GM, MapManager& MM) {
     GM.player.move(GM.WallArr, GM.DamageArr);
     if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
         if (MM.type == test) {
@@ -80,6 +126,7 @@ void gameDraw(GameManager& GM, MapManager MM) {
     else {
         DrawText(TextFormat("Respawning in: %i", (int)(GM.player.respawnTime + 4 - GetTime())), (GM.originalW - MeasureText(TextFormat("Respawning in: %d", (int) (GM.player.respawnTime + 4 - GetTime())), 40))/2, GM.originalH / 10, 40, BLACK);
     }
+    checkBorders(GM, MM);
 }
 
 void titleDraw(GameManager& GM) {
