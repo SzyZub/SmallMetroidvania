@@ -18,6 +18,15 @@ DamageZone::DamageZone(int lx, int ly, int lwidth, int lheight, int lrotation) {
 	label = damageZone;
 }
 
+LaunchPad::LaunchPad(int lx, int ly, int lwidth, int lheight, int lrotation) {
+	x = lx;
+	y = ly;
+	width = lwidth;
+	height = lheight;
+	rotation = lrotation;
+	label = launch;
+}
+
 Player::Player() {
 	spawnPoint = { -50, -50 };
 	x = -50;

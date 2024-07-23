@@ -13,6 +13,7 @@ void MapManager::changeType(gameType temp) {
 void MapManager::deloadmap(GameManager& temp) {
     temp.WallArr.clear();
     temp.DamageArr.clear();
+    temp.LaunchArr.clear();
 }
 
 bool MapManager::loadmap(GameManager& temp) {
@@ -75,6 +76,23 @@ bool MapManager::loadmap(GameManager& temp) {
             val5 = std::stoi(mapData.substr(prevPos, pos));
             temp.DamageArr.push_back(DamageZone(val1, val2, val3, val4, val5));
             break;
+        case 2:
+            pos = mapData.find(' ', prevPos);
+            val1 = std::stoi(mapData.substr(prevPos, pos));
+            prevPos = pos + 1;
+            pos = mapData.find(' ', prevPos);
+            val2 = std::stoi(mapData.substr(prevPos, pos));
+            prevPos = pos + 1;
+            pos = mapData.find(' ', prevPos);
+            val3 = std::stoi(mapData.substr(prevPos, pos));
+            prevPos = pos + 1;
+            pos = mapData.find(' ', prevPos);
+            val4 = std::stoi(mapData.substr(prevPos, pos));
+            prevPos = pos + 1;
+            pos = mapData.find(' ', prevPos);
+            val5 = std::stoi(mapData.substr(prevPos, pos));
+            temp.LaunchArr.push_back(LaunchPad(val1, val2, val3, val4, val5));
+            break;
         case 99: 
             pos = mapData.find(' ', prevPos);
             val1 = std::stoi(mapData.substr(prevPos, pos));
@@ -105,6 +123,9 @@ void MapManager::savemap(GameManager temp, Vector2 spawnPoints[4], int spawnPoin
     }
     for (std::vector <DamageZone>::iterator it = temp.DamageArr.begin(); it != temp.DamageArr.end(); it++) {
         writeFile << 1 << ' ' << it->x << ' ' << it->y << ' ' << it->width << ' ' << it->height << ' ' << it->rotation << '\n';
+    }
+    for (std::vector <LaunchPad>::iterator it = temp.LaunchArr.begin(); it != temp.LaunchArr.end(); it++) {
+        writeFile << 2 << ' ' << it->x << ' ' << it->y << ' ' << it->width << ' ' << it->height << ' ' << it->rotation << '\n';
     }
     for (int i = 0; i < spawnPointsNum; i++) {
         writeFile << 99 << ' ' << spawnPoints[i].x << ' ' << spawnPoints[i].y << ' ' << '\n';

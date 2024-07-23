@@ -6,6 +6,15 @@ void initScreen(GameManager GM) {
     SetExitKey(KEY_GRAVE);
 }
 
+void drawAllObject(GameManager GM) {
+    for (std::vector <DamageZone>::iterator it = GM.DamageArr.begin(); it != GM.DamageArr.end(); it++) {
+        DrawRectangle(it->x, it->y, it->width, it->height, DAMAGEZONECOLOR);
+    }
+    for (std::vector <BackgroundWall>::iterator it = GM.WallArr.begin(); it != GM.WallArr.end(); it++) {
+        DrawRectangle(it->x, it->y, it->width, it->height, WALLCOLOR);
+    }
+}
+
 void mainDraw(GameManager& GM, MapManager& MM) {
     BeginDrawing();
     ClearBackground(BACKGROUNDCOLOR);
@@ -114,12 +123,7 @@ void gameDraw(GameManager& GM, MapManager& MM) {
     if (IsKeyPressed(KEY_TAB)) {
         GM.sceneLabel = menu;
     }
-    for (std::vector <DamageZone>::iterator it = GM.DamageArr.begin(); it != GM.DamageArr.end(); it++) {
-        DrawRectangle(it->x, it->y, it->width, it->height, DAMAGEZONECOLOR);
-    }
-    for (std::vector <BackgroundWall>::iterator it = GM.WallArr.begin(); it != GM.WallArr.end(); it++) {
-        DrawRectangle(it->x, it->y, it->width, it->height, WALLCOLOR);
-    }
+    drawAllObjects(GM);
     if (!GM.player.respawning) {
         DrawRectangle(GM.player.x, GM.player.y, GM.player.width, GM.player.height, PLAYERCOLOR);
     }
@@ -194,12 +198,7 @@ void EditorDrawer::editDraw(GameManager& GM, MapManager MM) {
     if (editMode) {
         int x = GetMouseX();
         int y = GetMouseY();
-        for (std::vector <DamageZone>::iterator it = GM.DamageArr.begin(); it != GM.DamageArr.end(); it++) {
-            DrawRectangle(it->x, it->y, it->width, it->height, DAMAGEZONECOLOR);
-        }
-        for (std::vector <BackgroundWall>::iterator it = GM.WallArr.begin(); it != GM.WallArr.end(); it++) {
-            DrawRectangle(it->x, it->y, it->width, it->height, WALLCOLOR);
-        }
+        drawAllObjects(GM);
         for (int i = 0; i < spawnPointInc; i++) {
             DrawRectangle((int) spawnPoints[i].x, (int) spawnPoints[i].y, 32, 32, PLAYERCOLOR);
         }

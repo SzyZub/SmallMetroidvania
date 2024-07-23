@@ -16,7 +16,8 @@ typedef enum EnScene {
 typedef enum EnLabel {
 	player = 0,
 	wall,
-	damageZone
+	damageZone,
+	launch
 }EnLabel;
 
 class Object {
@@ -33,6 +34,11 @@ public:
 class DamageZone : public Object {
 public:
 	DamageZone(int lx, int ly, int lwidth, int lheight, int lrotation);
+};
+
+class LaunchPad : public Object {
+public:
+	LaunchPad(int lx, int ly, int lwidth, int lheight, int lrotation);
 };
 
 class Player : public Object {
@@ -59,6 +65,7 @@ public:
 	Player player;
 	std::vector <BackgroundWall> WallArr;
 	std::vector <DamageZone> DamageArr;
+	std::vector <LaunchPad> LaunchArr;
 	void changeScene(EnScene temp);
 	GameManager();
 };
