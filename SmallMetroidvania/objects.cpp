@@ -47,7 +47,7 @@ void Player::setSpawn(int lx, int ly) {
 	spawnPoint.y = (float) ly;
 }
 
-void Player::move(std::vector <BackgroundWall> WallArr, std::vector <DamageZone> DamageArr) {
+void Player::move(std::vector <BackgroundWall> WallArr, std::vector <DamageZone> DamageArr, SoundLibrary SL) {
 	if (respawning){
 		if (respawnTime + 3 < GetTime()) {
 			respawning = false;
@@ -55,9 +55,9 @@ void Player::move(std::vector <BackgroundWall> WallArr, std::vector <DamageZone>
 		}
 	}
 	else {
-		collisionX(WallArr, DamageArr);
+		collisionX(WallArr, DamageArr, SL);
 		x += moveX;
-		collisionY(WallArr, DamageArr);
+		collisionY(WallArr, DamageArr, SL);
 		y += moveY;
 		moveY += 1;
 		if (IsKeyDown(KEY_RIGHT) && moveX < 8)
@@ -66,13 +66,15 @@ void Player::move(std::vector <BackgroundWall> WallArr, std::vector <DamageZone>
 			moveX -= 4;
 		else
 			moveX /= 2;
-		if (IsKeyDown(KEY_R)) {
+		if (IsKeyDown(KEY_R)) {			
 			respawning = true;
 			respawnTime = GetTime();
+			PlaySound(SL.DeathSound);
 		}
 		if ((IsKeyPressed(KEY_UP) || IsKeyPressed(KEY_SPACE)) && !jumped) {
 			moveY = -15;
 			jumped = true;
+			PlaySound(SL.JumpSound);
 		}
 	}
 
@@ -87,12 +89,13 @@ void Player::respawn() {
 	rotation = 0;
 }
 
-void Player::collisionX(std::vector <BackgroundWall> WallArr, std::vector <DamageZone> DamageArr) {
+void Player::collisionX(std::vector <BackgroundWall> WallArr, std::vector <DamageZone> DamageArr, SoundLibrary SL) {
 	if (moveX != 0) {
 		for (std::vector <DamageZone>::iterator it = DamageArr.begin(); it != DamageArr.end(); it++) {
 			if (CheckCollisionRecs({ (float)it->x, (float)it->y, (float)it->width, (float)it->height }, { (float)x + moveX, (float)y, (float)width, (float)height }))
 				respawning = true;
 				respawnTime = GetTime();
+				PlaySound(SL.DeathSound);
 		}
 		for (std::vector <BackgroundWall>::iterator it = WallArr.begin(); it != WallArr.end(); it++) {
 			while (moveX) {
@@ -112,12 +115,13 @@ void Player::collisionX(std::vector <BackgroundWall> WallArr, std::vector <Damag
 	}
 }
 
-void Player::collisionY(std::vector <BackgroundWall> WallArr, std::vector <DamageZone> DamageArr) {
+void Player::collisionY(std::vector <BackgroundWall> WallArr, std::vector <DamageZone> DamageArr, SoundLibrary SL) {
 	if (moveY != 0) {
 		for (std::vector <DamageZone>::iterator it = DamageArr.begin(); it != DamageArr.end(); it++) {
 			if (CheckCollisionRecs({ (float)it->x, (float)it->y, (float)it->width, (float)it->height }, { (float)x, (float)y + moveY, (float)width, (float)height }))
 				respawning = true;
 				respawnTime = GetTime();
+				PlaySound(SL.DeathSound);
 		}
 		for (std::vector <BackgroundWall>::iterator it = WallArr.begin(); it != WallArr.end(); it++) {
 			while (moveY) {
@@ -144,6 +148,11 @@ GameManager::GameManager() {
 	originalW = 1280;
 	framerate = 60;
 	sceneLabel = title;
+}
+
+void GameManager::InitSounds() {
+	SL.JumpSound = LoadSound("Sounds/jump.wav");
+	SL.DeathSound = LoadSound("Sounds/death.wav");
 }
 
 void GameManager::changeScene(EnScene temp) {

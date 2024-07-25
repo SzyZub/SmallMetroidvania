@@ -3,10 +3,11 @@
 void initScreen(GameManager GM) {
     InitWindow(GM.originalW, GM.originalH, "MetroidCube");
     SetTargetFPS(GM.framerate);
+    InitAudioDevice();
     SetExitKey(KEY_GRAVE);
 }
 
-void drawAllObject(GameManager GM) {
+void drawAllObjects(GameManager GM) {
     for (std::vector <DamageZone>::iterator it = GM.DamageArr.begin(); it != GM.DamageArr.end(); it++) {
         DrawRectangle(it->x, it->y, it->width, it->height, DAMAGEZONECOLOR);
     }
@@ -113,7 +114,7 @@ void checkBorders(GameManager& GM, MapManager& MM) {
 }
 
 void gameDraw(GameManager& GM, MapManager& MM) {
-    GM.player.move(GM.WallArr, GM.DamageArr);
+    GM.player.move(GM.WallArr, GM.DamageArr, GM.SL);
     if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
         if (MM.type == test) {
             GM.player.setSpawn(GetMouseX(), GetMouseY());

@@ -20,6 +20,11 @@ typedef enum EnLabel {
 	launch
 }EnLabel;
 
+typedef struct SoundLibrary {
+	Sound JumpSound;
+	Sound DeathSound;
+}SoundLibrary;
+
 class Object {
 public:
 	int x, y, width, height, rotation;
@@ -51,10 +56,10 @@ public:
 	double respawnTime;
 	Player();
 	void setSpawn(int lx, int ly);
-	void move(std::vector <BackgroundWall> WallArr, std::vector <DamageZone> DamageArr);
+	void move(std::vector <BackgroundWall> WallArr, std::vector <DamageZone> DamageArr, SoundLibrary SL);
 	void respawn();
-	void collisionX(std::vector <BackgroundWall> WallArr, std::vector <DamageZone> DamageArr);
-	void collisionY(std::vector <BackgroundWall> WallArr, std::vector <DamageZone> DamageArr);
+	void collisionX(std::vector <BackgroundWall> WallArr, std::vector <DamageZone> DamageArr, SoundLibrary SL);
+	void collisionY(std::vector <BackgroundWall> WallArr, std::vector <DamageZone> DamageArr, SoundLibrary SL);
 };
 
 class GameManager {
@@ -66,6 +71,8 @@ public:
 	std::vector <BackgroundWall> WallArr;
 	std::vector <DamageZone> DamageArr;
 	std::vector <LaunchPad> LaunchArr;
+	SoundLibrary SL;
 	void changeScene(EnScene temp);
+	void InitSounds();
 	GameManager();
 };
