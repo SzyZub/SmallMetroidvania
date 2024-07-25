@@ -7,7 +7,7 @@
 #define WALLCOLOR {10, 10, 10, 255}
 #define DAMAGEZONECOLOR {200, 50, 50, 255}
 #define LAUNCHPADCOLOR1 {200, 200, 50, 255}
-#define LAUNCHPADCOLOR2 {200, 50, 50, 255}
+#define LAUNCHPADCOLOR2 {200, 150, 50, 255}
 #define MENUFONT 64
 
 void initScreen(GameManager GM);

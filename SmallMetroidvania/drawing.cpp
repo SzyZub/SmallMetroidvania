@@ -14,6 +14,23 @@ void drawAllObjects(GameManager GM) {
     for (std::vector <BackgroundWall>::iterator it = GM.WallArr.begin(); it != GM.WallArr.end(); it++) {
         DrawRectangle(it->x, it->y, it->width, it->height, WALLCOLOR);
     }
+    for (std::vector <LaunchPad>::iterator it = GM.LaunchArr.begin(); it != GM.LaunchArr.end(); it++) {
+        DrawRectangle(it->x, it->y, it->width, it->height, LAUNCHPADCOLOR1);
+        switch (it->rotation) {
+        case 0:
+            DrawRectangle(it->x + it->width * 3/8, it->y + it->height/2, it->width/4, it->height/2, LAUNCHPADCOLOR2);
+            break;
+        case 90:
+            DrawRectangle(it->x, it->y + it->height * 3 / 8, it->width / 2, it->height / 4, LAUNCHPADCOLOR2);
+            break;
+        case 180:
+            DrawRectangle(it->x + it->width * 3 / 8, it->y, it->width / 4, it->height / 2, LAUNCHPADCOLOR2);
+            break;
+        case 270:
+            DrawRectangle(it->x + it->width / 2, it->y + it->height *3 / 8, it->width / 2, it->height / 4, LAUNCHPADCOLOR2);
+            break;
+        }
+    }
 }
 
 void mainDraw(GameManager& GM, MapManager& MM) {
@@ -222,10 +239,18 @@ void EditorDrawer::editDraw(GameManager& GM, MapManager MM) {
         }
         if (IsKeyPressed(KEY_COMMA))
             measure = !measure;
-        else if (IsKeyPressed(KEY_ONE))
+        else if (IsKeyPressed(KEY_ONE)) {
             editMaterial = wall;
-        else if (IsKeyPressed(KEY_TWO))
+            makeRespawn = false;
+        }
+        else if (IsKeyPressed(KEY_TWO)) {
             editMaterial = damageZone;
+            makeRespawn = false;
+        }
+        else if (IsKeyPressed(KEY_THREE)) {
+            editMaterial = launch;
+            makeRespawn = false;
+        }
         else if (IsKeyPressed(KEY_PERIOD))
             drawBlock = false;
         else if (IsKeyPressed(KEY_P)) {
@@ -234,14 +259,20 @@ void EditorDrawer::editDraw(GameManager& GM, MapManager MM) {
         }
         else if (IsKeyPressed(KEY_D)) {
             for (std::vector <DamageZone>::iterator it = GM.DamageArr.begin(); it != GM.DamageArr.end(); it++) {
-                if (CheckCollisionPointRec({ (float)x, (float)y }, { (float)it->x, (float)it->y, (float)it->x + it->width, (float)it->y + it->height })) {
+                if (CheckCollisionPointRec({ (float)x, (float)y }, { (float)it->x, (float)it->y, (float)it->width, (float)it->height })) {
                     GM.DamageArr.erase(it);
                     return;
                 }
             }
             for (std::vector <BackgroundWall>::iterator it = GM.WallArr.begin(); it != GM.WallArr.end(); it++) {
-                if (CheckCollisionPointRec({ (float)x, (float)y }, { (float)it->x, (float)it->y, (float)it->x + it->width, (float)it->y + it->height })) {
+                if (CheckCollisionPointRec({ (float)x, (float)y }, { (float)it->x, (float)it->y, (float)it->width, (float)it->height })) {
                     GM.WallArr.erase(it);
+                    return;
+                }
+            }
+            for (std::vector <LaunchPad>::iterator it = GM.LaunchArr.begin(); it != GM.LaunchArr.end(); it++) {
+                if (CheckCollisionPointRec({ (float)x, (float)y }, { (float)it->x, (float)it->y, (float)it->width, (float)it->height })) {
+                    GM.LaunchArr.erase(it);
                     return;
                 }
             }
@@ -257,6 +288,15 @@ void EditorDrawer::editDraw(GameManager& GM, MapManager MM) {
         }
         else if (IsKeyPressed(KEY_Q))
             exitView = !exitView;
+        else if (IsKeyPressed(KEY_R)) {
+            for (std::vector <LaunchPad>::iterator it = GM.LaunchArr.begin(); it != GM.LaunchArr.end(); it++) {
+                if (CheckCollisionPointRec({ (float)x, (float)y }, { (float)it->x, (float)it->y, (float)it->width, (float)it->height })) {
+                    it->rotation += 90;
+                    it->rotation %= 360;
+                    return;
+                }
+            }
+        }
         if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
             if (drawBlock == false) {
                 if (!makeRespawn) {
@@ -266,12 +306,17 @@ void EditorDrawer::editDraw(GameManager& GM, MapManager MM) {
                 }
                 else if (spawnPointInc < 4){
                     for (std::vector <DamageZone>::iterator it = GM.DamageArr.begin(); it != GM.DamageArr.end(); it++) {
-                        if (CheckCollisionRecs({ (float)x, (float)y, 32, 32 }, { (float)it->x, (float)it->y, (float)it->x + it->width, (float)it->y + it->height })) {
+                        if (CheckCollisionRecs({ (float)x, (float)y, 32, 32 }, { (float)it->x, (float)it->y, (float)it->width, (float)it->height })) {
                             return;
                         }
                     }
                     for (std::vector <BackgroundWall>::iterator it = GM.WallArr.begin(); it != GM.WallArr.end(); it++) {
-                        if (CheckCollisionRecs({ (float)x + 1, (float)y + 1, 31, 31 }, { (float)it->x, (float)it->y, (float)it->x + it->width, (float)it->y + it->height })) {
+                        if (CheckCollisionRecs({ (float)x + 1, (float)y + 1, 31, 31 }, { (float)it->x, (float)it->y, (float)it->width, (float)it->height })) {
+                            return;
+                        }
+                    }
+                    for (std::vector <LaunchPad>::iterator it = GM.LaunchArr.begin(); it != GM.LaunchArr.end(); it++) {
+                        if (CheckCollisionRecs({ (float)x + 1, (float)y + 1, 31, 31 }, { (float)it->x, (float)it->y, (float)it->width, (float)it->height })) {
                             return;
                         }
                     }
@@ -288,21 +333,26 @@ void EditorDrawer::editDraw(GameManager& GM, MapManager MM) {
                 case damageZone:
                     GM.DamageArr.push_back(DamageZone(prevX > x ? x - 2 : prevX - 2, prevY > y ? y - 2 : prevY - 2, abs(x - prevX) + 4, abs(y - prevY) + 4, 0));
                     break;
+                case launch:
+                    GM.LaunchArr.push_back(LaunchPad(prevX > x ? x - 2 : prevX - 2, prevY > y ? y - 2 : prevY - 2, abs(x - prevX) + 4, abs(y - prevY) + 4, 0));
+                    break;
                 }
                 drawBlock = false;
             }
         }
     }
     else {
-        DrawText("Press e to toggle between helper and edit", GM.originalW/40, GM.originalH/18 - MENUFONT / 2, MENUFONT/2, BLACK);
-        DrawText("Press , to bring up a measure of how high player will jump", GM.originalW / 40, GM.originalH * 3 / 18 - MENUFONT / 2, MENUFONT / 2, BLACK);
-        DrawText("Press . to undo pressing the mouse", GM.originalW / 40, GM.originalH * 5 / 18 - MENUFONT / 2, MENUFONT / 2, BLACK);
-        DrawText("Press s to save the map and exit", GM.originalW / 40, GM.originalH * 7 / 18 - MENUFONT / 2, MENUFONT / 2, BLACK);
-        DrawText("Press g to exit without saving the map", GM.originalW / 40, GM.originalH * 9 / 18 - MENUFONT / 2, MENUFONT / 2, BLACK);
-        DrawText("Press d to delete a selected object", GM.originalW / 40, GM.originalH * 11 / 18 - MENUFONT / 2, MENUFONT / 2, BLACK);
-        DrawText("Press p to place respawn points", GM.originalW / 40, GM.originalH * 13 / 18 - MENUFONT / 2, MENUFONT / 2, BLACK);
-        DrawText("Press 1 to choose wall", GM.originalW / 40, GM.originalH * 15 / 18 - MENUFONT / 2, MENUFONT / 2, BLACK);
-        DrawText("Press 2 to choose danger zone", GM.originalW / 40, GM.originalH * 17 / 18 - MENUFONT / 2, MENUFONT / 2, BLACK);
+        DrawText("Press e to toggle between helper and edit", GM.originalW/40, GM.originalH/22 - MENUFONT / 2, MENUFONT/2, BLACK);
+        DrawText("Press , to bring up a measure of how high player will jump", GM.originalW / 40, GM.originalH * 3 / 22 - MENUFONT / 2, MENUFONT / 2, BLACK);
+        DrawText("Press . to undo pressing the mouse", GM.originalW / 40, GM.originalH * 5 / 22 - MENUFONT / 2, MENUFONT / 2, BLACK);
+        DrawText("Press s to save the map and exit", GM.originalW / 40, GM.originalH * 7 / 22 - MENUFONT / 2, MENUFONT / 2, BLACK);
+        DrawText("Press g to exit without saving the map", GM.originalW / 40, GM.originalH * 9 / 22 - MENUFONT / 2, MENUFONT / 2, BLACK);
+        DrawText("Press d to delete a selected object", GM.originalW / 40, GM.originalH * 11 / 22 - MENUFONT / 2, MENUFONT / 2, BLACK);
+        DrawText("Press p to place respawn points", GM.originalW / 40, GM.originalH * 13 / 22 - MENUFONT / 2, MENUFONT / 2, BLACK);
+        DrawText("Press r to rotate eligible objects", GM.originalW / 40, GM.originalH * 15 / 22 - MENUFONT / 2, MENUFONT / 2, BLACK);
+        DrawText("Press 1 to choose wall", GM.originalW / 40, GM.originalH * 17 / 22 - MENUFONT / 2, MENUFONT / 2, BLACK);
+        DrawText("Press 2 to choose danger zone", GM.originalW / 40, GM.originalH * 19 / 22 - MENUFONT / 2, MENUFONT / 2, BLACK);
+        DrawText("Press 3 to choose launch pad", GM.originalW / 40, GM.originalH * 21 / 22 - MENUFONT / 2, MENUFONT / 2, BLACK);
     }
     if (IsKeyPressed(KEY_E))
         editMode = !editMode;  
