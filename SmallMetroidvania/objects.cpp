@@ -47,7 +47,7 @@ void Player::setSpawn(int lx, int ly) {
 	spawnPoint.y = (float) ly;
 }
 
-void Player::move(std::vector <BackgroundWall> WallArr, std::vector <DamageZone> DamageArr, SoundLibrary SL) {
+void Player::move(std::vector <BackgroundWall> WallArr, std::vector <DamageZone> DamageArr, std::vector <LaunchPad> LaunchArr, SoundLibrary SL) {
 	if (respawning){
 		if (respawnTime + 3 < GetTime()) {
 			respawning = false;
@@ -55,17 +55,19 @@ void Player::move(std::vector <BackgroundWall> WallArr, std::vector <DamageZone>
 		}
 	}
 	else {
-		collisionX(WallArr, DamageArr, SL);
+		collisionX(WallArr, DamageArr, LaunchArr, SL);
 		x += moveX;
-		collisionY(WallArr, DamageArr, SL);
+		collisionY(WallArr, DamageArr, LaunchArr, SL);
 		y += moveY;
 		moveY += 1;
-		if (IsKeyDown(KEY_RIGHT) && moveX < 8)
-			moveX += 4;
-		else if (IsKeyDown(KEY_LEFT) && moveX > -8)
-			moveX -= 4;
-		else
-			moveX /= 2;
+		if (IsKeyDown(KEY_RIGHT) && moveX < 6)
+			moveX += 3;
+		else if (IsKeyDown(KEY_LEFT) && moveX > -6)
+			moveX -= 3;
+		else if (moveX > 0)
+			moveX -= 1;
+		else if (moveX < 0)
+			moveX += 1;
 		if (IsKeyDown(KEY_R)) {			
 			respawning = true;
 			respawnTime = GetTime();
@@ -89,8 +91,15 @@ void Player::respawn() {
 	rotation = 0;
 }
 
-void Player::collisionX(std::vector <BackgroundWall> WallArr, std::vector <DamageZone> DamageArr, SoundLibrary SL) {
+void Player::collisionX(std::vector <BackgroundWall> WallArr, std::vector <DamageZone> DamageArr, std::vector <LaunchPad> LaunchArr, SoundLibrary SL) {
 	if (moveX != 0) {
+		for (std::vector <LaunchPad>::iterator it = LaunchArr.begin(); it != LaunchArr.end(); it++) {
+			if (CheckCollisionRecs({ (float)it->x, (float)it->y, (float)it->width, (float)it->height }, { (float)x, (float)y + moveX, (float)width, (float)height }))
+				if (it->rotation == 90)
+					moveX = -30;
+				else if (it->rotation == 270)
+					moveX = 30;
+		}
 		for (std::vector <DamageZone>::iterator it = DamageArr.begin(); it != DamageArr.end(); it++) {
 			if (CheckCollisionRecs({ (float)it->x, (float)it->y, (float)it->width, (float)it->height }, { (float)x + moveX, (float)y, (float)width, (float)height }))
 				respawning = true;
@@ -115,8 +124,17 @@ void Player::collisionX(std::vector <BackgroundWall> WallArr, std::vector <Damag
 	}
 }
 
-void Player::collisionY(std::vector <BackgroundWall> WallArr, std::vector <DamageZone> DamageArr, SoundLibrary SL) {
+void Player::collisionY(std::vector <BackgroundWall> WallArr, std::vector <DamageZone> DamageArr, std::vector <LaunchPad> LaunchArr, SoundLibrary SL) {
 	if (moveY != 0) {
+		for (std::vector <LaunchPad>::iterator it = LaunchArr.begin(); it != LaunchArr.end(); it++) {
+			if (CheckCollisionRecs({ (float)it->x, (float)it->y, (float)it->width, (float)it->height }, { (float)x, (float)y + moveY, (float)width, (float)height }))
+				if (it->rotation == 180)
+					moveY = -25;
+				else if (it->rotation == 90)
+					moveX = -30;
+				else if (it->rotation == 270)
+					moveX = 30;
+		}
 		for (std::vector <DamageZone>::iterator it = DamageArr.begin(); it != DamageArr.end(); it++) {
 			if (CheckCollisionRecs({ (float)it->x, (float)it->y, (float)it->width, (float)it->height }, { (float)x, (float)y + moveY, (float)width, (float)height }))
 				respawning = true;

@@ -56,10 +56,10 @@ public:
 	double respawnTime;
 	Player();
 	void setSpawn(int lx, int ly);
-	void move(std::vector <BackgroundWall> WallArr, std::vector <DamageZone> DamageArr, SoundLibrary SL);
+	void move(std::vector <BackgroundWall> WallArr,	std::vector <DamageZone> DamageArr,	std::vector <LaunchPad> LaunchArr, SoundLibrary SL);
 	void respawn();
-	void collisionX(std::vector <BackgroundWall> WallArr, std::vector <DamageZone> DamageArr, SoundLibrary SL);
-	void collisionY(std::vector <BackgroundWall> WallArr, std::vector <DamageZone> DamageArr, SoundLibrary SL);
+	void collisionX(std::vector <BackgroundWall> WallArr, std::vector <DamageZone> DamageArr, std::vector <LaunchPad> LaunchArr, SoundLibrary SL);
+	void collisionY(std::vector <BackgroundWall> WallArr, std::vector <DamageZone> DamageArr, std::vector <LaunchPad> LaunchArr, SoundLibrary SL);
 };
 
 class GameManager {

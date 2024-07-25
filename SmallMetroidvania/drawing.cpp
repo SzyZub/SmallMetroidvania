@@ -131,7 +131,7 @@ void checkBorders(GameManager& GM, MapManager& MM) {
 }
 
 void gameDraw(GameManager& GM, MapManager& MM) {
-    GM.player.move(GM.WallArr, GM.DamageArr, GM.SL);
+    GM.player.move(GM.WallArr, GM.DamageArr, GM.LaunchArr, GM.SL);
     if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
         if (MM.type == test) {
             GM.player.setSpawn(GetMouseX(), GetMouseY());
