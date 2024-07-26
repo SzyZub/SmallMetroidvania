@@ -11,7 +11,6 @@ typedef enum gameType {
 }gameType;
 
 class MapManager {
-private:
 public:
 	int row, col;
 	gameType type;
@@ -21,3 +20,5 @@ public:
 	bool loadmap(GameManager& temp);
 	void savemap(GameManager temp, Vector2 spawnPoints[4], int spawnPointsNum);
 };
+
+void fillValues(int& val1, int& val2, int& val3, int& val4, int& val5, std::size_t& pos, std::size_t& prevPos, std::string& mapData);

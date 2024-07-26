@@ -8,6 +8,7 @@
 #define DAMAGEZONECOLOR {200, 50, 50, 255}
 #define LAUNCHPADCOLOR1 {200, 200, 50, 255}
 #define LAUNCHPADCOLOR2 {200, 150, 50, 255}
+#define DOUBLEJUMPCOLOR {0, 0, 255, 255}
 #define MENUFONT 64
 
 void initScreen(GameManager GM);
@@ -23,9 +24,10 @@ void optionsDraw(GameManager& GM);
 
 class EditorDrawer {
 private:
-    bool editMode, drawBlock, exitView, measure, makeRespawn;
+    bool editMode, drawBlock, exitView, measure;
     EnLabel editMaterial;
-    short int prevX, prevY;
+    Vector2 spawnPoints[4];
+    short int prevX, prevY, spawnPointInc;
 public:
     EditorDrawer();
     void editDraw(GameManager& GM, MapManager MM);

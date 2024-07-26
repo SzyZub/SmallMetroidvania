@@ -1,5 +1,20 @@
 #include "objects.h"
 
+Items::Items(int lx, int ly, int lwidth, int lheight, int lrotation, ItemLabels llabel) {
+	x = lx;
+	y = ly;
+	width = lwidth;
+	height = lheight;
+	rotation = lrotation;
+	itemLabel = llabel;
+	label = items;
+}
+
+Items::Items() {
+	label = items;
+	itemLabel = none;
+}
+
 BackgroundWall::BackgroundWall(int lx, int ly, int lwidth, int lheight, int lrotation) {
 	x = lx;
 	y = ly;
@@ -36,8 +51,10 @@ Player::Player() {
 	width = 32;
 	height = 32;
 	rotation = 0;
-	jumped = false;
+	jumped = 0;
+	allowedJumps = 1;
 	label = player;
+	isInAir = false;
 	respawning = false;
 	respawnTime = 0;
 }
@@ -47,7 +64,7 @@ void Player::setSpawn(int lx, int ly) {
 	spawnPoint.y = (float) ly;
 }
 
-void Player::move(std::vector <BackgroundWall> WallArr, std::vector <DamageZone> DamageArr, std::vector <LaunchPad> LaunchArr, SoundLibrary SL) {
+void Player::move(std::vector <BackgroundWall> WallArr, std::vector <DamageZone> DamageArr, std::vector <LaunchPad> LaunchArr, Items& currentItem, SoundLibrary SL) {
 	if (respawning){
 		if (respawnTime + 3 < GetTime()) {
 			respawning = false;
@@ -55,9 +72,9 @@ void Player::move(std::vector <BackgroundWall> WallArr, std::vector <DamageZone>
 		}
 	}
 	else {
-		collisionX(WallArr, DamageArr, LaunchArr, SL);
+		collisionX(WallArr, DamageArr, LaunchArr, currentItem, SL);
 		x += moveX;
-		collisionY(WallArr, DamageArr, LaunchArr, SL);
+		collisionY(WallArr, DamageArr, LaunchArr, currentItem, SL);
 		y += moveY;
 		moveY += 1;
 		if (IsKeyDown(KEY_RIGHT) && moveX < 6)
@@ -73,10 +90,17 @@ void Player::move(std::vector <BackgroundWall> WallArr, std::vector <DamageZone>
 			respawnTime = GetTime();
 			PlaySound(SL.DeathSound);
 		}
-		if ((IsKeyPressed(KEY_UP) || IsKeyPressed(KEY_SPACE)) && !jumped) {
-			moveY = -15;
-			jumped = true;
-			PlaySound(SL.JumpSound);
+		if ((IsKeyPressed(KEY_UP) || IsKeyPressed(KEY_SPACE)) && jumped < allowedJumps) {
+			if (isInAir && allowedJumps != 1) {
+				jumped = 2;
+				moveY = -15;
+				PlaySound(SL.JumpSound);
+			}
+			else if (!isInAir) {
+				jumped++;
+				moveY = -15;
+				PlaySound(SL.JumpSound);
+			}
 		}
 	}
 
@@ -87,12 +111,16 @@ void Player::respawn() {
 	y = spawnPoint.y;
 	moveX = 0;
 	moveY = 0;
-	jumped = false;
+	jumped = allowedJumps;
 	rotation = 0;
 }
 
-void Player::collisionX(std::vector <BackgroundWall> WallArr, std::vector <DamageZone> DamageArr, std::vector <LaunchPad> LaunchArr, SoundLibrary SL) {
+void Player::collisionX(std::vector <BackgroundWall> WallArr, std::vector <DamageZone> DamageArr, std::vector <LaunchPad> LaunchArr, Items& currentItem, SoundLibrary SL) {
 	if (moveX != 0) {
+		if (CheckCollisionPointRec({ (float)x, (float)y }, { (float)currentItem.x, (float)currentItem.y, 32, 32 })) {
+			currentItem.itemLabel = none;
+			allowedJumps = 2;
+		}
 		for (std::vector <LaunchPad>::iterator it = LaunchArr.begin(); it != LaunchArr.end(); it++) {
 			if (CheckCollisionRecs({ (float)it->x, (float)it->y, (float)it->width, (float)it->height }, { (float)x, (float)y + moveX, (float)width, (float)height })) {
 				if (it->rotation == 90)
@@ -126,8 +154,13 @@ void Player::collisionX(std::vector <BackgroundWall> WallArr, std::vector <Damag
 	}
 }
 
-void Player::collisionY(std::vector <BackgroundWall> WallArr, std::vector <DamageZone> DamageArr, std::vector <LaunchPad> LaunchArr, SoundLibrary SL) {
+void Player::collisionY(std::vector <BackgroundWall> WallArr, std::vector <DamageZone> DamageArr, std::vector <LaunchPad> LaunchArr, Items& currentItem, SoundLibrary SL) {
+	isInAir = true;;
 	if (moveY != 0) {
+		if (CheckCollisionRecs({ (float)x, (float)y, 32, 32 }, { (float)currentItem.x, (float)currentItem.y, 32, 32 })) {
+			currentItem.itemLabel = none;
+			allowedJumps = 2;
+		}
 		for (std::vector <LaunchPad>::iterator it = LaunchArr.begin(); it != LaunchArr.end(); it++) {
 			if (CheckCollisionRecs({ (float)it->x, (float)it->y, (float)it->width, (float)it->height }, { (float)x, (float)y + moveY, (float)width, (float)height })) {
 				if (it->rotation == 180)
@@ -147,9 +180,9 @@ void Player::collisionY(std::vector <BackgroundWall> WallArr, std::vector <Damag
 		}
 		for (std::vector <BackgroundWall>::iterator it = WallArr.begin(); it != WallArr.end(); it++) {
 			while (moveY) {
-				jumped = true;
 				if (CheckCollisionRecs({ (float)it->x, (float)it->y, (float)it->width, (float)it->height }, { (float)x, (float)y + moveY, (float)width, (float)height })) {
-					jumped = false;
+					jumped = 0;
+					isInAir = false;
 					if (moveY > 0)
 						moveY--;
 					else if (moveY < 0)
@@ -170,12 +203,14 @@ GameManager::GameManager() {
 	originalW = 1280;
 	framerate = 60;
 	sceneLabel = title;
+	currentItem = Items();
 }
 
 void GameManager::InitSounds() {
 	SL.JumpSound = LoadSound("Sounds/jump.wav");
 	SL.DeathSound = LoadSound("Sounds/death.wav");
 	SL.LaunchSound = LoadSound("Sounds/launch.wav");
+	SL.SelectSound = LoadSound("Sounds/select.wav");
 }
 
 void GameManager::changeScene(EnScene temp) {

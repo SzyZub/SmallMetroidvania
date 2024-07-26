@@ -17,19 +17,33 @@ typedef enum EnLabel {
 	player = 0,
 	wall,
 	damageZone,
-	launch
+	launch,
+	items
 }EnLabel;
+
+typedef enum ItemLabels {
+	none,
+	doubleJump
+}ItemLabels;
 
 typedef struct SoundLibrary {
 	Sound JumpSound;
-		Sound DeathSound;
-		Sound LaunchSound;
+	Sound DeathSound;
+	Sound LaunchSound;
+	Sound SelectSound;
 }SoundLibrary;
 
 class Object {
 public:
 	int x, y, width, height, rotation;
 	EnLabel label;
+};
+
+class Items : public Object {
+public:
+	ItemLabels itemLabel;
+	Items(int lx, int ly, int lwidth, int lheight, int lrotation, ItemLabels llabel);
+	Items();
 };
 
 class BackgroundWall : public Object {
@@ -49,18 +63,19 @@ public:
 
 class Player : public Object {
 private:
-	int moveX, moveY;
+	int moveX, moveY, jumped;
+	bool isInAir;
 	Vector2 spawnPoint;
-	bool jumped;
 public:
+	int allowedJumps;
 	bool respawning;
 	double respawnTime;
 	Player();
 	void setSpawn(int lx, int ly);
-	void move(std::vector <BackgroundWall> WallArr,	std::vector <DamageZone> DamageArr,	std::vector <LaunchPad> LaunchArr, SoundLibrary SL);
+	void move(std::vector <BackgroundWall> WallArr,	std::vector <DamageZone> DamageArr,	std::vector <LaunchPad> LaunchArr, Items& currentItem, SoundLibrary SL);
 	void respawn();
-	void collisionX(std::vector <BackgroundWall> WallArr, std::vector <DamageZone> DamageArr, std::vector <LaunchPad> LaunchArr, SoundLibrary SL);
-	void collisionY(std::vector <BackgroundWall> WallArr, std::vector <DamageZone> DamageArr, std::vector <LaunchPad> LaunchArr, SoundLibrary SL);
+	void collisionX(std::vector <BackgroundWall> WallArr, std::vector <DamageZone> DamageArr, std::vector <LaunchPad> LaunchArr, Items& currentItem, SoundLibrary SL);
+	void collisionY(std::vector <BackgroundWall> WallArr, std::vector <DamageZone> DamageArr, std::vector <LaunchPad> LaunchArr, Items& currentItem, SoundLibrary SL);
 };
 
 class GameManager {
@@ -72,6 +87,7 @@ public:
 	std::vector <BackgroundWall> WallArr;
 	std::vector <DamageZone> DamageArr;
 	std::vector <LaunchPad> LaunchArr;
+	Items currentItem;
 	SoundLibrary SL;
 	void changeScene(EnScene temp);
 	void InitSounds();
