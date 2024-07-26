@@ -22,7 +22,8 @@ typedef enum EnLabel {
 
 typedef struct SoundLibrary {
 	Sound JumpSound;
-	Sound DeathSound;
+		Sound DeathSound;
+		Sound LaunchSound;
 }SoundLibrary;
 
 class Object {

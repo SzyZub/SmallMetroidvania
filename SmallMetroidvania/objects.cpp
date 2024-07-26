@@ -94,11 +94,13 @@ void Player::respawn() {
 void Player::collisionX(std::vector <BackgroundWall> WallArr, std::vector <DamageZone> DamageArr, std::vector <LaunchPad> LaunchArr, SoundLibrary SL) {
 	if (moveX != 0) {
 		for (std::vector <LaunchPad>::iterator it = LaunchArr.begin(); it != LaunchArr.end(); it++) {
-			if (CheckCollisionRecs({ (float)it->x, (float)it->y, (float)it->width, (float)it->height }, { (float)x, (float)y + moveX, (float)width, (float)height }))
+			if (CheckCollisionRecs({ (float)it->x, (float)it->y, (float)it->width, (float)it->height }, { (float)x, (float)y + moveX, (float)width, (float)height })) {
 				if (it->rotation == 90)
 					moveX = -30;
 				else if (it->rotation == 270)
 					moveX = 30;
+				PlaySound(SL.LaunchSound);
+			}
 		}
 		for (std::vector <DamageZone>::iterator it = DamageArr.begin(); it != DamageArr.end(); it++) {
 			if (CheckCollisionRecs({ (float)it->x, (float)it->y, (float)it->width, (float)it->height }, { (float)x + moveX, (float)y, (float)width, (float)height }))
@@ -127,13 +129,15 @@ void Player::collisionX(std::vector <BackgroundWall> WallArr, std::vector <Damag
 void Player::collisionY(std::vector <BackgroundWall> WallArr, std::vector <DamageZone> DamageArr, std::vector <LaunchPad> LaunchArr, SoundLibrary SL) {
 	if (moveY != 0) {
 		for (std::vector <LaunchPad>::iterator it = LaunchArr.begin(); it != LaunchArr.end(); it++) {
-			if (CheckCollisionRecs({ (float)it->x, (float)it->y, (float)it->width, (float)it->height }, { (float)x, (float)y + moveY, (float)width, (float)height }))
+			if (CheckCollisionRecs({ (float)it->x, (float)it->y, (float)it->width, (float)it->height }, { (float)x, (float)y + moveY, (float)width, (float)height })) {
 				if (it->rotation == 180)
 					moveY = -25;
 				else if (it->rotation == 90)
 					moveX = -30;
 				else if (it->rotation == 270)
 					moveX = 30;
+				PlaySound(SL.LaunchSound);
+			}
 		}
 		for (std::vector <DamageZone>::iterator it = DamageArr.begin(); it != DamageArr.end(); it++) {
 			if (CheckCollisionRecs({ (float)it->x, (float)it->y, (float)it->width, (float)it->height }, { (float)x, (float)y + moveY, (float)width, (float)height }))
@@ -171,6 +175,7 @@ GameManager::GameManager() {
 void GameManager::InitSounds() {
 	SL.JumpSound = LoadSound("Sounds/jump.wav");
 	SL.DeathSound = LoadSound("Sounds/death.wav");
+	SL.LaunchSound = LoadSound("Sounds/launch.wav");
 }
 
 void GameManager::changeScene(EnScene temp) {
