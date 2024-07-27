@@ -142,6 +142,8 @@ void gameDraw(GameManager& GM, MapManager& MM) {
         if (MM.type == test) {
             GM.player.setSpawn(GetMouseX(), GetMouseY());
             GM.player.respawn();
+            MM.deloadmap(GM);
+            MM.loadmap(GM);
         }
     }
     if (GM.player.respawning) {
@@ -149,6 +151,8 @@ void gameDraw(GameManager& GM, MapManager& MM) {
         if (GM.player.respawnTime + 3 < GetTime()) {
             GM.player.respawning = false;
             GM.player.respawn();
+            MM.deloadmap(GM);
+            MM.loadmap(GM);
         }
     }
     else {
