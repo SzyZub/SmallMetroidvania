@@ -11,24 +11,24 @@
 #define DOUBLEJUMPCOLOR {0, 0, 255, 255}
 #define MENUFONT 64
 
-void initScreen(GameManager GM);
-void drawAllObjects(GameManager GM);
-void mainDraw(GameManager& GM, MapManager& MM);
-void errorLoadDraw(GameManager& GM, MapManager& MM);
-void chooseMap(GameManager& GM, MapManager& MM);
-void checkBorders(GameManager& Gm, MapManager& MM);
-void gameDraw(GameManager& GM, MapManager& MM);
-void titleDraw(GameManager& GM);
-void menuDraw(GameManager& GM, MapManager MM);
-void optionsDraw(GameManager& GM);
+void initScreen(GameManager GameManagerEntity);
+void drawAllObjects(GameManager GameManagerEntity);
+void mainDraw(GameManager& GameManagerEntity, MapManager& MapManagerEntity);
+void errorLoadDraw(GameManager& GameManagerEntity, MapManager& MapManagerEntity);
+void chooseMap(GameManager& GameManagerEntity, MapManager& MapManagerEntity);
+void checkBorders(GameManager& Gm, MapManager& MapManagerEntity);
+void gameDraw(GameManager& GameManagerEntity, MapManager& MapManagerEntity);
+void titleDraw(GameManager& GameManagerEntity);
+void menuDraw(GameManager& GameManagerEntity, MapManager MapManagerEntity);
+void optionsDraw(GameManager& GameManagerEntity);
 
 class EditorDrawer {
 private:
-    bool editMode, drawBlock, exitView, measure;
-    EnLabel editMaterial;
+    bool isEditMode, isDrawBlock, isExitView, isMeasure;
+    EntityLabel editMaterial;
     Vector2 spawnPoints[4];
     short int prevX, prevY, spawnPointInc;
 public:
     EditorDrawer();
-    void editDraw(GameManager& GM, MapManager MM);
+    void editDraw(GameManager& GameManagerEntity, MapManager MapManagerEntity);
 };

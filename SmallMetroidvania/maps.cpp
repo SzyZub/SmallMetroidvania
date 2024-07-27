@@ -3,42 +3,35 @@
 MapManager::MapManager() {
     row = 1;
     col = 1;
-    type = campaign;
+    campaginType = campaign;
 }
 
-void MapManager::changeType(gameType temp) {
-    type = temp;
+void MapManager::deloadmap(GameManager& GameManagerEntity) {
+    GameManagerEntity.wallArr.clear();
+    GameManagerEntity.damageArr.clear();
+    GameManagerEntity.launchArr.clear();
+    GameManagerEntity.currentItem.itemLabel = none;
 }
 
-void MapManager::deloadmap(GameManager& temp) {
-    temp.WallArr.clear();
-    temp.DamageArr.clear();
-    temp.LaunchArr.clear();
-    temp.currentItem.itemLabel = none;
-    temp.player.allowedJumps = 1;
-}
-
-bool MapManager::loadmap(GameManager& temp) {
+bool MapManager::loadmap(GameManager& GameManagerEntity) {
     std::string mapData;
     int spawnPointInc = 0;
     Vector2 spawnPoints[4];
     int tempLabel;
     int val1, val2, val3, val4, val5;
     std::ifstream readFile;
-    if (type == campaign) {
+    if (campaginType == campaign) {
         std::string mapName = "Maps/Campaign/" + std::to_string(row) + std::to_string(col) + ".txt";
         readFile.open(mapName);
     }
-    else if (type == customCampaign) {
+    else if (campaginType == customCampaign) {
         std::string mapName = "Maps/Custom/" + std::to_string(row) + std::to_string(col) + ".txt";
         readFile.open(mapName);
     }
-    else {
+    else
         readFile.open("Maps/Test/Custom.txt");
-    }
-    if (!readFile.is_open()) {
+    if (!readFile.is_open())
         return false;
-    }
     while (std::getline(readFile, mapData)) {
         std::size_t pos = mapData.find(' ');
         std::size_t prevPos = pos + 1;
@@ -46,15 +39,15 @@ bool MapManager::loadmap(GameManager& temp) {
         switch (tempLabel) {
         case 0:
             fillValues(val1, val2, val3, val4, val5, pos, prevPos, mapData);
-            temp.WallArr.push_back(BackgroundWall(val1, val2, val3, val4, val5));
+            GameManagerEntity.wallArr.push_back(Wall(val1, val2, val3, val4, val5));
             break;
         case 1:
             fillValues(val1, val2, val3, val4, val5, pos, prevPos, mapData);
-            temp.DamageArr.push_back(DamageZone(val1, val2, val3, val4, val5));
+            GameManagerEntity.damageArr.push_back(DamageZone(val1, val2, val3, val4, val5));
             break;
         case 2:
             fillValues(val1, val2, val3, val4, val5, pos, prevPos, mapData);
-            temp.LaunchArr.push_back(LaunchPad(val1, val2, val3, val4, val5));
+            GameManagerEntity.launchArr.push_back(LaunchPad(val1, val2, val3, val4, val5));
             break;
         case 99: 
             pos = mapData.find(' ', prevPos);
@@ -62,23 +55,24 @@ bool MapManager::loadmap(GameManager& temp) {
             prevPos = pos + 1;
             pos = mapData.find(' ', prevPos);
             val2 = std::stoi(mapData.substr(prevPos, pos));
-            spawnPoints[spawnPointInc].x = val1;
-            spawnPoints[spawnPointInc].y = val2;
+            spawnPoints[spawnPointInc].x = (float) val1;
+            spawnPoints[spawnPointInc].y = (float) val2;
             spawnPointInc++;
             break;
         case 3:
-            fillValues(val1, val2, val3, val4, val5, pos, prevPos, mapData);
-            temp.currentItem = Items(val1, val2, val3, val4, val5, doubleJump);
+            if (GameManagerEntity.player.allowedJumps != 2) {
+                fillValues(val1, val2, val3, val4, val5, pos, prevPos, mapData);
+                GameManagerEntity.currentItem = Item(val1, val2, val3, val4, val5, doubleJump);
+            }
             break;
         }
     }
     int bestSpawn = 0;
-    for (int i = 1; i < spawnPointInc; i++) {
-        if (sqrt(spawnPoints[bestSpawn].x * spawnPoints[bestSpawn].x + spawnPoints[bestSpawn].y * spawnPoints[bestSpawn].y) < sqrt(spawnPoints[i].x * spawnPoints[i].x + spawnPoints[i].y * spawnPoints[i].y)) {
+    for (int i = 1; i < spawnPointInc; i++) 
+        if (sqrt(spawnPoints[bestSpawn].x * spawnPoints[bestSpawn].x + spawnPoints[bestSpawn].y * spawnPoints[bestSpawn].y) < sqrt(spawnPoints[i].x * spawnPoints[i].x + spawnPoints[i].y * spawnPoints[i].y)) 
             bestSpawn = i;
-        }
-    }
-    temp.player.setSpawn(spawnPoints->x, spawnPoints->y);
+    GameManagerEntity.player.spawnPoint.x = (float)spawnPoints->x;
+    GameManagerEntity.player.spawnPoint.y = (float)spawnPoints->y;
     readFile.close();
     return true;
 }
@@ -100,39 +94,37 @@ void fillValues(int& val1, int& val2, int& val3, int& val4, int& val5, std::size
     val5 = std::stoi(mapData.substr(prevPos, pos));
 }
 
-void MapManager::savemap(GameManager temp, Vector2 spawnPoints[4], int spawnPointsNum) {
+void MapManager::savemap(GameManager GameManagerEntity, Vector2 spawnPoints[4], int spawnPointsNum) {
     std::ofstream writeFile("Maps/Test/Custom.txt");
-    for (std::vector <BackgroundWall>::iterator it = temp.WallArr.begin(); it != temp.WallArr.end(); it++) {
+    for (std::vector <Wall>::iterator it = GameManagerEntity.wallArr.begin(); it != GameManagerEntity.wallArr.end(); it++) 
         writeFile << 0 << ' ' << it->x << ' ' << it->y << ' ' << it->width << ' ' << it->height << ' ' << it->rotation << '\n';
-    }
-    for (std::vector <DamageZone>::iterator it = temp.DamageArr.begin(); it != temp.DamageArr.end(); it++) {
+    for (std::vector <DamageZone>::iterator it = GameManagerEntity.damageArr.begin(); it != GameManagerEntity.damageArr.end(); it++) 
         writeFile << 1 << ' ' << it->x << ' ' << it->y << ' ' << it->width << ' ' << it->height << ' ' << it->rotation << '\n';
-    }
-    for (std::vector <LaunchPad>::iterator it = temp.LaunchArr.begin(); it != temp.LaunchArr.end(); it++) {
+    for (std::vector <LaunchPad>::iterator it = GameManagerEntity.launchArr.begin(); it != GameManagerEntity.launchArr.end(); it++) 
         writeFile << 2 << ' ' << it->x << ' ' << it->y << ' ' << it->width << ' ' << it->height << ' ' << it->rotation << '\n';
-    }
-    if (temp.currentItem.itemLabel != none) {
-        switch (temp.currentItem.itemLabel) {
+    if (GameManagerEntity.currentItem.itemLabel != none) {
+        switch (GameManagerEntity.currentItem.itemLabel) {
         case doubleJump:
             writeFile << 3 << ' ';
             break;
         }
-        writeFile << temp.currentItem.x << ' ' << temp.currentItem.y << ' ' << temp.currentItem.width << ' ' << temp.currentItem.height << ' ' << temp.currentItem.rotation << '\n';
+        writeFile << GameManagerEntity.currentItem.x << ' ' << GameManagerEntity.currentItem.y << ' ' << GameManagerEntity.currentItem.width << ' ' << GameManagerEntity.currentItem.height << ' ' << GameManagerEntity.currentItem.rotation << '\n';
     }
-    for (int i = 0; i < spawnPointsNum; i++) {
+    for (int i = 0; i < spawnPointsNum; i++) 
         writeFile << 99 << ' ' << spawnPoints[i].x << ' ' << spawnPoints[i].y << ' ' << '\n';
-    }
     writeFile.close();
 }
 
-void saveCampaignSate(GameManager temp, MapManager MM) {
-    if (MM.type == test) return;
+void saveCampaignSate(GameManager GameManagerEntity, MapManager MapManagerEntity) {
+    if (MapManagerEntity.campaginType == test) 
+        return;
     std::ofstream writeFile;
-    if (MM.type == campaign)
+    if (MapManagerEntity.campaginType == campaign)
         writeFile.open("Maps/Campaign/CampaignSave.txt");
     else 
         writeFile.open("Maps/CustomCampaign/CampaignSave.txt");
-    writeFile << temp.player.spawnPoint.x << ' ' << temp.player.spawnPoint.y << '\n';
-    writeFile << MM.row << ' ' << MM.col << '\n';
+    writeFile << GameManagerEntity.player.spawnPoint.x << ' ' << GameManagerEntity.player.spawnPoint.y << '\n';
+    writeFile << MapManagerEntity.row << ' ' << MapManagerEntity.col << '\n';
+    writeFile << GameManagerEntity.player.allowedJumps << '\n';
     writeFile.close();
 }

@@ -1,20 +1,18 @@
 #include "drawing.h"
 
-void initScreen(GameManager GM) {
-    InitWindow(GM.originalW, GM.originalH, "MetroidCube");
-    SetTargetFPS(GM.framerate);
+void initScreen(GameManager GameManagerEntity) {
+    InitWindow(GameManagerEntity.originalW, GameManagerEntity.originalH, "MetroidCube");
+    SetTargetFPS(GameManagerEntity.framerate);
     InitAudioDevice();
     SetExitKey(KEY_GRAVE);
 }
 
-void drawAllObjects(GameManager GM) {
-    for (std::vector <DamageZone>::iterator it = GM.DamageArr.begin(); it != GM.DamageArr.end(); it++) {
+void drawAllObjects(GameManager GameManagerEntity) {
+    for (std::vector <DamageZone>::iterator it = GameManagerEntity.damageArr.begin(); it != GameManagerEntity.damageArr.end(); it++) 
         DrawRectangle(it->x, it->y, it->width, it->height, DAMAGEZONECOLOR);
-    }
-    for (std::vector <BackgroundWall>::iterator it = GM.WallArr.begin(); it != GM.WallArr.end(); it++) {
+    for (std::vector <Wall>::iterator it = GameManagerEntity.wallArr.begin(); it != GameManagerEntity.wallArr.end(); it++) 
         DrawRectangle(it->x, it->y, it->width, it->height, WALLCOLOR);
-    }
-    for (std::vector <LaunchPad>::iterator it = GM.LaunchArr.begin(); it != GM.LaunchArr.end(); it++) {
+    for (std::vector <LaunchPad>::iterator it = GameManagerEntity.launchArr.begin(); it != GameManagerEntity.launchArr.end(); it++) {
         DrawRectangle(it->x, it->y, it->width, it->height, LAUNCHPADCOLOR1);
         switch (it->rotation) {
         case 0:
@@ -31,269 +29,255 @@ void drawAllObjects(GameManager GM) {
             break;
         }
     }
-    switch (GM.currentItem.itemLabel) {
+    switch (GameManagerEntity.currentItem.itemLabel) {
     case doubleJump:
-        DrawRectangle(GM.currentItem.x, GM.currentItem.y, GM.currentItem.width, GM.currentItem.height, DOUBLEJUMPCOLOR);
+        DrawRectangle(GameManagerEntity.currentItem.x, GameManagerEntity.currentItem.y, GameManagerEntity.currentItem.width, GameManagerEntity.currentItem.height, DOUBLEJUMPCOLOR);
         break;
     }
 }
 
-void mainDraw(GameManager& GM, MapManager& MM) {
+void mainDraw(GameManager& GameManagerEntity, MapManager& MapManagerEntity) {
     BeginDrawing();
     ClearBackground(BACKGROUNDCOLOR);
-    switch (GM.sceneLabel) {
+    switch (GameManagerEntity.sceneLabel) {
     case game: 
-        gameDraw(GM, MM);
+        gameDraw(GameManagerEntity, MapManagerEntity);
         break;
     case title:
-        titleDraw(GM);
+        titleDraw(GameManagerEntity);
         break;
     case options:
-        optionsDraw(GM);
+        optionsDraw(GameManagerEntity);
         break;
     case choosing:
-        chooseMap(GM, MM);
+        chooseMap(GameManagerEntity, MapManagerEntity);
         break;
     case menu:
-        menuDraw(GM, MM);
+        menuDraw(GameManagerEntity, MapManagerEntity);
         break;
     case errorLoad:
-        errorLoadDraw(GM, MM);
+        errorLoadDraw(GameManagerEntity, MapManagerEntity);
         break;
     case edit:
         static EditorDrawer draw;
-        draw.editDraw(GM, MM);
+        draw.editDraw(GameManagerEntity, MapManagerEntity);
         break;
     }
     EndDrawing();
 }
 
-void errorLoadDraw(GameManager& GM, MapManager& MM) {
-    DrawText(TextFormat("Couldn't draw map %i %i", MM.row, MM.col), (GM.originalW - MeasureText(TextFormat("Couldn't draw map %i %i", MM.row, MM.col), 40)) / 2, GM.originalH / 10, 40, BLACK);
-    DrawText("Press Tab to go back to menu", (GM.originalW - MeasureText("Press Tab to go back to menu", 40)) / 2, GM.originalH * 3 / 10, 40, BLACK);
+void errorLoadDraw(GameManager& GameManagerEntity, MapManager& MapManagerEntity) {
+    DrawText(TextFormat("Couldn't draw map %i %i", MapManagerEntity.row, MapManagerEntity.col), (GameManagerEntity.originalW - MeasureText(TextFormat("Couldn't draw map %i %i", MapManagerEntity.row, MapManagerEntity.col), 40)) / 2, GameManagerEntity.originalH / 10, 40, BLACK);
+    DrawText("Press Tab to go back to menu", (GameManagerEntity.originalW - MeasureText("Press Tab to go back to menu", 40)) / 2, GameManagerEntity.originalH * 3 / 10, 40, BLACK);
     if (IsKeyPressed(KEY_TAB)) {
-        MM.deloadmap(GM);
-        GM.sceneLabel = title;
-        PlaySound(GM.SL.SelectSound);
+        MapManagerEntity.deloadmap(GameManagerEntity);
+        GameManagerEntity.sceneLabel = title;
+        PlaySound(GameManagerEntity.SL.SelectSound);
     }
 }
 
-void chooseMap(GameManager& GM, MapManager& MM) {
-    DrawText("Main Campaign", (GM.originalW-MeasureText("Main Campaign", MENUFONT))/2, GM.originalH/8-MENUFONT/2, MENUFONT, BLACK);
-    DrawText("Custom Campaign", (GM.originalW - MeasureText("Custom Campaign", MENUFONT)) / 2, GM.originalH * 3/8 - MENUFONT / 2, MENUFONT, BLACK);
-    DrawText("Test Map", (GM.originalW - MeasureText("Test Map", MENUFONT)) / 2, GM.originalH * 5/ 8 - MENUFONT / 2, MENUFONT, BLACK);
-    DrawText("Exit", (GM.originalW - MeasureText("Exit", MENUFONT)) / 2, GM.originalH * 7/ 8 - MENUFONT / 2, MENUFONT, BLACK);
+void chooseMap(GameManager& GameManagerEntity, MapManager& MapManagerEntity) {
+    DrawText("Main Campaign", (GameManagerEntity.originalW-MeasureText("Main Campaign", MENUFONT))/2, GameManagerEntity.originalH/8-MENUFONT/2, MENUFONT, BLACK);
+    DrawText("Custom Campaign", (GameManagerEntity.originalW - MeasureText("Custom Campaign", MENUFONT)) / 2, GameManagerEntity.originalH * 3/8 - MENUFONT / 2, MENUFONT, BLACK);
+    DrawText("Test Map", (GameManagerEntity.originalW - MeasureText("Test Map", MENUFONT)) / 2, GameManagerEntity.originalH * 5/ 8 - MENUFONT / 2, MENUFONT, BLACK);
+    DrawText("Exit", (GameManagerEntity.originalW - MeasureText("Exit", MENUFONT)) / 2, GameManagerEntity.originalH * 7/ 8 - MENUFONT / 2, MENUFONT, BLACK);
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-        PlaySound(GM.SL.SelectSound);
-        MM.row = 1;
-        MM.col = 1;
+        PlaySound(GameManagerEntity.SL.SelectSound);
+        MapManagerEntity.row = 1;
+        MapManagerEntity.col = 1;
         int y = GetMouseY();
-        if (y < GM.originalH* 3 / 4) {
-            if (y < GM.originalH / 4) {
-                MM.changeType(campaign);
-            }
-            else if (y < GM.originalH / 2) 
-                MM.changeType(customCampaign);
+        if (y < GameManagerEntity.originalH* 3 / 4) {
+            GameManagerEntity.player.clearItem();
+            if (y < GameManagerEntity.originalH / 4) 
+                MapManagerEntity.campaginType = campaign;
+            else if (y < GameManagerEntity.originalH / 2) 
+                MapManagerEntity.campaginType = customCampaign;
             else
-                MM.changeType(test);
-            if (MM.loadmap(GM)) {
-                GM.sceneLabel = game;
-                GM.player.respawn();
+                MapManagerEntity.campaginType = test;
+            if (MapManagerEntity.loadmap(GameManagerEntity)) {
+                GameManagerEntity.sceneLabel = game;
+                GameManagerEntity.player.respawn();
             }
         }
-        else {
-            GM.sceneLabel = title;
-        }
-    }
-}
-
-void checkBorders(GameManager& GM, MapManager& MM) {
-    if (GM.player.x > GM.originalW - 8) {
-        MM.deloadmap(GM);
-        MM.col++;
-        GM.player.x = 16;
-        if (!MM.loadmap(GM))
-            GM.changeScene(errorLoad);
-        else saveCampaignSate(GM, MM);
-    }
-    else if (GM.player.x + 8 < 0) {
-        MM.deloadmap(GM);
-        MM.col--;
-        GM.player.x = GM.originalW - 16;
-        if (!MM.loadmap(GM))
-            GM.changeScene(errorLoad);
-        else saveCampaignSate(GM, MM);
-    }
-    else if (GM.player.y + 8 < 0) {
-        MM.deloadmap(GM);
-        MM.row--;
-        GM.player.y = GM.originalH - 16;;
-        if (!MM.loadmap(GM))
-            GM.changeScene(errorLoad);
-        else saveCampaignSate(GM, MM);
-    } else if (GM.player.y > GM.originalH - 8) {
-        MM.deloadmap(GM);
-        MM.row++;
-        GM.player.y = 16;
-        if (!MM.loadmap(GM))
-            GM.changeScene(errorLoad);
-        else saveCampaignSate(GM, MM);
-    }
-}
-
-void gameDraw(GameManager& GM, MapManager& MM) {
-    if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-        if (MM.type == test) {
-            GM.player.setSpawn(GetMouseX(), GetMouseY());
-            GM.player.respawn();
-            MM.deloadmap(GM);
-            MM.loadmap(GM);
-        }
-    }
-    if (GM.player.respawning) {
-        DrawText(TextFormat("Respawning in: %i", (int)(GM.player.respawnTime + 4 - GetTime())), (GM.originalW - MeasureText(TextFormat("Respawning in: %d", (int)(GM.player.respawnTime + 4 - GetTime())), 40)) / 2, GM.originalH / 10, 40, BLACK);
-        if (GM.player.respawnTime + 3 < GetTime()) {
-            GM.player.respawning = false;
-            GM.player.respawn();
-            MM.deloadmap(GM);
-            MM.loadmap(GM);
-        }
-    }
-    else {
-        DrawRectangle(GM.player.x, GM.player.y, GM.player.width, GM.player.height, PLAYERCOLOR);
-    }
-    GM.player.move(GM.WallArr, GM.DamageArr, GM.LaunchArr, GM.currentItem ,GM.SL);
-    drawAllObjects(GM);
-    checkBorders(GM, MM);
-    if (IsKeyPressed(KEY_TAB)) {
-        GM.sceneLabel = menu;
-    }
-}
-
-void titleDraw(GameManager& GM) {
-    DrawText("Start the game", (GM.originalW - MeasureText("Start the game", MENUFONT))/2, GM.originalH / 8 - MENUFONT / 2, MENUFONT, BLACK);
-    DrawText("Editor", (GM.originalW - MeasureText("Editor", MENUFONT)) / 2, GM.originalH * 3 / 8 - MENUFONT / 2, MENUFONT, BLACK);
-    DrawText("Options", (GM.originalW - MeasureText("Options", MENUFONT)) / 2, GM.originalH * 5 / 8 - MENUFONT / 2, MENUFONT, BLACK);
-    DrawText("Exit", (GM.originalW - MeasureText("Exit", MENUFONT)) / 2, GM.originalH * 7 / 8 - MENUFONT / 2, MENUFONT, BLACK);
-    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-        PlaySound(GM.SL.SelectSound);
-        int y = GetMouseY();
-        if (y < GM.originalH / 4) 
-            GM.sceneLabel = choosing;       
-        else if (y < GM.originalH /2) 
-            GM.sceneLabel = edit;      
-        else if (y < GM.originalH * 3 / 4) 
-            GM.sceneLabel = options;      
         else 
-            GM.sceneLabel = ext;        
+            GameManagerEntity.sceneLabel = title;
     }
 }
 
-void menuDraw(GameManager& GM, MapManager MM) {
-    GM.player.respawnTime = GetTime();
-    DrawText("Resume the game", (GM.originalW - MeasureText("Resume the game", MENUFONT)) / 2, GM.originalH/4 - MENUFONT / 2, MENUFONT, BLACK);
-    DrawText("Save & exit", (GM.originalW - MeasureText("Save & exit", MENUFONT)) / 2, GM.originalH*3/4 - MENUFONT / 2, MENUFONT, BLACK);
+void checkBorders(GameManager& GameManagerEntity, MapManager& MapManagerEntity) {
+    if (GameManagerEntity.player.x > GameManagerEntity.originalW - 8) {
+        MapManagerEntity.deloadmap(GameManagerEntity);
+        MapManagerEntity.col++;
+        GameManagerEntity.player.x = 16;
+        if (!MapManagerEntity.loadmap(GameManagerEntity))
+            GameManagerEntity.sceneLabel = errorLoad;
+        else saveCampaignSate(GameManagerEntity, MapManagerEntity);
+    }
+    else if (GameManagerEntity.player.x + 8 < 0) {
+        MapManagerEntity.deloadmap(GameManagerEntity);
+        MapManagerEntity.col--;
+        GameManagerEntity.player.x = GameManagerEntity.originalW - 16;
+        if (!MapManagerEntity.loadmap(GameManagerEntity))
+            GameManagerEntity.sceneLabel = errorLoad;
+        else saveCampaignSate(GameManagerEntity, MapManagerEntity);
+    }
+    else if (GameManagerEntity.player.y + 8 < 0) {
+        MapManagerEntity.deloadmap(GameManagerEntity);
+        MapManagerEntity.row--;
+        GameManagerEntity.player.y = GameManagerEntity.originalH - 16;;
+        if (!MapManagerEntity.loadmap(GameManagerEntity))
+            GameManagerEntity.sceneLabel = errorLoad;
+        else saveCampaignSate(GameManagerEntity, MapManagerEntity);
+    } else if (GameManagerEntity.player.y > GameManagerEntity.originalH - 8) {
+        MapManagerEntity.deloadmap(GameManagerEntity);
+        MapManagerEntity.row++;
+        GameManagerEntity.player.y = 16;
+        if (!MapManagerEntity.loadmap(GameManagerEntity))
+            GameManagerEntity.sceneLabel = errorLoad;
+        else saveCampaignSate(GameManagerEntity, MapManagerEntity);
+    }
+}
+
+void gameDraw(GameManager& GameManagerEntity, MapManager& MapManagerEntity) {
+    if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+        if (MapManagerEntity.campaginType == test) {
+            GameManagerEntity.player.spawnPoint.x = (float)GetMouseX();
+            GameManagerEntity.player.spawnPoint.y = (float)GetMouseY();
+            GameManagerEntity.player.respawn();
+            MapManagerEntity.deloadmap(GameManagerEntity);
+            MapManagerEntity.loadmap(GameManagerEntity);
+        }
+    }
+    if (GameManagerEntity.player.isRespawning) {
+        DrawText(TextFormat("Respawning in: %i", (int)(GameManagerEntity.player.respawnTime + 4 - GetTime())), (GameManagerEntity.originalW - MeasureText(TextFormat("Respawning in: %d", (int)(GameManagerEntity.player.respawnTime + 4 - GetTime())), 40)) / 2, GameManagerEntity.originalH / 10, 40, BLACK);
+        if (GameManagerEntity.player.respawnTime + 3 < GetTime()) {
+            GameManagerEntity.player.isRespawning = false;
+            GameManagerEntity.player.respawn();
+            MapManagerEntity.deloadmap(GameManagerEntity);
+            MapManagerEntity.loadmap(GameManagerEntity);
+        }
+    }
+    else 
+        DrawRectangle(GameManagerEntity.player.x, GameManagerEntity.player.y, GameManagerEntity.player.width, GameManagerEntity.player.height, PLAYERCOLOR);
+    GameManagerEntity.player.move(GameManagerEntity.wallArr, GameManagerEntity.damageArr, GameManagerEntity.launchArr, GameManagerEntity.currentItem ,GameManagerEntity.SL);
+    drawAllObjects(GameManagerEntity);
+    checkBorders(GameManagerEntity, MapManagerEntity);
+    if (IsKeyPressed(KEY_TAB)) 
+        GameManagerEntity.sceneLabel = menu;
+}
+
+void titleDraw(GameManager& GameManagerEntity) {
+    DrawText("Start the game", (GameManagerEntity.originalW - MeasureText("Start the game", MENUFONT))/2, GameManagerEntity.originalH / 8 - MENUFONT / 2, MENUFONT, BLACK);
+    DrawText("Editor", (GameManagerEntity.originalW - MeasureText("Editor", MENUFONT)) / 2, GameManagerEntity.originalH * 3 / 8 - MENUFONT / 2, MENUFONT, BLACK);
+    DrawText("Options", (GameManagerEntity.originalW - MeasureText("Options", MENUFONT)) / 2, GameManagerEntity.originalH * 5 / 8 - MENUFONT / 2, MENUFONT, BLACK);
+    DrawText("Exit", (GameManagerEntity.originalW - MeasureText("Exit", MENUFONT)) / 2, GameManagerEntity.originalH * 7 / 8 - MENUFONT / 2, MENUFONT, BLACK);
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-        PlaySound(GM.SL.SelectSound);
+        PlaySound(GameManagerEntity.SL.SelectSound);
         int y = GetMouseY();
-        if (y > GM.originalH/2) {
-            MM.deloadmap(GM);
-            GM.player.respawning = false;
-            GM.sceneLabel = title;
-            saveCampaignSate(GM, MM);
-        }
-        else {
-            GM.sceneLabel = game;
-        }
+        if (y < GameManagerEntity.originalH / 4) 
+            GameManagerEntity.sceneLabel = choosing;       
+        else if (y < GameManagerEntity.originalH /2) 
+            GameManagerEntity.sceneLabel = edit;      
+        else if (y < GameManagerEntity.originalH * 3 / 4) 
+            GameManagerEntity.sceneLabel = options;      
+        else 
+            GameManagerEntity.sceneLabel = ext;        
     }
 }
 
-void optionsDraw(GameManager& GM) {
-    DrawText("Window", (GM.originalW - MeasureText("Window", MENUFONT)) / 2, GM.originalH/10 - MENUFONT / 2, MENUFONT, BLACK);
-    DrawText("Fullscreen", (GM.originalW - MeasureText("Fullscreen", MENUFONT*3/4)) / 4, GM.originalH * 2/ 10 - MENUFONT / 2, MENUFONT * 3 / 4, IsWindowState(FLAG_FULLSCREEN_MODE) ? GREEN : RED);
-    DrawText("Windowed", (GM.originalW - MeasureText("Windowed", MENUFONT * 3 / 4)) / 4* 3, GM.originalH * 2/ 10 - MENUFONT / 2, MENUFONT * 3 / 4, IsWindowState(FLAG_FULLSCREEN_MODE) ? RED : GREEN);
-    DrawText("Exit", (GM.originalW - MeasureText("Exit", MENUFONT)) / 2, GM.originalH * 7 / 8 - MENUFONT / 2, MENUFONT, BLACK);
+void menuDraw(GameManager& GameManagerEntity, MapManager MapManagerEntity) {
+    GameManagerEntity.player.respawnTime = GetTime();
+    DrawText("Resume the game", (GameManagerEntity.originalW - MeasureText("Resume the game", MENUFONT)) / 2, GameManagerEntity.originalH/4 - MENUFONT / 2, MENUFONT, BLACK);
+    DrawText("Save & exit", (GameManagerEntity.originalW - MeasureText("Save & exit", MENUFONT)) / 2, GameManagerEntity.originalH*3/4 - MENUFONT / 2, MENUFONT, BLACK);
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-        PlaySound(GM.SL.SelectSound);
+        PlaySound(GameManagerEntity.SL.SelectSound);
+        int y = GetMouseY();
+        if (y > GameManagerEntity.originalH/2) {
+            MapManagerEntity.deloadmap(GameManagerEntity);
+            GameManagerEntity.player.isRespawning = false;
+            GameManagerEntity.sceneLabel = title;
+            saveCampaignSate(GameManagerEntity, MapManagerEntity);
+        }
+        else 
+            GameManagerEntity.sceneLabel = game;
+    }
+}
+
+void optionsDraw(GameManager& GameManagerEntity) {
+    DrawText("Window", (GameManagerEntity.originalW - MeasureText("Window", MENUFONT)) / 2, GameManagerEntity.originalH/10 - MENUFONT / 2, MENUFONT, BLACK);
+    DrawText("Fullscreen", (GameManagerEntity.originalW - MeasureText("Fullscreen", MENUFONT*3/4)) / 4, GameManagerEntity.originalH * 2/ 10 - MENUFONT / 2, MENUFONT * 3 / 4, IsWindowState(FLAG_FULLSCREEN_MODE) ? GREEN : RED);
+    DrawText("Windowed", (GameManagerEntity.originalW - MeasureText("Windowed", MENUFONT * 3 / 4)) / 4* 3, GameManagerEntity.originalH * 2/ 10 - MENUFONT / 2, MENUFONT * 3 / 4, IsWindowState(FLAG_FULLSCREEN_MODE) ? RED : GREEN);
+    DrawText("Exit", (GameManagerEntity.originalW - MeasureText("Exit", MENUFONT)) / 2, GameManagerEntity.originalH * 7 / 8 - MENUFONT / 2, MENUFONT, BLACK);
+    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+        PlaySound(GameManagerEntity.SL.SelectSound);
         int y = GetMouseY();
         int x = GetMouseX();
-        if (y > GM.originalH * 5 / 40 && y < GM.originalH * 6 / 20) {
-            if (x < GM.originalW / 2) {
+        if (y > GameManagerEntity.originalH * 5 / 40 && y < GameManagerEntity.originalH * 6 / 20) {
+            if (x < GameManagerEntity.originalW / 2) 
                 SetWindowState(FLAG_FULLSCREEN_MODE);
-            }
-            else {
+            else 
                 ClearWindowState(FLAG_FULLSCREEN_MODE);
-            }
-            SetWindowSize(GM.originalW, GM.originalH);
+            SetWindowSize(GameManagerEntity.originalW, GameManagerEntity.originalH);
         }
-        else if (y > GM.originalH*3/4){
-            GM.sceneLabel = title;
-        }
+        else if (y > GameManagerEntity.originalH*3/4)
+            GameManagerEntity.sceneLabel = title;
     }
 }
 
-void EditorDrawer::editDraw(GameManager& GM, MapManager MM) {
-    if (GM.player.respawnTime + 2 > GetTime() && GetTime() > 2) {
-        DrawText("You didn't place any respawn points", (GM.originalW - MeasureText("You didn't place any respawn points", MENUFONT)) / 2, GM.originalH * 1 / 8 - MENUFONT / 2, MENUFONT, BLACK);
-    }
-    if (editMode) {
+void EditorDrawer::editDraw(GameManager& GameManagerEntity, MapManager MapManagerEntity) {
+    if (GameManagerEntity.player.respawnTime + 2 > GetTime() && GetTime() > 2) 
+        DrawText("You didn't place any respawn points", (GameManagerEntity.originalW - MeasureText("You didn't place any respawn points", MENUFONT)) / 2, GameManagerEntity.originalH * 1 / 8 - MENUFONT / 2, MENUFONT, BLACK);
+    if (isEditMode) {
         int x = GetMouseX();
         int y = GetMouseY();
-        drawAllObjects(GM);
-        for (int i = 0; i < spawnPointInc; i++) {
+        drawAllObjects(GameManagerEntity);
+        for (int i = 0; i < spawnPointInc; i++) 
             DrawRectangle((int) spawnPoints[i].x, (int) spawnPoints[i].y, 32, 32, PLAYERCOLOR);
-        }
-        for (int i = 0; i < GM.originalW; i += 20) {
-            DrawLine(i, 0, i, GM.originalH, { 0, 0, 0, 100 });
-        }
-        for (int i = 0; i < GM.originalH; i += 20) {
-            DrawLine(0, i, GM.originalW, i, { 0, 0, 0, 100 });
-        }
-        if (measure) {
+        for (int i = 0; i < GameManagerEntity.originalW; i += 20) 
+            DrawLine(i, 0, i, GameManagerEntity.originalH, { 0, 0, 0, 100 });
+        for (int i = 0; i < GameManagerEntity.originalH; i += 20) 
+            DrawLine(0, i, GameManagerEntity.originalW, i, { 0, 0, 0, 100 });
+        if (isMeasure) {
             DrawLineEx({ (float)x, (float)y }, { (float)x, (float)y - 120 }, 3, BLACK);
             DrawLineEx({ (float)x, (float)y }, { (float)x + 210, (float)y }, 3, BLACK);
             DrawLineEx({ (float)x, (float)y }, { (float)x - 210, (float)y }, 3, BLACK);
         }
-        if (drawBlock) {
+        if (isDrawBlock) 
             DrawCircle(prevX, prevY, 5, RED);
-        }
         if (IsKeyPressed(KEY_COMMA))
-            measure = !measure;
+            isMeasure = !isMeasure;
         else if (IsKeyPressed(KEY_ZERO)) {
             editMaterial = player;
-            drawBlock = false;
+            isDrawBlock = false;
         }
         else if (IsKeyPressed(KEY_ONE)) {
             editMaterial = items;
-            drawBlock = false;
+            isDrawBlock = false;
         }
-        else if (IsKeyPressed(KEY_TWO)) {
+        else if (IsKeyPressed(KEY_TWO)) 
             editMaterial = wall;
-        }
-        else if (IsKeyPressed(KEY_THREE)) {
+        else if (IsKeyPressed(KEY_THREE)) 
             editMaterial = damageZone;
-        }
-        else if (IsKeyPressed(KEY_FOUR)) {
+        else if (IsKeyPressed(KEY_FOUR)) 
             editMaterial = launch;
-        }
         else if (IsKeyPressed(KEY_PERIOD))
-            drawBlock = false;
+            isDrawBlock = false;
         else if (IsKeyPressed(KEY_D)) {
-            for (std::vector <DamageZone>::iterator it = GM.DamageArr.begin(); it != GM.DamageArr.end(); it++) {
+            for (std::vector <DamageZone>::iterator it = GameManagerEntity.damageArr.begin(); it != GameManagerEntity.damageArr.end(); it++) {
                 if (CheckCollisionPointRec({ (float)x, (float)y }, { (float)it->x, (float)it->y, (float)it->width, (float)it->height })) {
-                    GM.DamageArr.erase(it);
+                    GameManagerEntity.damageArr.erase(it);
                     return;
                 }
             }
-            for (std::vector <BackgroundWall>::iterator it = GM.WallArr.begin(); it != GM.WallArr.end(); it++) {
+            for (std::vector <Wall>::iterator it = GameManagerEntity.wallArr.begin(); it != GameManagerEntity.wallArr.end(); it++) {
                 if (CheckCollisionPointRec({ (float)x, (float)y }, { (float)it->x, (float)it->y, (float)it->width, (float)it->height })) {
-                    GM.WallArr.erase(it);
+                    GameManagerEntity.wallArr.erase(it);
                     return;
                 }
             }
-            for (std::vector <LaunchPad>::iterator it = GM.LaunchArr.begin(); it != GM.LaunchArr.end(); it++) {
+            for (std::vector <LaunchPad>::iterator it = GameManagerEntity.launchArr.begin(); it != GameManagerEntity.launchArr.end(); it++) {
                 if (CheckCollisionPointRec({ (float)x, (float)y }, { (float)it->x, (float)it->y, (float)it->width, (float)it->height })) {
-                    GM.LaunchArr.erase(it);
+                    GameManagerEntity.launchArr.erase(it);
                     return;
                 }
             }
@@ -306,14 +290,13 @@ void EditorDrawer::editDraw(GameManager& GM, MapManager MM) {
                     spawnPointInc--;
                 }
             }
-            if (CheckCollisionPointRec({ (float)x, (float)y }, { (float)GM.currentItem.x, (float)GM.currentItem.y, 32, 32 })) {
-                GM.currentItem.itemLabel = none;
-            }
+            if (CheckCollisionPointRec({ (float)x, (float)y }, { (float)GameManagerEntity.currentItem.x, (float)GameManagerEntity.currentItem.y, 32, 32 })) 
+                GameManagerEntity.currentItem.itemLabel = none;
         }
         else if (IsKeyPressed(KEY_Q))
-            exitView = !exitView;
+            isExitView = !isExitView;
         else if (IsKeyPressed(KEY_R)) {
-            for (std::vector <LaunchPad>::iterator it = GM.LaunchArr.begin(); it != GM.LaunchArr.end(); it++) {
+            for (std::vector <LaunchPad>::iterator it = GameManagerEntity.launchArr.begin(); it != GameManagerEntity.launchArr.end(); it++) {
                 if (CheckCollisionPointRec({ (float)x, (float)y }, { (float)it->x, (float)it->y, (float)it->width, (float)it->height })) {
                     it->rotation += 90;
                     it->rotation %= 360;
@@ -322,93 +305,85 @@ void EditorDrawer::editDraw(GameManager& GM, MapManager MM) {
             }
         }
         if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-            if (drawBlock == false) {
+            if (isDrawBlock == false) {
                 if (editMaterial != items && editMaterial != player) {
                     prevX = x;
                     prevY = y;
-                    drawBlock = true;
+                    isDrawBlock = true;
                 }
                 else {
-                    for (std::vector <DamageZone>::iterator it = GM.DamageArr.begin(); it != GM.DamageArr.end(); it++) {
-                        if (CheckCollisionRecs({ (float)x, (float)y, 32, 32 }, { (float)it->x, (float)it->y, (float)it->width, (float)it->height })) {
+                    for (std::vector <DamageZone>::iterator it = GameManagerEntity.damageArr.begin(); it != GameManagerEntity.damageArr.end(); it++) 
+                        if (CheckCollisionRecs({ (float)x, (float)y, 32, 32 }, { (float)it->x, (float)it->y, (float)it->width, (float)it->height })) 
                             return;
-                        }
-                    }
-                    for (std::vector <BackgroundWall>::iterator it = GM.WallArr.begin(); it != GM.WallArr.end(); it++) {
-                        if (CheckCollisionRecs({ (float)x + 1, (float)y + 1, 31, 31 }, { (float)it->x, (float)it->y, (float)it->width, (float)it->height })) {
+                    for (std::vector <Wall>::iterator it = GameManagerEntity.wallArr.begin(); it != GameManagerEntity.wallArr.end(); it++) 
+                        if (CheckCollisionRecs({ (float)x + 1, (float)y + 1, 31, 31 }, { (float)it->x, (float)it->y, (float)it->width, (float)it->height })) 
                             return;
-                        }
-                    }
-                    for (std::vector <LaunchPad>::iterator it = GM.LaunchArr.begin(); it != GM.LaunchArr.end(); it++) {
-                        if (CheckCollisionRecs({ (float)x + 1, (float)y + 1, 31, 31 }, { (float)it->x, (float)it->y, (float)it->width, (float)it->height })) {
+                    for (std::vector <LaunchPad>::iterator it = GameManagerEntity.launchArr.begin(); it != GameManagerEntity.launchArr.end(); it++) 
+                        if (CheckCollisionRecs({ (float)x + 1, (float)y + 1, 31, 31 }, { (float)it->x, (float)it->y, (float)it->width, (float)it->height })) 
                             return;
-                        }
-                    }
                     if (editMaterial == player && spawnPointInc < 4) {
                         spawnPoints[spawnPointInc].x = (float)x;
                         spawnPoints[spawnPointInc].y = (float)y;
                         spawnPointInc++;
                     }
-                    else if (editMaterial == items) {
-                        GM.currentItem = Items(x, y, 32, 32, 0, doubleJump);
-                    }
+                    else if (editMaterial == items) 
+                        GameManagerEntity.currentItem = Item(x, y, 32, 32, 0, doubleJump);
                 }
             }
-            else if (drawBlock == true) {
+            else if (isDrawBlock == true) {
                 switch (editMaterial) {
                 case wall:
-                    GM.WallArr.push_back(BackgroundWall(prevX > x ? x - 2 : prevX - 2, prevY > y ? y - 2 : prevY - 2, abs(x - prevX) + 4, abs(y - prevY) + 4, 0));
+                    GameManagerEntity.wallArr.push_back(Wall(prevX > x ? x - 2 : prevX - 2, prevY > y ? y - 2 : prevY - 2, abs(x - prevX) + 4, abs(y - prevY) + 4, 0));
                     break;
                 case damageZone:
-                    GM.DamageArr.push_back(DamageZone(prevX > x ? x - 2 : prevX - 2, prevY > y ? y - 2 : prevY - 2, abs(x - prevX) + 4, abs(y - prevY) + 4, 0));
+                    GameManagerEntity.damageArr.push_back(DamageZone(prevX > x ? x - 2 : prevX - 2, prevY > y ? y - 2 : prevY - 2, abs(x - prevX) + 4, abs(y - prevY) + 4, 0));
                     break;
                 case launch:
-                    GM.LaunchArr.push_back(LaunchPad(prevX > x ? x - 2 : prevX - 2, prevY > y ? y - 2 : prevY - 2, abs(x - prevX) + 4, abs(y - prevY) + 4, 0));
+                    GameManagerEntity.launchArr.push_back(LaunchPad(prevX > x ? x - 2 : prevX - 2, prevY > y ? y - 2 : prevY - 2, abs(x - prevX) + 4, abs(y - prevY) + 4, 0));
                     break;
                 }
-                drawBlock = false;
+                isDrawBlock = false;
             }
         }
     }
     else {
-        DrawText("Press e to toggle between helper and edit", GM.originalW/40, GM.originalH/24 - MENUFONT / 2, MENUFONT/2, BLACK);
-        DrawText("Press , to bring up a measure of how high player will jump", GM.originalW / 40, GM.originalH * 3 / 24 - MENUFONT / 2, MENUFONT / 2, BLACK);
-        DrawText("Press . to undo pressing the mouse", GM.originalW / 40, GM.originalH * 5 / 24 - MENUFONT / 2, MENUFONT / 2, BLACK);
-        DrawText("Press s to save the map and exit", GM.originalW / 40, GM.originalH * 7 / 24 - MENUFONT / 2, MENUFONT / 2, BLACK);
-        DrawText("Press g to exit without saving the map", GM.originalW / 40, GM.originalH * 9 / 24 - MENUFONT / 2, MENUFONT / 2, BLACK);
-        DrawText("Press d to delete a selected object", GM.originalW / 40, GM.originalH * 11 / 24 - MENUFONT / 2, MENUFONT / 2, BLACK);
-        DrawText("Press r to rotate eligible objects or cycle through items", GM.originalW / 40, GM.originalH * 13 / 24 - MENUFONT / 2, MENUFONT / 2, BLACK);
-        DrawText("Press 0 to place respawn points", GM.originalW / 40, GM.originalH * 15 / 24 - MENUFONT / 2, MENUFONT / 2, BLACK);
-        DrawText("Press 1 to place a item", GM.originalW / 40, GM.originalH * 17 / 24 - MENUFONT / 2, MENUFONT / 2, BLACK);
-        DrawText("Press 2 to choose wall", GM.originalW / 40, GM.originalH * 19 / 24 - MENUFONT / 2, MENUFONT / 2, BLACK);
-        DrawText("Press 3 to choose danger zone", GM.originalW / 40, GM.originalH * 21 / 24 - MENUFONT / 2, MENUFONT / 2, BLACK);
-        DrawText("Press 4 to choose launch pad", GM.originalW / 40, GM.originalH * 23 / 24 - MENUFONT / 2, MENUFONT / 2, BLACK);
+        DrawText("Press e to toggle between helper and edit", GameManagerEntity.originalW/40, GameManagerEntity.originalH/24 - MENUFONT / 2, MENUFONT/2, BLACK);
+        DrawText("Press , to bring up a isMeasure of how high player will jump", GameManagerEntity.originalW / 40, GameManagerEntity.originalH * 3 / 24 - MENUFONT / 2, MENUFONT / 2, BLACK);
+        DrawText("Press . to undo pressing the mouse", GameManagerEntity.originalW / 40, GameManagerEntity.originalH * 5 / 24 - MENUFONT / 2, MENUFONT / 2, BLACK);
+        DrawText("Press s to save the map and exit", GameManagerEntity.originalW / 40, GameManagerEntity.originalH * 7 / 24 - MENUFONT / 2, MENUFONT / 2, BLACK);
+        DrawText("Press g to exit without saving the map", GameManagerEntity.originalW / 40, GameManagerEntity.originalH * 9 / 24 - MENUFONT / 2, MENUFONT / 2, BLACK);
+        DrawText("Press d to delete a selected object", GameManagerEntity.originalW / 40, GameManagerEntity.originalH * 11 / 24 - MENUFONT / 2, MENUFONT / 2, BLACK);
+        DrawText("Press r to rotate eligible objects or cycle through items", GameManagerEntity.originalW / 40, GameManagerEntity.originalH * 13 / 24 - MENUFONT / 2, MENUFONT / 2, BLACK);
+        DrawText("Press 0 to place respawn points", GameManagerEntity.originalW / 40, GameManagerEntity.originalH * 15 / 24 - MENUFONT / 2, MENUFONT / 2, BLACK);
+        DrawText("Press 1 to place a item", GameManagerEntity.originalW / 40, GameManagerEntity.originalH * 17 / 24 - MENUFONT / 2, MENUFONT / 2, BLACK);
+        DrawText("Press 2 to choose wall", GameManagerEntity.originalW / 40, GameManagerEntity.originalH * 19 / 24 - MENUFONT / 2, MENUFONT / 2, BLACK);
+        DrawText("Press 3 to choose danger zone", GameManagerEntity.originalW / 40, GameManagerEntity.originalH * 21 / 24 - MENUFONT / 2, MENUFONT / 2, BLACK);
+        DrawText("Press 4 to choose launch pad", GameManagerEntity.originalW / 40, GameManagerEntity.originalH * 23 / 24 - MENUFONT / 2, MENUFONT / 2, BLACK);
     }
     if (IsKeyPressed(KEY_E))
-        editMode = !editMode;  
+        isEditMode = !isEditMode;  
     else if (IsKeyPressed(KEY_G)) {
-        GM.sceneLabel = title;
-        editMode = false;
-        drawBlock = false;
-        measure = false;
+        GameManagerEntity.sceneLabel = title;
+        isEditMode = false;
+        isDrawBlock = false;
+        isMeasure = false;
         editMaterial = wall;
         prevX = prevY = 0;
-        MM.deloadmap(GM);
+        MapManagerEntity.deloadmap(GameManagerEntity);
         spawnPointInc = 0;
     }
     else if (IsKeyPressed(KEY_S)) { 
-        if (spawnPointInc < 1) {
-            GM.player.respawnTime = GetTime();
-        }
+        if (spawnPointInc < 1) 
+            GameManagerEntity.player.respawnTime = GetTime();
         else {
-            MM.savemap(GM, spawnPoints, spawnPointInc);
-            GM.sceneLabel = title;
-            editMode = false;
-            drawBlock = false;
-            measure = false;
+            MapManagerEntity.savemap(GameManagerEntity, spawnPoints, spawnPointInc);
+            GameManagerEntity.sceneLabel = title;
+            isEditMode = false;
+            isDrawBlock = false;
+            isMeasure = false;
             editMaterial = wall;
             prevX = prevY = 0;
-            MM.deloadmap(GM);
+            MapManagerEntity.deloadmap(GameManagerEntity);
             spawnPointInc = 0;
         }
     }
@@ -416,11 +391,15 @@ void EditorDrawer::editDraw(GameManager& GM, MapManager MM) {
 }
 
 EditorDrawer::EditorDrawer() {
-    editMode = false;
-    drawBlock = false;
-    measure = false;
-    exitView = false;
+    isEditMode = false;
+    isDrawBlock = false;
+    isMeasure = false;
+    isExitView = false;
     editMaterial = wall;
     spawnPointInc = 0;
     prevX = prevY = 0;
+    for (int i = 0; i < 4; i++) {
+        spawnPoints->x = 0;
+        spawnPoints->y = 0;
+    }
 }

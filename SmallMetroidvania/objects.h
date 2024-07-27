@@ -2,7 +2,7 @@
 #include "raylib.h"
 #include <vector>
 
-typedef enum EnScene {
+typedef enum SceneLabel {
 	game = 0,
 	title,
 	edit,
@@ -11,20 +11,20 @@ typedef enum EnScene {
 	choosing,
 	menu,
 	errorLoad
-}EnScene;
+}SceneLabel;
 
-typedef enum EnLabel {
+typedef enum EntityLabel {
 	player = 0,
 	wall,
 	damageZone,
 	launch,
 	items
-}EnLabel;
+}EntityLabel;
 
-typedef enum ItemLabels {
+typedef enum ItemLabel {
 	none,
 	doubleJump
-}ItemLabels;
+}ItemLabel;
 
 typedef struct SoundLibrary {
 	Sound JumpSound;
@@ -36,60 +36,55 @@ typedef struct SoundLibrary {
 class Object {
 public:
 	int x, y, width, height, rotation;
-	EnLabel label;
+	EntityLabel label;
 };
 
-class Items : public Object {
+class Item : public Object {
 public:
-	ItemLabels itemLabel;
-	Items(int lx, int ly, int lwidth, int lheight, int lrotation, ItemLabels llabel);
-	Items();
+	ItemLabel itemLabel;
+	Item(int readX, int readY, int readWith, int readHeight, int readRotation, ItemLabel readItemLabel);
+	Item();
 };
 
-class BackgroundWall : public Object {
+class Wall : public Object {
 public:
-	BackgroundWall(int lx, int ly, int lwidth, int lheight, int lrotation);
+	Wall(int readX, int readY, int readWith, int readHeight, int readRotation);
 };
 
 class DamageZone : public Object {
 public:
-	DamageZone(int lx, int ly, int lwidth, int lheight, int lrotation);
+	DamageZone(int readX, int readY, int readWith, int readHeight, int readRotation);
 };
 
 class LaunchPad : public Object {
 public:
-	LaunchPad(int lx, int ly, int lwidth, int lheight, int lrotation);
+	LaunchPad(int readX, int readY, int readWith, int readHeight, int readRotation);
 };
 
 class Player : public Object {
-private:
-	int moveX, moveY, jumped;
-	bool isInAir;
 public:
-	Vector2 spawnPoint;
-	int allowedJumps;
-	bool respawning;
-	double respawnTime;
 	Player();
-	void setSpawn(int lx, int ly);
-	void move(std::vector <BackgroundWall> WallArr,	std::vector <DamageZone> DamageArr,	std::vector <LaunchPad> LaunchArr, Items& currentItem, SoundLibrary SL);
+	int moveX, moveY, jumped, allowedJumps;
+	bool isInAir, isRespawning;
+	double respawnTime;
+	Vector2 spawnPoint;
+	void move(std::vector <Wall> wallArr,	std::vector <DamageZone> damageArr,	std::vector <LaunchPad> launchArr, Item& currentItem, SoundLibrary SL);
 	void respawn();
-	void collisionX(std::vector <BackgroundWall> WallArr, std::vector <DamageZone> DamageArr, std::vector <LaunchPad> LaunchArr, Items& currentItem, SoundLibrary SL);
-	void collisionY(std::vector <BackgroundWall> WallArr, std::vector <DamageZone> DamageArr, std::vector <LaunchPad> LaunchArr, Items& currentItem, SoundLibrary SL);
+	void collisionX(std::vector <Wall> wallArr, std::vector <DamageZone> damageArr, std::vector <LaunchPad> launchArr, Item& currentItem, SoundLibrary SL);
+	void collisionY(std::vector <Wall> wallArr, std::vector <DamageZone> damageArr, std::vector <LaunchPad> launchArr, Item& currentItem, SoundLibrary SL);
+	void clearItem();
 };
 
 class GameManager {
 public:
-	int originalW, originalH, framerate;
-	EnScene sceneLabel;
-public:
-	Player player;
-	std::vector <BackgroundWall> WallArr;
-	std::vector <DamageZone> DamageArr;
-	std::vector <LaunchPad> LaunchArr;
-	Items currentItem;
-	SoundLibrary SL;
-	void changeScene(EnScene temp);
-	void InitSounds();
 	GameManager();
+	int originalW, originalH, framerate;
+	SceneLabel sceneLabel;
+	SoundLibrary SL;
+	Player player;
+	Item currentItem;
+	std::vector <Wall> wallArr;
+	std::vector <DamageZone> damageArr;
+	std::vector <LaunchPad> launchArr;
+	void initSounds();
 };
