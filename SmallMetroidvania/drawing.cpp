@@ -138,24 +138,28 @@ void checkBorders(GameManager& GM, MapManager& MM) {
 }
 
 void gameDraw(GameManager& GM, MapManager& MM) {
-    GM.player.move(GM.WallArr, GM.DamageArr, GM.LaunchArr, GM.currentItem ,GM.SL);
     if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
         if (MM.type == test) {
             GM.player.setSpawn(GetMouseX(), GetMouseY());
             GM.player.respawn();
         }
     }
+    if (GM.player.respawning) {
+        DrawText(TextFormat("Respawning in: %i", (int)(GM.player.respawnTime + 4 - GetTime())), (GM.originalW - MeasureText(TextFormat("Respawning in: %d", (int)(GM.player.respawnTime + 4 - GetTime())), 40)) / 2, GM.originalH / 10, 40, BLACK);
+        if (GM.player.respawnTime + 3 < GetTime()) {
+            GM.player.respawning = false;
+            GM.player.respawn();
+        }
+    }
+    else {
+        DrawRectangle(GM.player.x, GM.player.y, GM.player.width, GM.player.height, PLAYERCOLOR);
+    }
+    GM.player.move(GM.WallArr, GM.DamageArr, GM.LaunchArr, GM.currentItem ,GM.SL);
+    drawAllObjects(GM);
+    checkBorders(GM, MM);
     if (IsKeyPressed(KEY_TAB)) {
         GM.sceneLabel = menu;
     }
-    drawAllObjects(GM);
-    if (!GM.player.respawning) {
-        DrawRectangle(GM.player.x, GM.player.y, GM.player.width, GM.player.height, PLAYERCOLOR);
-    }
-    else {
-        DrawText(TextFormat("Respawning in: %i", (int)(GM.player.respawnTime + 4 - GetTime())), (GM.originalW - MeasureText(TextFormat("Respawning in: %d", (int) (GM.player.respawnTime + 4 - GetTime())), 40))/2, GM.originalH / 10, 40, BLACK);
-    }
-    checkBorders(GM, MM);
 }
 
 void titleDraw(GameManager& GM) {
@@ -178,6 +182,7 @@ void titleDraw(GameManager& GM) {
 }
 
 void menuDraw(GameManager& GM, MapManager MM) {
+    GM.player.respawnTime = GetTime();
     DrawText("Resume the game", (GM.originalW - MeasureText("Resume the game", MENUFONT)) / 2, GM.originalH/4 - MENUFONT / 2, MENUFONT, BLACK);
     DrawText("Exit to the title", (GM.originalW - MeasureText("Exit to the title", MENUFONT)) / 2, GM.originalH*3/4 - MENUFONT / 2, MENUFONT, BLACK);
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
@@ -185,6 +190,7 @@ void menuDraw(GameManager& GM, MapManager MM) {
         int y = GetMouseY();
         if (y > GM.originalH/2) {
             MM.deloadmap(GM);
+            GM.player.respawning = false;
             GM.sceneLabel = title;
         }
         else {

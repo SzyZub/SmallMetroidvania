@@ -65,13 +65,7 @@ void Player::setSpawn(int lx, int ly) {
 }
 
 void Player::move(std::vector <BackgroundWall> WallArr, std::vector <DamageZone> DamageArr, std::vector <LaunchPad> LaunchArr, Items& currentItem, SoundLibrary SL) {
-	if (respawning){
-		if (respawnTime + 3 < GetTime()) {
-			respawning = false;
-			respawn();
-		}
-	}
-	else {
+	if(!respawning) {
 		collisionX(WallArr, DamageArr, LaunchArr, currentItem, SL);
 		x += moveX;
 		collisionY(WallArr, DamageArr, LaunchArr, currentItem, SL);
@@ -113,6 +107,7 @@ void Player::respawn() {
 	moveY = 0;
 	jumped = allowedJumps;
 	rotation = 0;
+
 }
 
 void Player::collisionX(std::vector <BackgroundWall> WallArr, std::vector <DamageZone> DamageArr, std::vector <LaunchPad> LaunchArr, Items& currentItem, SoundLibrary SL) {
