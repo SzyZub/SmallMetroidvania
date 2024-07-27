@@ -65,8 +65,8 @@ class Player : public Object {
 private:
 	int moveX, moveY, jumped;
 	bool isInAir;
-	Vector2 spawnPoint;
 public:
+	Vector2 spawnPoint;
 	int allowedJumps;
 	bool respawning;
 	double respawnTime;

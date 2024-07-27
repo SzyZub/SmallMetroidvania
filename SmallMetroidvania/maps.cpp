@@ -124,3 +124,15 @@ void MapManager::savemap(GameManager temp, Vector2 spawnPoints[4], int spawnPoin
     }
     writeFile.close();
 }
+
+void saveCampaignSate(GameManager temp, MapManager MM) {
+    if (MM.type == test) return;
+    std::ofstream writeFile;
+    if (MM.type == campaign)
+        writeFile.open("Maps/Campaign/CampaignSave.txt");
+    else 
+        writeFile.open("Maps/CustomCampaign/CampaignSave.txt");
+    writeFile << temp.player.spawnPoint.x << ' ' << temp.player.spawnPoint.y << '\n';
+    writeFile << MM.row << ' ' << MM.col << '\n';
+    writeFile.close();
+}

@@ -112,8 +112,9 @@ void checkBorders(GameManager& GM, MapManager& MM) {
         MM.deloadmap(GM);
         MM.col++;
         GM.player.x = 16;
-        if(!MM.loadmap(GM))
+        if (!MM.loadmap(GM))
             GM.changeScene(errorLoad);
+        else saveCampaignSate(GM, MM);
     }
     else if (GM.player.x + 8 < 0) {
         MM.deloadmap(GM);
@@ -121,6 +122,7 @@ void checkBorders(GameManager& GM, MapManager& MM) {
         GM.player.x = GM.originalW - 16;
         if (!MM.loadmap(GM))
             GM.changeScene(errorLoad);
+        else saveCampaignSate(GM, MM);
     }
     else if (GM.player.y + 8 < 0) {
         MM.deloadmap(GM);
@@ -128,12 +130,14 @@ void checkBorders(GameManager& GM, MapManager& MM) {
         GM.player.y = GM.originalH - 16;;
         if (!MM.loadmap(GM))
             GM.changeScene(errorLoad);
+        else saveCampaignSate(GM, MM);
     } else if (GM.player.y > GM.originalH - 8) {
         MM.deloadmap(GM);
         MM.row++;
         GM.player.y = 16;
         if (!MM.loadmap(GM))
             GM.changeScene(errorLoad);
+        else saveCampaignSate(GM, MM);
     }
 }
 
@@ -188,7 +192,7 @@ void titleDraw(GameManager& GM) {
 void menuDraw(GameManager& GM, MapManager MM) {
     GM.player.respawnTime = GetTime();
     DrawText("Resume the game", (GM.originalW - MeasureText("Resume the game", MENUFONT)) / 2, GM.originalH/4 - MENUFONT / 2, MENUFONT, BLACK);
-    DrawText("Exit to the title", (GM.originalW - MeasureText("Exit to the title", MENUFONT)) / 2, GM.originalH*3/4 - MENUFONT / 2, MENUFONT, BLACK);
+    DrawText("Save & exit", (GM.originalW - MeasureText("Save & exit", MENUFONT)) / 2, GM.originalH*3/4 - MENUFONT / 2, MENUFONT, BLACK);
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
         PlaySound(GM.SL.SelectSound);
         int y = GetMouseY();
@@ -196,6 +200,7 @@ void menuDraw(GameManager& GM, MapManager MM) {
             MM.deloadmap(GM);
             GM.player.respawning = false;
             GM.sceneLabel = title;
+            saveCampaignSate(GM, MM);
         }
         else {
             GM.sceneLabel = game;

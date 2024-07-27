@@ -22,3 +22,4 @@ public:
 };
 
 void fillValues(int& val1, int& val2, int& val3, int& val4, int& val5, std::size_t& pos, std::size_t& prevPos, std::string& mapData);
+void saveCampaignSate(GameManager temp, MapManager MM);
