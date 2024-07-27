@@ -131,10 +131,11 @@ void Player::collisionX(std::vector <BackgroundWall> WallArr, std::vector <Damag
 			}
 		}
 		for (std::vector <DamageZone>::iterator it = DamageArr.begin(); it != DamageArr.end(); it++) {
-			if (CheckCollisionRecs({ (float)it->x, (float)it->y, (float)it->width, (float)it->height }, { (float)x + moveX, (float)y, (float)width, (float)height }))
+			if (CheckCollisionRecs({ (float)it->x, (float)it->y, (float)it->width, (float)it->height }, { (float)x + moveX, (float)y, (float)width, (float)height })) {
 				respawning = true;
 				respawnTime = GetTime();
 				PlaySound(SL.DeathSound);
+			}
 		}
 		for (std::vector <BackgroundWall>::iterator it = WallArr.begin(); it != WallArr.end(); it++) {
 			while (moveX) {
@@ -173,10 +174,11 @@ void Player::collisionY(std::vector <BackgroundWall> WallArr, std::vector <Damag
 			}
 		}
 		for (std::vector <DamageZone>::iterator it = DamageArr.begin(); it != DamageArr.end(); it++) {
-			if (CheckCollisionRecs({ (float)it->x, (float)it->y, (float)it->width, (float)it->height }, { (float)x, (float)y + moveY, (float)width, (float)height }))
+			if (CheckCollisionRecs({ (float)it->x, (float)it->y, (float)it->width, (float)it->height }, { (float)x, (float)y + moveY, (float)width, (float)height })) {
 				respawning = true;
 				respawnTime = GetTime();
 				PlaySound(SL.DeathSound);
+			}
 		}
 		for (std::vector <BackgroundWall>::iterator it = WallArr.begin(); it != WallArr.end(); it++) {
 			while (moveY) {
