@@ -72,26 +72,25 @@ void errorLoadDraw(GameManager& GameManagerEntity, MapManager& MapManagerEntity)
     if (IsKeyPressed(KEY_TAB)) {
         MapManagerEntity.deloadmap(GameManagerEntity);
         GameManagerEntity.sceneLabel = title;
-        PlaySound(GameManagerEntity.SL.SelectSound);
+        PlaySound(GameManagerEntity.SoundManagerEntity.SelectSound);
     }
 }
 
 void chooseMap(GameManager& GameManagerEntity, MapManager& MapManagerEntity) {
-    DrawText("Main Campaign", (GameManagerEntity.originalW-MeasureText("Main Campaign", MENUFONT))/2, GameManagerEntity.originalH/8-MENUFONT/2, MENUFONT, BLACK);
-    DrawText("Custom Campaign", (GameManagerEntity.originalW - MeasureText("Custom Campaign", MENUFONT)) / 2, GameManagerEntity.originalH * 3/8 - MENUFONT / 2, MENUFONT, BLACK);
-    DrawText("Test Map", (GameManagerEntity.originalW - MeasureText("Test Map", MENUFONT)) / 2, GameManagerEntity.originalH * 5/ 8 - MENUFONT / 2, MENUFONT, BLACK);
-    DrawText("Exit", (GameManagerEntity.originalW - MeasureText("Exit", MENUFONT)) / 2, GameManagerEntity.originalH * 7/ 8 - MENUFONT / 2, MENUFONT, BLACK);
+    DrawText("Main Campaign", (GameManagerEntity.originalW-MeasureText("Main Campaign", MENUFONT))/2, GameManagerEntity.originalH/6-MENUFONT/2, MENUFONT, BLACK);
+    DrawText("Test Map", (GameManagerEntity.originalW - MeasureText("Test Map", MENUFONT)) / 2, GameManagerEntity.originalH * 3/ 6 - MENUFONT / 2, MENUFONT, BLACK);
+    DrawText("Exit", (GameManagerEntity.originalW - MeasureText("Exit", MENUFONT)) / 2, GameManagerEntity.originalH * 5/ 6 - MENUFONT / 2, MENUFONT, BLACK);
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-        PlaySound(GameManagerEntity.SL.SelectSound);
+        PlaySound(GameManagerEntity.SoundManagerEntity.SelectSound);
         MapManagerEntity.row = 1;
         MapManagerEntity.col = 1;
         int y = GetMouseY();
-        if (y < GameManagerEntity.originalH* 3 / 4) {
+        if (y < GameManagerEntity.originalH* 5 / 6) {
             GameManagerEntity.player.clearItem();
-            if (y < GameManagerEntity.originalH / 4) 
+            if (y < GameManagerEntity.originalH / 3) {
                 MapManagerEntity.campaginType = campaign;
-            else if (y < GameManagerEntity.originalH / 2) 
-                MapManagerEntity.campaginType = customCampaign;
+                MapManagerEntity.loadCampaignState(GameManagerEntity);
+            }
             else
                 MapManagerEntity.campaginType = test;
             if (MapManagerEntity.loadmap(GameManagerEntity)) {
@@ -106,35 +105,43 @@ void chooseMap(GameManager& GameManagerEntity, MapManager& MapManagerEntity) {
 
 void checkBorders(GameManager& GameManagerEntity, MapManager& MapManagerEntity) {
     if (GameManagerEntity.player.x > GameManagerEntity.originalW - 8) {
+        int tempAllowedJump = GameManagerEntity.player.allowedJumps;
         MapManagerEntity.deloadmap(GameManagerEntity);
+        GameManagerEntity.player.allowedJumps = tempAllowedJump;
         MapManagerEntity.col++;
         GameManagerEntity.player.x = 16;
         if (!MapManagerEntity.loadmap(GameManagerEntity))
             GameManagerEntity.sceneLabel = errorLoad;
-        else saveCampaignSate(GameManagerEntity, MapManagerEntity);
+        else saveCampaignState(GameManagerEntity, MapManagerEntity);
     }
     else if (GameManagerEntity.player.x + 8 < 0) {
+        int tempAllowedJump = GameManagerEntity.player.allowedJumps;
         MapManagerEntity.deloadmap(GameManagerEntity);
+        GameManagerEntity.player.allowedJumps = tempAllowedJump;
         MapManagerEntity.col--;
         GameManagerEntity.player.x = GameManagerEntity.originalW - 16;
         if (!MapManagerEntity.loadmap(GameManagerEntity))
             GameManagerEntity.sceneLabel = errorLoad;
-        else saveCampaignSate(GameManagerEntity, MapManagerEntity);
+        else saveCampaignState(GameManagerEntity, MapManagerEntity);
     }
     else if (GameManagerEntity.player.y + 8 < 0) {
+        int tempAllowedJump = GameManagerEntity.player.allowedJumps;
         MapManagerEntity.deloadmap(GameManagerEntity);
+        GameManagerEntity.player.allowedJumps = tempAllowedJump;
         MapManagerEntity.row--;
-        GameManagerEntity.player.y = GameManagerEntity.originalH - 16;;
+        GameManagerEntity.player.y = GameManagerEntity.originalH - 16;
         if (!MapManagerEntity.loadmap(GameManagerEntity))
             GameManagerEntity.sceneLabel = errorLoad;
-        else saveCampaignSate(GameManagerEntity, MapManagerEntity);
+        else saveCampaignState(GameManagerEntity, MapManagerEntity);
     } else if (GameManagerEntity.player.y > GameManagerEntity.originalH - 8) {
+        int tempAllowedJump = GameManagerEntity.player.allowedJumps;
         MapManagerEntity.deloadmap(GameManagerEntity);
+        MapManagerEntity.loadCampaignState(GameManagerEntity);
         MapManagerEntity.row++;
         GameManagerEntity.player.y = 16;
         if (!MapManagerEntity.loadmap(GameManagerEntity))
             GameManagerEntity.sceneLabel = errorLoad;
-        else saveCampaignSate(GameManagerEntity, MapManagerEntity);
+        else saveCampaignState(GameManagerEntity, MapManagerEntity);
     }
 }
 
@@ -154,12 +161,13 @@ void gameDraw(GameManager& GameManagerEntity, MapManager& MapManagerEntity) {
             GameManagerEntity.player.isRespawning = false;
             GameManagerEntity.player.respawn();
             MapManagerEntity.deloadmap(GameManagerEntity);
+            MapManagerEntity.loadCampaignState(GameManagerEntity);
             MapManagerEntity.loadmap(GameManagerEntity);
         }
     }
     else 
         DrawRectangle(GameManagerEntity.player.x, GameManagerEntity.player.y, GameManagerEntity.player.width, GameManagerEntity.player.height, PLAYERCOLOR);
-    GameManagerEntity.player.move(GameManagerEntity.wallArr, GameManagerEntity.damageArr, GameManagerEntity.launchArr, GameManagerEntity.currentItem ,GameManagerEntity.SL);
+    GameManagerEntity.player.move(GameManagerEntity.wallArr, GameManagerEntity.damageArr, GameManagerEntity.launchArr, GameManagerEntity.currentItem ,GameManagerEntity.SoundManagerEntity);
     drawAllObjects(GameManagerEntity);
     checkBorders(GameManagerEntity, MapManagerEntity);
     if (IsKeyPressed(KEY_TAB)) 
@@ -172,12 +180,14 @@ void titleDraw(GameManager& GameManagerEntity) {
     DrawText("Options", (GameManagerEntity.originalW - MeasureText("Options", MENUFONT)) / 2, GameManagerEntity.originalH * 5 / 8 - MENUFONT / 2, MENUFONT, BLACK);
     DrawText("Exit", (GameManagerEntity.originalW - MeasureText("Exit", MENUFONT)) / 2, GameManagerEntity.originalH * 7 / 8 - MENUFONT / 2, MENUFONT, BLACK);
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-        PlaySound(GameManagerEntity.SL.SelectSound);
+        PlaySound(GameManagerEntity.SoundManagerEntity.SelectSound);
         int y = GetMouseY();
         if (y < GameManagerEntity.originalH / 4) 
             GameManagerEntity.sceneLabel = choosing;       
-        else if (y < GameManagerEntity.originalH /2) 
-            GameManagerEntity.sceneLabel = edit;      
+        else if (y < GameManagerEntity.originalH / 2) {
+            GameManagerEntity.sceneLabel = edit;
+            GameManagerEntity.player.respawnTime = 0;
+        }
         else if (y < GameManagerEntity.originalH * 3 / 4) 
             GameManagerEntity.sceneLabel = options;      
         else 
@@ -190,13 +200,13 @@ void menuDraw(GameManager& GameManagerEntity, MapManager MapManagerEntity) {
     DrawText("Resume the game", (GameManagerEntity.originalW - MeasureText("Resume the game", MENUFONT)) / 2, GameManagerEntity.originalH/4 - MENUFONT / 2, MENUFONT, BLACK);
     DrawText("Save & exit", (GameManagerEntity.originalW - MeasureText("Save & exit", MENUFONT)) / 2, GameManagerEntity.originalH*3/4 - MENUFONT / 2, MENUFONT, BLACK);
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-        PlaySound(GameManagerEntity.SL.SelectSound);
+        PlaySound(GameManagerEntity.SoundManagerEntity.SelectSound);
         int y = GetMouseY();
         if (y > GameManagerEntity.originalH/2) {
+            saveCampaignState(GameManagerEntity, MapManagerEntity);
             MapManagerEntity.deloadmap(GameManagerEntity);
             GameManagerEntity.player.isRespawning = false;
             GameManagerEntity.sceneLabel = title;
-            saveCampaignSate(GameManagerEntity, MapManagerEntity);
         }
         else 
             GameManagerEntity.sceneLabel = game;
@@ -207,17 +217,25 @@ void optionsDraw(GameManager& GameManagerEntity) {
     DrawText("Window", (GameManagerEntity.originalW - MeasureText("Window", MENUFONT)) / 2, GameManagerEntity.originalH/10 - MENUFONT / 2, MENUFONT, BLACK);
     DrawText("Fullscreen", (GameManagerEntity.originalW - MeasureText("Fullscreen", MENUFONT*3/4)) / 4, GameManagerEntity.originalH * 2/ 10 - MENUFONT / 2, MENUFONT * 3 / 4, IsWindowState(FLAG_FULLSCREEN_MODE) ? GREEN : RED);
     DrawText("Windowed", (GameManagerEntity.originalW - MeasureText("Windowed", MENUFONT * 3 / 4)) / 4* 3, GameManagerEntity.originalH * 2/ 10 - MENUFONT / 2, MENUFONT * 3 / 4, IsWindowState(FLAG_FULLSCREEN_MODE) ? RED : GREEN);
+    DrawText("Sound Volume", (GameManagerEntity.originalW - MeasureText("Sound Volum", MENUFONT)) / 2, GameManagerEntity.originalH * 3 / 10 - MENUFONT / 2, MENUFONT, BLACK);
+    for (int i = 0; i <= 10; i++) {
+        DrawText(TextFormat("%i", i), (GameManagerEntity.originalW - MeasureText(TextFormat("%i", i), MENUFONT * 3 / 4))*(i + 1)/12, GameManagerEntity.originalH * 2 / 5 - MENUFONT / 2, MENUFONT*3/4, GameManagerEntity.SoundManagerEntity.Volume == i ? GREEN : BLACK);
+    }
     DrawText("Exit", (GameManagerEntity.originalW - MeasureText("Exit", MENUFONT)) / 2, GameManagerEntity.originalH * 7 / 8 - MENUFONT / 2, MENUFONT, BLACK);
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-        PlaySound(GameManagerEntity.SL.SelectSound);
+        PlaySound(GameManagerEntity.SoundManagerEntity.SelectSound);
         int y = GetMouseY();
         int x = GetMouseX();
-        if (y > GameManagerEntity.originalH * 5 / 40 && y < GameManagerEntity.originalH * 6 / 20) {
+        if (y > GameManagerEntity.originalH * 5 / 40 && y < GameManagerEntity.originalH * 9 / 40) {
             if (x < GameManagerEntity.originalW / 2) 
                 SetWindowState(FLAG_FULLSCREEN_MODE);
             else 
                 ClearWindowState(FLAG_FULLSCREEN_MODE);
             SetWindowSize(GameManagerEntity.originalW, GameManagerEntity.originalH);
+        }
+        else if (y > GameManagerEntity.originalH * 7 / 20 && y < GameManagerEntity.originalH * 17/40 && x > GameManagerEntity.originalW * 1 / 24 && x < GameManagerEntity.originalW * 23 / 24) {
+            GameManagerEntity.SoundManagerEntity.Volume = (x + GameManagerEntity.originalW * 1 / 24) * 12 / GameManagerEntity.originalW - 1;
+            SetMasterVolume((float) GameManagerEntity.SoundManagerEntity.Volume / 10);
         }
         else if (y > GameManagerEntity.originalH*3/4)
             GameManagerEntity.sceneLabel = title;
@@ -348,7 +366,7 @@ void EditorDrawer::editDraw(GameManager& GameManagerEntity, MapManager MapManage
     }
     else {
         DrawText("Press e to toggle between helper and edit", GameManagerEntity.originalW/40, GameManagerEntity.originalH/24 - MENUFONT / 2, MENUFONT/2, BLACK);
-        DrawText("Press , to bring up a isMeasure of how high player will jump", GameManagerEntity.originalW / 40, GameManagerEntity.originalH * 3 / 24 - MENUFONT / 2, MENUFONT / 2, BLACK);
+        DrawText("Press , to bring up a measure of how high player will jump", GameManagerEntity.originalW / 40, GameManagerEntity.originalH * 3 / 24 - MENUFONT / 2, MENUFONT / 2, BLACK);
         DrawText("Press . to undo pressing the mouse", GameManagerEntity.originalW / 40, GameManagerEntity.originalH * 5 / 24 - MENUFONT / 2, MENUFONT / 2, BLACK);
         DrawText("Press s to save the map and exit", GameManagerEntity.originalW / 40, GameManagerEntity.originalH * 7 / 24 - MENUFONT / 2, MENUFONT / 2, BLACK);
         DrawText("Press g to exit without saving the map", GameManagerEntity.originalW / 40, GameManagerEntity.originalH * 9 / 24 - MENUFONT / 2, MENUFONT / 2, BLACK);

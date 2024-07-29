@@ -11,6 +11,7 @@ void MapManager::deloadmap(GameManager& GameManagerEntity) {
     GameManagerEntity.damageArr.clear();
     GameManagerEntity.launchArr.clear();
     GameManagerEntity.currentItem.itemLabel = none;
+    GameManagerEntity.player.clearItem();
 }
 
 bool MapManager::loadmap(GameManager& GameManagerEntity) {
@@ -22,10 +23,6 @@ bool MapManager::loadmap(GameManager& GameManagerEntity) {
     std::ifstream readFile;
     if (campaginType == campaign) {
         std::string mapName = "Maps/Campaign/" + std::to_string(row) + std::to_string(col) + ".txt";
-        readFile.open(mapName);
-    }
-    else if (campaginType == customCampaign) {
-        std::string mapName = "Maps/Custom/" + std::to_string(row) + std::to_string(col) + ".txt";
         readFile.open(mapName);
     }
     else
@@ -67,13 +64,13 @@ bool MapManager::loadmap(GameManager& GameManagerEntity) {
             break;
         }
     }
+    readFile.close();
     int bestSpawn = 0;
     for (int i = 1; i < spawnPointInc; i++) 
         if (sqrt(spawnPoints[bestSpawn].x * spawnPoints[bestSpawn].x + spawnPoints[bestSpawn].y * spawnPoints[bestSpawn].y) < sqrt(spawnPoints[i].x * spawnPoints[i].x + spawnPoints[i].y * spawnPoints[i].y)) 
             bestSpawn = i;
     GameManagerEntity.player.spawnPoint.x = (float)spawnPoints->x;
     GameManagerEntity.player.spawnPoint.y = (float)spawnPoints->y;
-    readFile.close();
     return true;
 }
 
@@ -115,16 +112,52 @@ void MapManager::savemap(GameManager GameManagerEntity, Vector2 spawnPoints[4], 
     writeFile.close();
 }
 
-void saveCampaignSate(GameManager GameManagerEntity, MapManager MapManagerEntity) {
+void saveCampaignState(GameManager GameManagerEntity, MapManager MapManagerEntity) {
     if (MapManagerEntity.campaginType == test) 
         return;
     std::ofstream writeFile;
     if (MapManagerEntity.campaginType == campaign)
         writeFile.open("Maps/Campaign/CampaignSave.txt");
-    else 
-        writeFile.open("Maps/CustomCampaign/CampaignSave.txt");
     writeFile << GameManagerEntity.player.spawnPoint.x << ' ' << GameManagerEntity.player.spawnPoint.y << '\n';
     writeFile << MapManagerEntity.row << ' ' << MapManagerEntity.col << '\n';
     writeFile << GameManagerEntity.player.allowedJumps << '\n';
     writeFile.close();
+}
+
+void MapManager::loadCampaignState(GameManager& GameManagerEntity) {
+    std::string mapData;
+    std::ifstream readFile;
+    int tempValue;
+    if (campaginType == test)
+        return;
+    if (campaginType == campaign) 
+        readFile.open("Maps/Campaign/CampaignSave.txt");
+    if (!readFile.good()) 
+        return;
+    std::getline(readFile, mapData);
+    std::size_t pos = mapData.find(' ');
+    std::size_t prevPos = 0;
+    pos = mapData.find(' ', prevPos);
+    tempValue = std::stoi(mapData.substr(prevPos, pos));
+    prevPos = pos + 1;
+    GameManagerEntity.player.spawnPoint.x = tempValue;
+    pos = mapData.find(' ', prevPos);
+    tempValue = std::stoi(mapData.substr(prevPos, pos));
+    prevPos = pos + 1;
+    GameManagerEntity.player.spawnPoint.y = tempValue;
+    std::getline(readFile, mapData);
+    pos = mapData.find(' ', prevPos);
+    tempValue = std::stoi(mapData.substr(prevPos, pos));
+    prevPos = pos + 1;
+    row = tempValue;
+    pos = mapData.find(' ', prevPos);
+    tempValue = std::stoi(mapData.substr(prevPos, pos));
+    prevPos = pos + 1;
+    col = tempValue;
+    std::getline(readFile, mapData);
+    pos = mapData.find(' ', prevPos);
+    tempValue = std::stoi(mapData.substr(prevPos, pos));
+    prevPos = pos + 1;
+    GameManagerEntity.player.allowedJumps = tempValue;
+    readFile.close();
 }

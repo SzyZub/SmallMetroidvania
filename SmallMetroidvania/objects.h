@@ -31,6 +31,7 @@ typedef struct SoundLibrary {
 	Sound DeathSound;
 	Sound LaunchSound;
 	Sound SelectSound;
+	int Volume;
 }SoundLibrary;
 
 class Object {
@@ -68,10 +69,10 @@ public:
 	bool isInAir, isRespawning;
 	double respawnTime;
 	Vector2 spawnPoint;
-	void move(std::vector <Wall> wallArr,	std::vector <DamageZone> damageArr,	std::vector <LaunchPad> launchArr, Item& currentItem, SoundLibrary SL);
+	void move(std::vector <Wall> wallArr,	std::vector <DamageZone> damageArr,	std::vector <LaunchPad> launchArr, Item& currentItem, SoundLibrary SoundManagerEntity);
 	void respawn();
-	void collisionX(std::vector <Wall> wallArr, std::vector <DamageZone> damageArr, std::vector <LaunchPad> launchArr, Item& currentItem, SoundLibrary SL);
-	void collisionY(std::vector <Wall> wallArr, std::vector <DamageZone> damageArr, std::vector <LaunchPad> launchArr, Item& currentItem, SoundLibrary SL);
+	void collisionX(std::vector <Wall> wallArr, std::vector <DamageZone> damageArr, std::vector <LaunchPad> launchArr, Item& currentItem, SoundLibrary SoundManagerEntity);
+	void collisionY(std::vector <Wall> wallArr, std::vector <DamageZone> damageArr, std::vector <LaunchPad> launchArr, Item& currentItem, SoundLibrary SoundManagerEntity);
 	void clearItem();
 };
 
@@ -80,7 +81,7 @@ public:
 	GameManager();
 	int originalW, originalH, framerate;
 	SceneLabel sceneLabel;
-	SoundLibrary SL;
+	SoundLibrary SoundManagerEntity;
 	Player player;
 	Item currentItem;
 	std::vector <Wall> wallArr;

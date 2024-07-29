@@ -8,12 +8,10 @@ int main(void)
     GameManagerEntity.initSounds();
     while (!WindowShouldClose() && GameManagerEntity.sceneLabel != ext)    
         mainDraw(GameManagerEntity, MapManagerEntity);
-    CloseWindow(); 
+    while (IsSoundPlaying(GameManagerEntity.SoundManagerEntity.SelectSound));
+    CloseWindow();
     return 0;
 }
 
 // TODO:: 
-//LOAD CAMPAIGN STATE WHEN ENTERING ONE
-//ADD VOLUME SLIDER
-//REMOVE SOUND WHEN EXITING THE GAME
 //FIX BEING STUCK IN WALL WHEN TRANSITIONING BETWEEN MAPS

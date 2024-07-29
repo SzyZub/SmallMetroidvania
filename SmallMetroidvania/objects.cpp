@@ -59,11 +59,11 @@ Player::Player() {
 	respawnTime = 0;
 }
 
-void Player::move(std::vector <Wall> wallArr, std::vector <DamageZone> damageArr, std::vector <LaunchPad> launchArr, Item& currentItem, SoundLibrary SL) {
+void Player::move(std::vector <Wall> wallArr, std::vector <DamageZone> damageArr, std::vector <LaunchPad> launchArr, Item& currentItem, SoundLibrary SoundManagerEntity) {
 	if(!isRespawning) {
-		collisionX(wallArr, damageArr, launchArr, currentItem, SL);
+		collisionX(wallArr, damageArr, launchArr, currentItem, SoundManagerEntity);
 		x += moveX;
-		collisionY(wallArr, damageArr, launchArr, currentItem, SL);
+		collisionY(wallArr, damageArr, launchArr, currentItem, SoundManagerEntity);
 		y += moveY;
 		if (IsKeyDown(KEY_RIGHT) && moveX < 6)
 			moveX += 3;
@@ -77,18 +77,18 @@ void Player::move(std::vector <Wall> wallArr, std::vector <DamageZone> damageArr
 		if (IsKeyDown(KEY_R)) {			
 			isRespawning = true;
 			respawnTime = GetTime();
-			PlaySound(SL.DeathSound);
+			PlaySound(SoundManagerEntity.DeathSound);
 		}
 		if ((IsKeyPressed(KEY_UP) || IsKeyPressed(KEY_SPACE)) && jumped < allowedJumps) {
 			if (isInAir && allowedJumps != 1) {
 				jumped = 2;
 				moveY = -15;
-				PlaySound(SL.JumpSound);
+				PlaySound(SoundManagerEntity.JumpSound);
 			}
 			else if (!isInAir) {
 				jumped++;
 				moveY = -15;
-				PlaySound(SL.JumpSound);
+				PlaySound(SoundManagerEntity.JumpSound);
 			}
 		}
 	}
@@ -103,7 +103,7 @@ void Player::respawn() {
 	jumped = allowedJumps;
 }
 
-void Player::collisionX(std::vector <Wall> wallArr, std::vector <DamageZone> damageArr, std::vector <LaunchPad> launchArr, Item& currentItem, SoundLibrary SL) {
+void Player::collisionX(std::vector <Wall> wallArr, std::vector <DamageZone> damageArr, std::vector <LaunchPad> launchArr, Item& currentItem, SoundLibrary SoundManagerEntity) {
 	if (moveX != 0) {
 		if (CheckCollisionPointRec({ (float)x, (float)y }, { (float)currentItem.x, (float)currentItem.y, 32, 32 })) {
 			currentItem.itemLabel = none;
@@ -115,14 +115,14 @@ void Player::collisionX(std::vector <Wall> wallArr, std::vector <DamageZone> dam
 					moveX = -30;
 				else if (it->rotation == 270)
 					moveX = 30;
-				PlaySound(SL.LaunchSound);
+				PlaySound(SoundManagerEntity.LaunchSound);
 			}
 		}
 		for (std::vector <DamageZone>::iterator it = damageArr.begin(); it != damageArr.end(); it++) {
 			if (CheckCollisionRecs({ (float)it->x, (float)it->y, (float)it->width, (float)it->height }, { (float)x + moveX, (float)y, (float)width, (float)height })) {
 				isRespawning = true;
 				respawnTime = GetTime();
-				PlaySound(SL.DeathSound);
+				PlaySound(SoundManagerEntity.DeathSound);
 			}
 		}
 		for (std::vector <Wall>::iterator it = wallArr.begin(); it != wallArr.end(); it++) {
@@ -142,7 +142,7 @@ void Player::collisionX(std::vector <Wall> wallArr, std::vector <DamageZone> dam
 	}
 }
 
-void Player::collisionY(std::vector <Wall> wallArr, std::vector <DamageZone> damageArr, std::vector <LaunchPad> launchArr, Item& currentItem, SoundLibrary SL) {
+void Player::collisionY(std::vector <Wall> wallArr, std::vector <DamageZone> damageArr, std::vector <LaunchPad> launchArr, Item& currentItem, SoundLibrary SoundManagerEntity) {
 	isInAir = true;;
 	if (moveY != 0) {
 		if (CheckCollisionRecs({ (float)x, (float)y, 32, 32 }, { (float)currentItem.x, (float)currentItem.y, 32, 32 })) {
@@ -157,14 +157,14 @@ void Player::collisionY(std::vector <Wall> wallArr, std::vector <DamageZone> dam
 					moveX = -30;
 				else if (it->rotation == 270)
 					moveX = 30;
-				PlaySound(SL.LaunchSound);
+				PlaySound(SoundManagerEntity.LaunchSound);
 			}
 		}
 		for (std::vector <DamageZone>::iterator it = damageArr.begin(); it != damageArr.end(); it++) {
 			if (CheckCollisionRecs({ (float)it->x, (float)it->y, (float)it->width, (float)it->height }, { (float)x, (float)y + moveY, (float)width, (float)height })) {
 				isRespawning = true;
 				respawnTime = GetTime();
-				PlaySound(SL.DeathSound);
+				PlaySound(SoundManagerEntity.DeathSound);
 			}
 		}
 		for (std::vector <Wall>::iterator it = wallArr.begin(); it != wallArr.end(); it++) {
@@ -196,12 +196,13 @@ GameManager::GameManager() {
 	framerate = 60;
 	sceneLabel = title;
 	currentItem = Item();
-	SL = { NULL };
+	SoundManagerEntity = { NULL };
 }
 
 void GameManager::initSounds() {
-	SL.JumpSound = LoadSound("Sounds/jump.wav");
-	SL.DeathSound = LoadSound("Sounds/death.wav");
-	SL.LaunchSound = LoadSound("Sounds/launch.wav");
-	SL.SelectSound = LoadSound("Sounds/select.wav");
+	SoundManagerEntity.JumpSound = LoadSound("Sounds/jump.wav");
+	SoundManagerEntity.DeathSound = LoadSound("Sounds/death.wav");
+	SoundManagerEntity.LaunchSound = LoadSound("Sounds/launch.wav");
+	SoundManagerEntity.SelectSound = LoadSound("Sounds/select.wav");
+	SoundManagerEntity.Volume = 10;
 }
