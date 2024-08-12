@@ -12,6 +12,3 @@ int main(void)
     CloseWindow();
     return 0;
 }
-
-// TODO:: 
-//FIX BEING STUCK IN WALL WHEN TRANSITIONING BETWEEN MAPS

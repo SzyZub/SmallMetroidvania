@@ -103,45 +103,45 @@ void chooseMap(GameManager& GameManagerEntity, MapManager& MapManagerEntity) {
     }
 }
 
-void checkBorders(GameManager& GameManagerEntity, MapManager& MapManagerEntity) {
-    if (GameManagerEntity.player.x > GameManagerEntity.originalW - 8) {
-        int tempAllowedJump = GameManagerEntity.player.allowedJumps;
-        MapManagerEntity.deloadmap(GameManagerEntity);
-        GameManagerEntity.player.allowedJumps = tempAllowedJump;
+bool checkBorders(GameManager& GameManagerEntity, MapManager& MapManagerEntity) {
+    if (!(GameManagerEntity.player.x > GameManagerEntity.originalW - 8) && !(GameManagerEntity.player.x + 8 < 0) && !(GameManagerEntity.player.y + 8 < 0) && !(GameManagerEntity.player.y > GameManagerEntity.originalH - 8))
+        return false;
+    int tempAllowedJump = GameManagerEntity.player.allowedJumps;
+    MapManagerEntity.deloadmap(GameManagerEntity);
+    GameManagerEntity.player.allowedJumps = tempAllowedJump;
+    if (GameManagerEntity.player.x > GameManagerEntity.originalW-16) {
         MapManagerEntity.col++;
-        GameManagerEntity.player.x = 16;
-        if (!MapManagerEntity.loadmap(GameManagerEntity))
-            GameManagerEntity.sceneLabel = errorLoad;
-        else saveCampaignState(GameManagerEntity, MapManagerEntity);
+        GameManagerEntity.player.x = -16;
     }
-    else if (GameManagerEntity.player.x + 8 < 0) {
-        int tempAllowedJump = GameManagerEntity.player.allowedJumps;
-        MapManagerEntity.deloadmap(GameManagerEntity);
-        GameManagerEntity.player.allowedJumps = tempAllowedJump;
+    else if (GameManagerEntity.player.x < -GameManagerEntity.player.width) {
         MapManagerEntity.col--;
         GameManagerEntity.player.x = GameManagerEntity.originalW - 16;
-        if (!MapManagerEntity.loadmap(GameManagerEntity))
-            GameManagerEntity.sceneLabel = errorLoad;
-        else saveCampaignState(GameManagerEntity, MapManagerEntity);
     }
-    else if (GameManagerEntity.player.y + 8 < 0) {
-        int tempAllowedJump = GameManagerEntity.player.allowedJumps;
-        MapManagerEntity.deloadmap(GameManagerEntity);
-        GameManagerEntity.player.allowedJumps = tempAllowedJump;
+    else if (GameManagerEntity.player.y < -GameManagerEntity.player.height) {
         MapManagerEntity.row--;
         GameManagerEntity.player.y = GameManagerEntity.originalH - 16;
-        if (!MapManagerEntity.loadmap(GameManagerEntity))
-            GameManagerEntity.sceneLabel = errorLoad;
-        else saveCampaignState(GameManagerEntity, MapManagerEntity);
-    } else if (GameManagerEntity.player.y > GameManagerEntity.originalH - 8) {
-        int tempAllowedJump = GameManagerEntity.player.allowedJumps;
-        MapManagerEntity.deloadmap(GameManagerEntity);
-        MapManagerEntity.loadCampaignState(GameManagerEntity);
+    } else if (GameManagerEntity.player.y > GameManagerEntity.originalH - 16) {
         MapManagerEntity.row++;
         GameManagerEntity.player.y = 16;
-        if (!MapManagerEntity.loadmap(GameManagerEntity))
-            GameManagerEntity.sceneLabel = errorLoad;
-        else saveCampaignState(GameManagerEntity, MapManagerEntity);
+    }
+    if (!MapManagerEntity.loadmap(GameManagerEntity))
+        GameManagerEntity.sceneLabel = errorLoad;
+    else saveCampaignState(GameManagerEntity, MapManagerEntity);
+    return true;
+}
+
+void unstuck(GameManager& GameManagerEntity) {
+    for (std::vector <Wall>::iterator it = GameManagerEntity.wallArr.begin(); it != GameManagerEntity.wallArr.end(); it++) {
+        while (CheckCollisionRecs({ (float)GameManagerEntity.player.x, (float)GameManagerEntity.player.y, (float)GameManagerEntity.player.width, (float)GameManagerEntity.player.height }, { (float)it->x, (float)it->y, (float)it->width, (float)it->height })) {
+            if (GameManagerEntity.player.x + GameManagerEntity.player.width / 2 < it->x + it->width / 2)
+                GameManagerEntity.player.x--;
+            else
+                GameManagerEntity.player.x++;
+            if (GameManagerEntity.player.y + GameManagerEntity.player.height / 2 < it->y + it->height / 2)
+                GameManagerEntity.player.y--;
+            else
+                GameManagerEntity.player.y++;
+        }
     }
 }
 
@@ -167,9 +167,11 @@ void gameDraw(GameManager& GameManagerEntity, MapManager& MapManagerEntity) {
     }
     else 
         DrawRectangle(GameManagerEntity.player.x, GameManagerEntity.player.y, GameManagerEntity.player.width, GameManagerEntity.player.height, PLAYERCOLOR);
+    if (checkBorders(GameManagerEntity, MapManagerEntity)) {
+        unstuck(GameManagerEntity);
+    }
     GameManagerEntity.player.move(GameManagerEntity.wallArr, GameManagerEntity.damageArr, GameManagerEntity.launchArr, GameManagerEntity.currentItem ,GameManagerEntity.SoundManagerEntity);
     drawAllObjects(GameManagerEntity);
-    checkBorders(GameManagerEntity, MapManagerEntity);
     if (IsKeyPressed(KEY_TAB)) 
         GameManagerEntity.sceneLabel = menu;
 }
