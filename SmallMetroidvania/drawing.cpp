@@ -149,15 +149,17 @@ void unstuck(GameManager& GameManagerEntity) {
 }
 
 void gameDraw(GameManager& GameManagerEntity, MapManager& MapManagerEntity) {
-    if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-        if (MapManagerEntity.campaginType == test) {
+    if (MapManagerEntity.campaginType == test) {
+        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
             GameManagerEntity.player.spawnPoint.x = (float)GetMouseX();
             GameManagerEntity.player.spawnPoint.y = (float)GetMouseY();
             GameManagerEntity.player.respawn();
-            MapManagerEntity.deloadmap(GameManagerEntity);
             MapManagerEntity.loadmap(GameManagerEntity);
         }
+        if (IsKeyPressed(KEY_ONE))
+            GameManagerEntity.player.allowedJumps = 2;
     }
+
     if (GameManagerEntity.player.isRespawning) {
         DrawText(TextFormat("Respawning in: %i", (int)(GameManagerEntity.player.respawnTime + 4 - GetTime())), (GameManagerEntity.originalW - MeasureText(TextFormat("Respawning in: %d", (int)(GameManagerEntity.player.respawnTime + 4 - GetTime())), 40)) / 2, GameManagerEntity.originalH / 10, 40, BLACK);
         if (GameManagerEntity.player.respawnTime + 3 < GetTime()) {
