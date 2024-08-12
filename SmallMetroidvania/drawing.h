@@ -22,6 +22,7 @@ void gameDraw(GameManager& GameManagerEntity, MapManager& MapManagerEntity);
 void titleDraw(GameManager& GameManagerEntity);
 void menuDraw(GameManager& GameManagerEntity, MapManager MapManagerEntity);
 void optionsDraw(GameManager& GameManagerEntity);
+void yesOrNoDraw(GameManager& GameManagerEntity);
 
 class EditorDrawer {
 private:

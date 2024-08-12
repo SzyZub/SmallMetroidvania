@@ -10,7 +10,8 @@ typedef enum SceneLabel {
 	ext,
 	choosing,
 	menu,
-	errorLoad
+	errorLoad,
+	choice
 }SceneLabel;
 
 typedef enum EntityLabel {

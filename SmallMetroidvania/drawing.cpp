@@ -58,6 +58,9 @@ void mainDraw(GameManager& GameManagerEntity, MapManager& MapManagerEntity) {
     case errorLoad:
         errorLoadDraw(GameManagerEntity, MapManagerEntity);
         break;
+    case choice:
+        yesOrNoDraw(GameManagerEntity);
+        break;
     case edit:
         static EditorDrawer draw;
         draw.editDraw(GameManagerEntity, MapManagerEntity);
@@ -219,11 +222,12 @@ void optionsDraw(GameManager& GameManagerEntity) {
     DrawText("Window", (GameManagerEntity.originalW - MeasureText("Window", MENUFONT)) / 2, GameManagerEntity.originalH/10 - MENUFONT / 2, MENUFONT, BLACK);
     DrawText("Fullscreen", (GameManagerEntity.originalW - MeasureText("Fullscreen", MENUFONT*3/4)) / 4, GameManagerEntity.originalH * 2/ 10 - MENUFONT / 2, MENUFONT * 3 / 4, IsWindowState(FLAG_FULLSCREEN_MODE) ? GREEN : RED);
     DrawText("Windowed", (GameManagerEntity.originalW - MeasureText("Windowed", MENUFONT * 3 / 4)) / 4* 3, GameManagerEntity.originalH * 2/ 10 - MENUFONT / 2, MENUFONT * 3 / 4, IsWindowState(FLAG_FULLSCREEN_MODE) ? RED : GREEN);
-    DrawText("Sound Volume", (GameManagerEntity.originalW - MeasureText("Sound Volum", MENUFONT)) / 2, GameManagerEntity.originalH * 3 / 10 - MENUFONT / 2, MENUFONT, BLACK);
+    DrawText("Sound Volume", (GameManagerEntity.originalW - MeasureText("Sound Volume", MENUFONT)) / 2, GameManagerEntity.originalH * 3 / 10 - MENUFONT / 2, MENUFONT, BLACK);
     for (int i = 0; i <= 10; i++) {
         DrawText(TextFormat("%i", i), (GameManagerEntity.originalW - MeasureText(TextFormat("%i", i), MENUFONT * 3 / 4))*(i + 1)/12, GameManagerEntity.originalH * 2 / 5 - MENUFONT / 2, MENUFONT*3/4, GameManagerEntity.SoundManagerEntity.Volume == i ? GREEN : BLACK);
     }
-    DrawText("Exit", (GameManagerEntity.originalW - MeasureText("Exit", MENUFONT)) / 2, GameManagerEntity.originalH * 7 / 8 - MENUFONT / 2, MENUFONT, BLACK);
+    DrawText("RESET THE CAMPAIGN PROGRESS", (GameManagerEntity.originalW - MeasureText("RESET THE CAMPAIGN PROGRESS", MENUFONT)) / 2, GameManagerEntity.originalH * 7 / 10 - MENUFONT / 2, MENUFONT, RED);
+    DrawText("Exit", (GameManagerEntity.originalW - MeasureText("Exit", MENUFONT)) / 2, GameManagerEntity.originalH * 9 / 10 - MENUFONT / 2, MENUFONT, BLACK);
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
         PlaySound(GameManagerEntity.SoundManagerEntity.SelectSound);
         int y = GetMouseY();
@@ -239,8 +243,31 @@ void optionsDraw(GameManager& GameManagerEntity) {
             GameManagerEntity.SoundManagerEntity.Volume = (x + GameManagerEntity.originalW * 1 / 24) * 12 / GameManagerEntity.originalW - 1;
             SetMasterVolume((float) GameManagerEntity.SoundManagerEntity.Volume / 10);
         }
-        else if (y > GameManagerEntity.originalH*3/4)
+        else if (y > GameManagerEntity.originalH * 3 / 5 && y < GameManagerEntity.originalH * 4 / 5) {
+            GameManagerEntity.sceneLabel = choice;
+        }
+        else if (y > GameManagerEntity.originalH*4/5)
             GameManagerEntity.sceneLabel = title;
+    }
+}
+
+void yesOrNoDraw(GameManager& GameManagerEntity) {
+    DrawText("Are you sure?", (GameManagerEntity.originalW - MeasureText("Are you sure?", MENUFONT)) / 2, GameManagerEntity.originalH / 10 - MENUFONT / 2, MENUFONT, BLACK);
+    DrawText("YES", (GameManagerEntity.originalW - MeasureText("YES", MENUFONT)) / 4, GameManagerEntity.originalH * 3 / 4 - MENUFONT / 2, MENUFONT, BLACK);
+    DrawText("NO", (GameManagerEntity.originalW - MeasureText("NO", MENUFONT)) * 3/ 4, GameManagerEntity.originalH * 3 / 4 - MENUFONT / 2, MENUFONT, BLACK);
+    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+        PlaySound(GameManagerEntity.SoundManagerEntity.SelectSound);
+        int y = GetMouseY();
+        int x = GetMouseX();
+        if (y > GameManagerEntity.originalH * 11 / 16 && y < GameManagerEntity.originalH * 13 / 16) {
+            if (x > (GameManagerEntity.originalW - MeasureText("YES", MENUFONT)) / 4 - MeasureText("YES", MENUFONT) / 3 && x < (GameManagerEntity.originalW - MeasureText("YES", MENUFONT)) / 4 + MeasureText("YES", MENUFONT) * 4 / 3) {
+                std::remove("Maps/Campaign/CampaignSave.txt");
+                GameManagerEntity.sceneLabel = options;
+            }
+            else if (x > (GameManagerEntity.originalW - MeasureText("NO", MENUFONT)) * 3 / 4 - MeasureText("NO", MENUFONT) / 3 && x < (GameManagerEntity.originalW - MeasureText("NO", MENUFONT)) * 3 / 4 + MeasureText("NO", MENUFONT) * 4 / 3) {
+                GameManagerEntity.sceneLabel = options;
+            }
+        }
     }
 }
 
