@@ -33,6 +33,9 @@ void drawAllObjects(GameManager GameManagerEntity) {
     case doubleJump:
         DrawRectangle(GameManagerEntity.currentItem.x, GameManagerEntity.currentItem.y, GameManagerEntity.currentItem.width, GameManagerEntity.currentItem.height, DOUBLEJUMPCOLOR);
         break;
+    case dash:
+        DrawRectangle(GameManagerEntity.currentItem.x, GameManagerEntity.currentItem.y, GameManagerEntity.currentItem.width, GameManagerEntity.currentItem.height, DASHCOLOR);
+        break;
     }
 }
 
@@ -110,8 +113,10 @@ bool checkBorders(GameManager& GameManagerEntity, MapManager& MapManagerEntity) 
     if (!(GameManagerEntity.player.x > GameManagerEntity.originalW - 8) && !(GameManagerEntity.player.x + 8 < 0) && !(GameManagerEntity.player.y + 8 < 0) && !(GameManagerEntity.player.y > GameManagerEntity.originalH - 8))
         return false;
     int tempAllowedJump = GameManagerEntity.player.allowedJumps;
+    bool tempAllowedDash = GameManagerEntity.player.allowedDash;
     MapManagerEntity.deloadmap(GameManagerEntity);
     GameManagerEntity.player.allowedJumps = tempAllowedJump;
+    GameManagerEntity.player.allowedDash = tempAllowedDash;
     if (GameManagerEntity.player.x > GameManagerEntity.originalW-16) {
         MapManagerEntity.col++;
         GameManagerEntity.player.x = -16;
@@ -158,8 +163,9 @@ void gameDraw(GameManager& GameManagerEntity, MapManager& MapManagerEntity) {
         }
         if (IsKeyPressed(KEY_ONE))
             GameManagerEntity.player.allowedJumps = 2;
+        else if (IsKeyPressed(KEY_TWO))
+            GameManagerEntity.player.allowedDash = true;
     }
-
     if (GameManagerEntity.player.isRespawning) {
         DrawText(TextFormat("Respawning in: %i", (int)(GameManagerEntity.player.respawnTime + 4 - GetTime())), (GameManagerEntity.originalW - MeasureText(TextFormat("Respawning in: %d", (int)(GameManagerEntity.player.respawnTime + 4 - GetTime())), 40)) / 2, GameManagerEntity.originalH / 10, 40, BLACK);
         if (GameManagerEntity.player.respawnTime + 3 < GetTime()) {
@@ -351,6 +357,9 @@ void EditorDrawer::editDraw(GameManager& GameManagerEntity, MapManager MapManage
                     it->rotation %= 360;
                     return;
                 }
+            }
+            if (CheckCollisionPointRec({ (float)x, (float)y }, { (float)GameManagerEntity.currentItem.x, (float)GameManagerEntity.currentItem.y, (float)GameManagerEntity.currentItem.width, (float)GameManagerEntity.currentItem.height })) {
+                GameManagerEntity.currentItem.itemLabel = (ItemLabel)((GameManagerEntity.currentItem.itemLabel)%2 + 1);
             }
         }
         if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {

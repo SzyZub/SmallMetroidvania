@@ -24,7 +24,8 @@ typedef enum EntityLabel {
 
 typedef enum ItemLabel {
 	none,
-	doubleJump
+	doubleJump,
+	dash
 }ItemLabel;
 
 typedef struct SoundLibrary {
@@ -67,7 +68,7 @@ class Player : public Object {
 public:
 	Player();
 	int moveX, moveY, jumped, allowedJumps;
-	bool isInAir, isRespawning;
+	bool isInAir, isRespawning, allowedDash, isDashed;
 	double respawnTime;
 	Vector2 spawnPoint;
 	void move(std::vector <Wall> wallArr,	std::vector <DamageZone> damageArr,	std::vector <LaunchPad> launchArr, Item& currentItem, SoundLibrary SoundManagerEntity);

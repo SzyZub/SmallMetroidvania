@@ -62,6 +62,12 @@ bool MapManager::loadmap(GameManager& GameManagerEntity) {
                 GameManagerEntity.currentItem = Item(val1, val2, val3, val4, val5, doubleJump);
             }
             break;
+        case 4: 
+            if (GameManagerEntity.player.allowedDash != true) {
+                fillValues(val1, val2, val3, val4, val5, pos, prevPos, mapData);
+                GameManagerEntity.currentItem = Item(val1, val2, val3, val4, val5, dash);
+            }
+            break;
         }
     }
     readFile.close();
@@ -104,6 +110,9 @@ void MapManager::savemap(GameManager GameManagerEntity, Vector2 spawnPoints[4], 
         case doubleJump:
             writeFile << 3 << ' ';
             break;
+        case dash:
+            writeFile << 4 << ' ';
+            break;
         }
         writeFile << GameManagerEntity.currentItem.x << ' ' << GameManagerEntity.currentItem.y << ' ' << GameManagerEntity.currentItem.width << ' ' << GameManagerEntity.currentItem.height << ' ' << GameManagerEntity.currentItem.rotation << '\n';
     }
@@ -120,7 +129,7 @@ void saveCampaignState(GameManager GameManagerEntity, MapManager MapManagerEntit
         writeFile.open("Maps/Campaign/CampaignSave.txt");
     writeFile << GameManagerEntity.player.spawnPoint.x << ' ' << GameManagerEntity.player.spawnPoint.y << '\n';
     writeFile << MapManagerEntity.row << ' ' << MapManagerEntity.col << '\n';
-    writeFile << GameManagerEntity.player.allowedJumps << '\n';
+    writeFile << GameManagerEntity.player.allowedJumps << ' ' << (GameManagerEntity.player.allowedDash == true) ? 1 : 0 << '\n';
     writeFile.close();
 }
 
@@ -159,5 +168,9 @@ void MapManager::loadCampaignState(GameManager& GameManagerEntity) {
     tempValue = std::stoi(mapData.substr(prevPos, pos));
     prevPos = pos + 1;
     GameManagerEntity.player.allowedJumps = tempValue;
+    pos = mapData.find(' ', prevPos);
+    tempValue = std::stoi(mapData.substr(prevPos, pos));
+    prevPos = pos + 1;
+    GameManagerEntity.player.allowedDash = tempValue;
     readFile.close();
 }
