@@ -31,6 +31,7 @@ typedef enum ItemLabel {
 
 typedef struct SoundLibrary {
 	Sound JumpSound;
+	Sound JumpWaterSound;
 	Sound DeathSound;
 	Sound LaunchSound;
 	Sound SelectSound;

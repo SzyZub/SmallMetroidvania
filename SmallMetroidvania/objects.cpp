@@ -116,12 +116,18 @@ void Player::move(std::vector <Wall> wallArr, std::vector <DamageZone> damageArr
 			if (isInAir && allowedJumps != 1) {
 				jumped = 2;
 				moveY = -15;
-				PlaySound(SoundManagerEntity.JumpSound);
+				if (checkColWater(waterArr))
+					PlaySound(SoundManagerEntity.JumpWaterSound);
+				else
+					PlaySound(SoundManagerEntity.JumpSound);
 			}
 			else if (!isInAir) {
 				jumped++;
 				moveY = -15;
-				PlaySound(SoundManagerEntity.JumpSound);
+				if (checkColWater(waterArr))
+					PlaySound(SoundManagerEntity.JumpWaterSound);
+				else
+					PlaySound(SoundManagerEntity.JumpSound);
 			}
 		}
 	}
@@ -244,6 +250,7 @@ GameManager::GameManager() {
 
 void GameManager::initSounds() {
 	SoundManagerEntity.JumpSound = LoadSound("Sounds/jump.wav");
+	SoundManagerEntity.JumpWaterSound = LoadSound("Sounds/jumpWater.wav");
 	SoundManagerEntity.DeathSound = LoadSound("Sounds/death.wav");
 	SoundManagerEntity.LaunchSound = LoadSound("Sounds/launch.wav");
 	SoundManagerEntity.SelectSound = LoadSound("Sounds/select.wav");
