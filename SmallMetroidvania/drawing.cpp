@@ -8,6 +8,8 @@ void initScreen(GameManager GameManagerEntity) {
 }
 
 void drawAllObjects(GameManager GameManagerEntity) {
+    for (std::vector <Water>::iterator it = GameManagerEntity.waterArr.begin(); it != GameManagerEntity.waterArr.end(); it++)
+        DrawRectangle(it->x, it->y, it->width, it->height, WATERCOLOR);
     for (std::vector <DamageZone>::iterator it = GameManagerEntity.damageArr.begin(); it != GameManagerEntity.damageArr.end(); it++) 
         DrawRectangle(it->x, it->y, it->width, it->height, DAMAGEZONECOLOR);
     for (std::vector <Wall>::iterator it = GameManagerEntity.wallArr.begin(); it != GameManagerEntity.wallArr.end(); it++) 
@@ -154,6 +156,7 @@ void unstuck(GameManager& GameManagerEntity) {
 }
 
 void gameDraw(GameManager& GameManagerEntity, MapManager& MapManagerEntity) {
+    drawAllObjects(GameManagerEntity);
     if (MapManagerEntity.campaginType == test) {
         if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
             GameManagerEntity.player.spawnPoint.x = (float)GetMouseX();
@@ -178,11 +181,9 @@ void gameDraw(GameManager& GameManagerEntity, MapManager& MapManagerEntity) {
     }
     else 
         DrawRectangle(GameManagerEntity.player.x, GameManagerEntity.player.y, GameManagerEntity.player.width, GameManagerEntity.player.height, PLAYERCOLOR);
-    if (checkBorders(GameManagerEntity, MapManagerEntity)) {
+    if (checkBorders(GameManagerEntity, MapManagerEntity)) 
         unstuck(GameManagerEntity);
-    }
-    GameManagerEntity.player.move(GameManagerEntity.wallArr, GameManagerEntity.damageArr, GameManagerEntity.launchArr, GameManagerEntity.currentItem ,GameManagerEntity.SoundManagerEntity);
-    drawAllObjects(GameManagerEntity);
+    GameManagerEntity.player.move(GameManagerEntity.wallArr, GameManagerEntity.damageArr, GameManagerEntity.launchArr, GameManagerEntity.currentItem ,GameManagerEntity.SoundManagerEntity, GameManagerEntity.waterArr);
     if (IsKeyPressed(KEY_TAB)) 
         GameManagerEntity.sceneLabel = menu;
 }
@@ -231,9 +232,8 @@ void optionsDraw(GameManager& GameManagerEntity) {
     DrawText("Fullscreen", (GameManagerEntity.originalW - MeasureText("Fullscreen", MENUFONT*3/4)) / 4, GameManagerEntity.originalH * 2/ 10 - MENUFONT / 2, MENUFONT * 3 / 4, IsWindowState(FLAG_FULLSCREEN_MODE) ? GREEN : RED);
     DrawText("Windowed", (GameManagerEntity.originalW - MeasureText("Windowed", MENUFONT * 3 / 4)) / 4* 3, GameManagerEntity.originalH * 2/ 10 - MENUFONT / 2, MENUFONT * 3 / 4, IsWindowState(FLAG_FULLSCREEN_MODE) ? RED : GREEN);
     DrawText("Sound Volume", (GameManagerEntity.originalW - MeasureText("Sound Volume", MENUFONT)) / 2, GameManagerEntity.originalH * 3 / 10 - MENUFONT / 2, MENUFONT, BLACK);
-    for (int i = 0; i <= 10; i++) {
+    for (int i = 0; i <= 10; i++) 
         DrawText(TextFormat("%i", i), (GameManagerEntity.originalW - MeasureText(TextFormat("%i", i), MENUFONT * 3 / 4))*(i + 1)/12, GameManagerEntity.originalH * 2 / 5 - MENUFONT / 2, MENUFONT*3/4, GameManagerEntity.SoundManagerEntity.Volume == i ? GREEN : BLACK);
-    }
     DrawText("RESET THE CAMPAIGN PROGRESS", (GameManagerEntity.originalW - MeasureText("RESET THE CAMPAIGN PROGRESS", MENUFONT)) / 2, GameManagerEntity.originalH * 7 / 10 - MENUFONT / 2, MENUFONT, RED);
     DrawText("Exit", (GameManagerEntity.originalW - MeasureText("Exit", MENUFONT)) / 2, GameManagerEntity.originalH * 9 / 10 - MENUFONT / 2, MENUFONT, BLACK);
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
@@ -251,9 +251,8 @@ void optionsDraw(GameManager& GameManagerEntity) {
             GameManagerEntity.SoundManagerEntity.Volume = (x + GameManagerEntity.originalW * 1 / 24) * 12 / GameManagerEntity.originalW - 1;
             SetMasterVolume((float) GameManagerEntity.SoundManagerEntity.Volume / 10);
         }
-        else if (y > GameManagerEntity.originalH * 3 / 5 && y < GameManagerEntity.originalH * 4 / 5) {
+        else if (y > GameManagerEntity.originalH * 3 / 5 && y < GameManagerEntity.originalH * 4 / 5) 
             GameManagerEntity.sceneLabel = choice;
-        }
         else if (y > GameManagerEntity.originalH*4/5)
             GameManagerEntity.sceneLabel = title;
     }
@@ -272,9 +271,9 @@ void yesOrNoDraw(GameManager& GameManagerEntity) {
                 std::remove("Maps/Campaign/CampaignSave.txt");
                 GameManagerEntity.sceneLabel = options;
             }
-            else if (x > (GameManagerEntity.originalW - MeasureText("NO", MENUFONT)) * 3 / 4 - MeasureText("NO", MENUFONT) / 3 && x < (GameManagerEntity.originalW - MeasureText("NO", MENUFONT)) * 3 / 4 + MeasureText("NO", MENUFONT) * 4 / 3) {
+            else if (x > (GameManagerEntity.originalW - MeasureText("NO", MENUFONT)) * 3 / 4 - MeasureText("NO", MENUFONT) / 3 && x < (GameManagerEntity.originalW - MeasureText("NO", MENUFONT)) * 3 / 4 + MeasureText("NO", MENUFONT) * 4 / 3) 
                 GameManagerEntity.sceneLabel = options;
-            }
+            
         }
     }
 }
@@ -315,6 +314,8 @@ void EditorDrawer::editDraw(GameManager& GameManagerEntity, MapManager MapManage
             editMaterial = damageZone;
         else if (IsKeyPressed(KEY_FOUR)) 
             editMaterial = launch;
+        else if (IsKeyPressed(KEY_FIVE))
+            editMaterial = water;
         else if (IsKeyPressed(KEY_PERIOD))
             isDrawBlock = false;
         else if (IsKeyPressed(KEY_D)) {
@@ -333,6 +334,12 @@ void EditorDrawer::editDraw(GameManager& GameManagerEntity, MapManager MapManage
             for (std::vector <LaunchPad>::iterator it = GameManagerEntity.launchArr.begin(); it != GameManagerEntity.launchArr.end(); it++) {
                 if (CheckCollisionPointRec({ (float)x, (float)y }, { (float)it->x, (float)it->y, (float)it->width, (float)it->height })) {
                     GameManagerEntity.launchArr.erase(it);
+                    return;
+                }
+            }
+            for (std::vector <Water>::iterator it = GameManagerEntity.waterArr.begin(); it != GameManagerEntity.waterArr.end(); it++) {
+                if (CheckCollisionPointRec({ (float)x, (float)y }, { (float)it->x, (float)it->y, (float)it->width, (float)it->height })) {
+                    GameManagerEntity.waterArr.erase(it);
                     return;
                 }
             }
@@ -358,9 +365,8 @@ void EditorDrawer::editDraw(GameManager& GameManagerEntity, MapManager MapManage
                     return;
                 }
             }
-            if (CheckCollisionPointRec({ (float)x, (float)y }, { (float)GameManagerEntity.currentItem.x, (float)GameManagerEntity.currentItem.y, (float)GameManagerEntity.currentItem.width, (float)GameManagerEntity.currentItem.height })) {
-                GameManagerEntity.currentItem.itemLabel = (ItemLabel)((GameManagerEntity.currentItem.itemLabel)%2 + 1);
-            }
+            if (CheckCollisionPointRec({ (float)x, (float)y }, { (float)GameManagerEntity.currentItem.x, (float)GameManagerEntity.currentItem.y, (float)GameManagerEntity.currentItem.width, (float)GameManagerEntity.currentItem.height }))                
+                GameManagerEntity.currentItem.itemLabel = (ItemLabel)((GameManagerEntity.currentItem.itemLabel)%2 + 1);           
         }
         if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
             if (isDrawBlock == false) {
@@ -399,24 +405,28 @@ void EditorDrawer::editDraw(GameManager& GameManagerEntity, MapManager MapManage
                 case launch:
                     GameManagerEntity.launchArr.push_back(LaunchPad(prevX > x ? x - 2 : prevX - 2, prevY > y ? y - 2 : prevY - 2, abs(x - prevX) + 4, abs(y - prevY) + 4, 0));
                     break;
+                case water:
+                    GameManagerEntity.waterArr.push_back(Water(prevX > x ? x - 2 : prevX - 2, prevY > y ? y - 2 : prevY - 2, abs(x - prevX) + 4, abs(y - prevY) + 4, 0));
+                    break;
                 }
                 isDrawBlock = false;
             }
         }
     }
     else {
-        DrawText("Press e to toggle between helper and edit", GameManagerEntity.originalW/40, GameManagerEntity.originalH/24 - MENUFONT / 2, MENUFONT/2, BLACK);
-        DrawText("Press , to bring up a measure of how high player will jump", GameManagerEntity.originalW / 40, GameManagerEntity.originalH * 3 / 24 - MENUFONT / 2, MENUFONT / 2, BLACK);
-        DrawText("Press . to undo pressing the mouse", GameManagerEntity.originalW / 40, GameManagerEntity.originalH * 5 / 24 - MENUFONT / 2, MENUFONT / 2, BLACK);
-        DrawText("Press s to save the map and exit", GameManagerEntity.originalW / 40, GameManagerEntity.originalH * 7 / 24 - MENUFONT / 2, MENUFONT / 2, BLACK);
-        DrawText("Press g to exit without saving the map", GameManagerEntity.originalW / 40, GameManagerEntity.originalH * 9 / 24 - MENUFONT / 2, MENUFONT / 2, BLACK);
-        DrawText("Press d to delete a selected object", GameManagerEntity.originalW / 40, GameManagerEntity.originalH * 11 / 24 - MENUFONT / 2, MENUFONT / 2, BLACK);
-        DrawText("Press r to rotate eligible objects or cycle through items", GameManagerEntity.originalW / 40, GameManagerEntity.originalH * 13 / 24 - MENUFONT / 2, MENUFONT / 2, BLACK);
-        DrawText("Press 0 to place respawn points", GameManagerEntity.originalW / 40, GameManagerEntity.originalH * 15 / 24 - MENUFONT / 2, MENUFONT / 2, BLACK);
-        DrawText("Press 1 to place a item", GameManagerEntity.originalW / 40, GameManagerEntity.originalH * 17 / 24 - MENUFONT / 2, MENUFONT / 2, BLACK);
-        DrawText("Press 2 to choose wall", GameManagerEntity.originalW / 40, GameManagerEntity.originalH * 19 / 24 - MENUFONT / 2, MENUFONT / 2, BLACK);
-        DrawText("Press 3 to choose danger zone", GameManagerEntity.originalW / 40, GameManagerEntity.originalH * 21 / 24 - MENUFONT / 2, MENUFONT / 2, BLACK);
-        DrawText("Press 4 to choose launch pad", GameManagerEntity.originalW / 40, GameManagerEntity.originalH * 23 / 24 - MENUFONT / 2, MENUFONT / 2, BLACK);
+        DrawText("Press e to toggle between helper and edit", GameManagerEntity.originalW/40, GameManagerEntity.originalH/26, MENUFONT/2, BLACK);
+        DrawText("Press , to bring up a measure of how high player will jump", GameManagerEntity.originalW / 40, GameManagerEntity.originalH * 3 / 26, MENUFONT / 2, BLACK);
+        DrawText("Press . to undo pressing the mouse", GameManagerEntity.originalW / 40, GameManagerEntity.originalH * 5 / 26, MENUFONT / 2, BLACK);
+        DrawText("Press s to save the map and exit", GameManagerEntity.originalW / 40, GameManagerEntity.originalH * 7 / 26, MENUFONT / 2, BLACK);
+        DrawText("Press g to exit without saving the map", GameManagerEntity.originalW / 40, GameManagerEntity.originalH * 9 / 26, MENUFONT / 2, BLACK);
+        DrawText("Press d to delete a selected object", GameManagerEntity.originalW / 40, GameManagerEntity.originalH * 11 / 26, MENUFONT / 2, BLACK);
+        DrawText("Press r to rotate eligible objects or cycle through items", GameManagerEntity.originalW / 40, GameManagerEntity.originalH * 13 / 26, MENUFONT / 2, BLACK);
+        DrawText("Press 0 to place respawn points", GameManagerEntity.originalW / 40, GameManagerEntity.originalH * 15 / 26, MENUFONT / 2, BLACK);
+        DrawText("Press 1 to place a item", GameManagerEntity.originalW / 40, GameManagerEntity.originalH * 17 / 26, MENUFONT / 2, BLACK);
+        DrawText("Press 2 to choose wall", GameManagerEntity.originalW / 40, GameManagerEntity.originalH * 19 / 26, MENUFONT / 2, BLACK);
+        DrawText("Press 3 to choose danger zone", GameManagerEntity.originalW / 40, GameManagerEntity.originalH * 21 / 26, MENUFONT / 2, BLACK);
+        DrawText("Press 4 to choose launch pad", GameManagerEntity.originalW / 40, GameManagerEntity.originalH * 23 / 26, MENUFONT / 2, BLACK);
+        DrawText("Press 5 to choose water", GameManagerEntity.originalW / 40, GameManagerEntity.originalH * 25 / 26, MENUFONT / 2, BLACK);
     }
     if (IsKeyPressed(KEY_E))
         isEditMode = !isEditMode;  

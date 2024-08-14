@@ -19,7 +19,8 @@ typedef enum EntityLabel {
 	wall,
 	damageZone,
 	launch,
-	items
+	items,
+	water
 }EntityLabel;
 
 typedef enum ItemLabel {
@@ -64,6 +65,11 @@ public:
 	LaunchPad(int readX, int readY, int readWith, int readHeight, int readRotation);
 };
 
+class Water : public Object {
+public:
+	Water(int readX, int readY, int readWith, int readHeight, int readRotation);
+};
+
 class Player : public Object {
 public:
 	Player();
@@ -71,10 +77,11 @@ public:
 	bool isInAir, isRespawning, allowedDash, isDashed;
 	double respawnTime;
 	Vector2 spawnPoint;
-	void move(std::vector <Wall> wallArr,	std::vector <DamageZone> damageArr,	std::vector <LaunchPad> launchArr, Item& currentItem, SoundLibrary SoundManagerEntity);
+	void move(std::vector <Wall> wallArr,	std::vector <DamageZone> damageArr,	std::vector <LaunchPad> launchArr, Item& currentItem, SoundLibrary SoundManagerEntity, std::vector <Water> waterArr);
 	void respawn();
 	void collisionX(std::vector <Wall> wallArr, std::vector <DamageZone> damageArr, std::vector <LaunchPad> launchArr, Item& currentItem, SoundLibrary SoundManagerEntity);
 	void collisionY(std::vector <Wall> wallArr, std::vector <DamageZone> damageArr, std::vector <LaunchPad> launchArr, Item& currentItem, SoundLibrary SoundManagerEntity);
+	bool checkColWater(std::vector <Water> waterArr);
 	void clearItem();
 };
 
@@ -89,5 +96,6 @@ public:
 	std::vector <Wall> wallArr;
 	std::vector <DamageZone> damageArr;
 	std::vector <LaunchPad> launchArr;
+	std::vector <Water> waterArr;
 	void initSounds();
 };

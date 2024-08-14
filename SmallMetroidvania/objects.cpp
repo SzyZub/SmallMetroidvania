@@ -42,6 +42,15 @@ LaunchPad::LaunchPad(int readX, int readY, int readWith, int readHeight, int rea
 	label = launch;
 }
 
+Water::Water(int readX, int readY, int readWith, int readHeight, int readRotation) {
+	x = readX;
+	y = readY;
+	width = readWith;
+	height = readHeight;
+	rotation = readRotation;
+	label = water;
+}
+
 Player::Player() {
 	spawnPoint = { -50, -50 };
 	x = -50;
@@ -61,7 +70,7 @@ Player::Player() {
 	respawnTime = 0;
 }
 
-void Player::move(std::vector <Wall> wallArr, std::vector <DamageZone> damageArr, std::vector <LaunchPad> launchArr, Item& currentItem, SoundLibrary SoundManagerEntity) {
+void Player::move(std::vector <Wall> wallArr, std::vector <DamageZone> damageArr, std::vector <LaunchPad> launchArr, Item& currentItem, SoundLibrary SoundManagerEntity, std::vector <Water> waterArr) {
 	if(!isRespawning) {
 		collisionX(wallArr, damageArr, launchArr, currentItem, SoundManagerEntity);
 		x += moveX;
@@ -80,18 +89,24 @@ void Player::move(std::vector <Wall> wallArr, std::vector <DamageZone> damageArr
 		else if (IsKeyDown(KEY_LEFT) && moveX > -6)
 			moveX -= 3;
 		else if (moveX > 0)
-			moveX -= 1;
+			moveX --;
 		else if (moveX < 0)
-			moveX += 1;
+			moveX ++;
 		if (isDashed) {
 			if (moveX > 0)
 				moveX--;
 			else
 				moveX++;
 		}
-		if (!isDashed || abs(moveX) < 10) {
-			moveY += 1;
-		}
+		if (checkColWater(waterArr)) {
+			isDashed = false;
+			isInAir = false;
+			if (moveY < 3)
+				moveY++;
+			if (moveY > 0) 
+				jumped = allowedJumps - 1;			
+		} else if (!isDashed || abs(moveX) < 10)
+			moveY++;
 		if (IsKeyDown(KEY_R)) {			
 			isRespawning = true;
 			respawnTime = GetTime();
@@ -202,6 +217,15 @@ void Player::collisionY(std::vector <Wall> wallArr, std::vector <DamageZone> dam
 			}
 		}
 	}
+}
+
+bool Player::checkColWater(std::vector <Water> waterArr) {
+	for (std::vector <Water>::iterator it = waterArr.begin(); it != waterArr.end(); it++) {
+		if (CheckCollisionRecs({ (float)it->x, (float)it->y, (float)it->width, (float)it->height }, { (float)x, (float)y + moveY, (float)width, (float)height })) {
+			return true;
+		}
+	}
+	return false;
 }
 
 void Player::clearItem() {

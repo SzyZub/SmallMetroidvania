@@ -10,6 +10,7 @@ void MapManager::deloadmap(GameManager& GameManagerEntity) {
     GameManagerEntity.wallArr.clear();
     GameManagerEntity.damageArr.clear();
     GameManagerEntity.launchArr.clear();
+    GameManagerEntity.waterArr.clear();
     GameManagerEntity.currentItem.itemLabel = none;
     GameManagerEntity.player.clearItem();
 }
@@ -46,16 +47,6 @@ bool MapManager::loadmap(GameManager& GameManagerEntity) {
             fillValues(val1, val2, val3, val4, val5, pos, prevPos, mapData);
             GameManagerEntity.launchArr.push_back(LaunchPad(val1, val2, val3, val4, val5));
             break;
-        case 99: 
-            pos = mapData.find(' ', prevPos);
-            val1 = std::stoi(mapData.substr(prevPos, pos));
-            prevPos = pos + 1;
-            pos = mapData.find(' ', prevPos);
-            val2 = std::stoi(mapData.substr(prevPos, pos));
-            spawnPoints[spawnPointInc].x = (float) val1;
-            spawnPoints[spawnPointInc].y = (float) val2;
-            spawnPointInc++;
-            break;
         case 3:
             if (GameManagerEntity.player.allowedJumps != 2) {
                 fillValues(val1, val2, val3, val4, val5, pos, prevPos, mapData);
@@ -67,6 +58,20 @@ bool MapManager::loadmap(GameManager& GameManagerEntity) {
                 fillValues(val1, val2, val3, val4, val5, pos, prevPos, mapData);
                 GameManagerEntity.currentItem = Item(val1, val2, val3, val4, val5, dash);
             }
+            break;
+        case 5:
+            fillValues(val1, val2, val3, val4, val5, pos, prevPos, mapData);
+            GameManagerEntity.waterArr.push_back(Water(val1, val2, val3, val4, val5));
+            break;
+        case 99:
+            pos = mapData.find(' ', prevPos);
+            val1 = std::stoi(mapData.substr(prevPos, pos));
+            prevPos = pos + 1;
+            pos = mapData.find(' ', prevPos);
+            val2 = std::stoi(mapData.substr(prevPos, pos));
+            spawnPoints[spawnPointInc].x = (float)val1;
+            spawnPoints[spawnPointInc].y = (float)val2;
+            spawnPointInc++;
             break;
         }
     }
@@ -105,6 +110,8 @@ void MapManager::savemap(GameManager GameManagerEntity, Vector2 spawnPoints[4], 
         writeFile << 1 << ' ' << it->x << ' ' << it->y << ' ' << it->width << ' ' << it->height << ' ' << it->rotation << '\n';
     for (std::vector <LaunchPad>::iterator it = GameManagerEntity.launchArr.begin(); it != GameManagerEntity.launchArr.end(); it++) 
         writeFile << 2 << ' ' << it->x << ' ' << it->y << ' ' << it->width << ' ' << it->height << ' ' << it->rotation << '\n';
+    for (std::vector <Water>::iterator it = GameManagerEntity.waterArr.begin(); it != GameManagerEntity.waterArr.end(); it++)
+        writeFile << 5 << ' ' << it->x << ' ' << it->y << ' ' << it->width << ' ' << it->height << ' ' << it->rotation << '\n';
     if (GameManagerEntity.currentItem.itemLabel != none) {
         switch (GameManagerEntity.currentItem.itemLabel) {
         case doubleJump:
