@@ -292,9 +292,14 @@ void EditorDrawer::editDraw(GameManager& GameManagerEntity, MapManager MapManage
         for (int i = 0; i < GameManagerEntity.originalH; i += 20) 
             DrawLine(0, i, GameManagerEntity.originalW, i, { 0, 0, 0, 100 });
         if (isMeasure) {
-            DrawLineEx({ (float)x, (float)y }, { (float)x, (float)y - 120 }, 3, BLACK);
-            DrawLineEx({ (float)x, (float)y }, { (float)x + 210, (float)y }, 3, BLACK);
-            DrawLineEx({ (float)x, (float)y }, { (float)x - 210, (float)y }, 3, BLACK);
+            DrawLineEx({ (float)x, (float)y }, { (float)x, (float)y - 110 }, 4, BLACK);
+            DrawLineEx({ (float)x, (float)y }, { (float)x, (float)y - 230 }, 2, { 120, 120, 120, 255 });
+            DrawLineEx({ (float)x, (float)y }, { (float)x + 220, (float)y }, 4, BLACK);
+            DrawLineEx({ (float)x, (float)y }, { (float)x - 220, (float)y }, 4, BLACK);
+            DrawLineEx({ (float)x, (float)y }, { (float)x + 420, (float)y }, 3, {50, 50, 50, 255});
+            DrawLineEx({ (float)x, (float)y }, { (float)x - 420, (float)y }, 3, { 50, 50, 50, 255 });
+            DrawLineEx({ (float)x, (float)y }, { (float)x + 620, (float)y }, 2, { 120, 120, 120, 255 });
+            DrawLineEx({ (float)x, (float)y }, { (float)x - 620, (float)y }, 2, { 120, 120, 120, 255 });
         }
         if (isDrawBlock) 
             DrawCircle(prevX, prevY, 5, RED);
@@ -414,7 +419,7 @@ void EditorDrawer::editDraw(GameManager& GameManagerEntity, MapManager MapManage
         }
     }
     else {
-        DrawText("Press e to toggle between helper and edit", GameManagerEntity.originalW/40, GameManagerEntity.originalH/26, MENUFONT/2, BLACK);
+        DrawText("Press tab to toggle between helper and edit", GameManagerEntity.originalW/40, GameManagerEntity.originalH/26, MENUFONT/2, BLACK);
         DrawText("Press , to bring up a measure of how high player will jump", GameManagerEntity.originalW / 40, GameManagerEntity.originalH * 3 / 26, MENUFONT / 2, BLACK);
         DrawText("Press . to undo pressing the mouse", GameManagerEntity.originalW / 40, GameManagerEntity.originalH * 5 / 26, MENUFONT / 2, BLACK);
         DrawText("Press s to save the map and exit", GameManagerEntity.originalW / 40, GameManagerEntity.originalH * 7 / 26, MENUFONT / 2, BLACK);
@@ -428,7 +433,7 @@ void EditorDrawer::editDraw(GameManager& GameManagerEntity, MapManager MapManage
         DrawText("Press 4 to choose launch pad", GameManagerEntity.originalW / 40, GameManagerEntity.originalH * 23 / 26, MENUFONT / 2, BLACK);
         DrawText("Press 5 to choose water", GameManagerEntity.originalW / 40, GameManagerEntity.originalH * 25 / 26, MENUFONT / 2, BLACK);
     }
-    if (IsKeyPressed(KEY_E))
+    if (IsKeyPressed(KEY_TAB))
         isEditMode = !isEditMode;  
     else if (IsKeyPressed(KEY_G)) {
         GameManagerEntity.sceneLabel = title;
