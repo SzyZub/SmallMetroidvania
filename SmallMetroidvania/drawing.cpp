@@ -12,8 +12,6 @@ void drawAllObjects(GameManager GameManagerEntity) {
         DrawRectangle(it->x, it->y, it->width, it->height, WATERCOLOR);
     for (std::vector <DamageZone>::iterator it = GameManagerEntity.damageArr.begin(); it != GameManagerEntity.damageArr.end(); it++) 
         DrawRectangle(it->x, it->y, it->width, it->height, DAMAGEZONECOLOR);
-    for (std::vector <Wall>::iterator it = GameManagerEntity.wallArr.begin(); it != GameManagerEntity.wallArr.end(); it++) 
-        DrawRectangle(it->x, it->y, it->width, it->height, WALLCOLOR);
     for (std::vector <LaunchPad>::iterator it = GameManagerEntity.launchArr.begin(); it != GameManagerEntity.launchArr.end(); it++) {
         DrawRectangle(it->x, it->y, it->width, it->height, LAUNCHPADCOLOR1);
         switch (it->rotation) {
@@ -31,6 +29,8 @@ void drawAllObjects(GameManager GameManagerEntity) {
             break;
         }
     }
+    for (std::vector <Wall>::iterator it = GameManagerEntity.wallArr.begin(); it != GameManagerEntity.wallArr.end(); it++)
+        DrawRectangle(it->x, it->y, it->width, it->height, WALLCOLOR);
     switch (GameManagerEntity.currentItem.itemLabel) {
     case doubleJump:
         DrawRectangle(GameManagerEntity.currentItem.x, GameManagerEntity.currentItem.y, GameManagerEntity.currentItem.width, GameManagerEntity.currentItem.height, DOUBLEJUMPCOLOR);

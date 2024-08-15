@@ -187,6 +187,13 @@ void Player::collisionX(std::vector <Wall> wallArr, std::vector <DamageZone> dam
 void Player::collisionY(std::vector <Wall> wallArr, std::vector <DamageZone> damageArr, std::vector <LaunchPad> launchArr, Item& currentItem, SoundLibrary SoundManagerEntity) {
 	isInAir = true;;
 	if (moveY != 0) {
+		if (CheckCollisionRecs({ (float)x, (float)y, (float)width, (float)height }, { (float)currentItem.x, (float)currentItem.y, (float)currentItem.width, (float)currentItem.height })) {
+			if (currentItem.itemLabel == doubleJump)
+				allowedJumps = 2;
+			else if (currentItem.itemLabel == dash)
+				allowedDash = true;
+			currentItem.itemLabel = none;
+		}
 		for (std::vector <LaunchPad>::iterator it = launchArr.begin(); it != launchArr.end(); it++) {
 			if (CheckCollisionRecs({ (float)it->x, (float)it->y, (float)it->width, (float)it->height }, { (float)x, (float)y + moveY, (float)width, (float)height })) {
 				if (it->rotation == 180)
