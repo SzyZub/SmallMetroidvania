@@ -19,7 +19,6 @@ void mainDraw(GameManager& GameManagerEntity, MapManager& MapManagerEntity);
 void errorLoadDraw(GameManager& GameManagerEntity, MapManager& MapManagerEntity);
 void chooseMap(GameManager& GameManagerEntity, MapManager& MapManagerEntity);
 bool checkBorders(GameManager& GameManagerEntity, MapManager& MapManagerEntity);
-void unstuck(GameManager& GameManagerEntity);
 void gameDraw(GameManager& GameManagerEntity, MapManager& MapManagerEntity);
 void titleDraw(GameManager& GameManagerEntity);
 void menuDraw(GameManager& GameManagerEntity, MapManager MapManagerEntity);

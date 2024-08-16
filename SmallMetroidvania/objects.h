@@ -78,12 +78,12 @@ public:
 	bool isInAir, isRespawning, allowedDash, isDashed;
 	double respawnTime;
 	Vector2 spawnPoint;
-	void move(std::vector <Wall> wallArr,	std::vector <DamageZone> damageArr,	std::vector <LaunchPad> launchArr, Item& currentItem, SoundLibrary SoundManagerEntity, std::vector <Water> waterArr);
+	void move(std::vector <Object> objectArr, SoundLibrary SoundManagerEntity, std::vector <Water> waterArr);
 	void respawn();
-	void collisionX(std::vector <Wall> wallArr, std::vector <DamageZone> damageArr, std::vector <LaunchPad> launchArr, Item& currentItem, SoundLibrary SoundManagerEntity);
-	void collisionY(std::vector <Wall> wallArr, std::vector <DamageZone> damageArr, std::vector <LaunchPad> launchArr, Item& currentItem, SoundLibrary SoundManagerEntity);
-	bool checkColWater(std::vector <Water> waterArr);
+	bool collision(std::vector <Object> objectArr, SoundLibrary SoundManagerEntity);
 	void clearItem();
+	void unstuck(std::vector <Object> objectArr);
+	void friction();
 };
 
 class GameManager {
@@ -93,10 +93,7 @@ public:
 	SceneLabel sceneLabel;
 	SoundLibrary SoundManagerEntity;
 	Player player;
-	Item currentItem;
-	std::vector <Wall> wallArr;
-	std::vector <DamageZone> damageArr;
-	std::vector <LaunchPad> launchArr;
+	std::vector <Object> objectArr;
 	std::vector <Water> waterArr;
 	void initSounds();
 };

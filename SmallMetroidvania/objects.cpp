@@ -70,12 +70,12 @@ Player::Player() {
 	respawnTime = 0;
 }
 
-void Player::move(std::vector <Wall> wallArr, std::vector <DamageZone> damageArr, std::vector <LaunchPad> launchArr, Item& currentItem, SoundLibrary SoundManagerEntity, std::vector <Water> waterArr) {
+void Player::move(std::vector <Object> objectArr, SoundLibrary SoundManagerEntity, std::vector <Water> waterArr) {
 	if(!isRespawning) {
-		collisionX(wallArr, damageArr, launchArr, currentItem, SoundManagerEntity);
+		bool waterCol = collision(objectArr, SoundManagerEntity);		
 		x += moveX;
-		collisionY(wallArr, damageArr, launchArr, currentItem, SoundManagerEntity);
 		y += moveY;
+		friction();
 		if (IsKeyDown(KEY_LEFT_SHIFT) && allowedDash && !isDashed) {
 			if (moveX > 0) 
 				moveX = 30;
@@ -84,21 +84,11 @@ void Player::move(std::vector <Wall> wallArr, std::vector <DamageZone> damageArr
 			moveY = 0;
 			isDashed = true;
 		}
-		else if (IsKeyDown(KEY_RIGHT) && moveX < 6)
+		if (IsKeyDown(KEY_RIGHT) && moveX < 6)
 			moveX += 3;
 		else if (IsKeyDown(KEY_LEFT) && moveX > -6)
-			moveX -= 3;
-		else if (moveX > 0)
-			moveX --;
-		else if (moveX < 0)
-			moveX ++;
-		if (isDashed) {
-			if (moveX > 0)
-				moveX--;
-			else
-				moveX++;
-		}
-		if (checkColWater(waterArr)) {
+			moveX -= 3;	
+		if (waterCol) {
 			isDashed = false;
 			isInAir = false;
 			if (moveY < 3)
@@ -107,28 +97,18 @@ void Player::move(std::vector <Wall> wallArr, std::vector <DamageZone> damageArr
 				jumped = allowedJumps - 1;			
 		} else if (!isDashed || abs(moveX) < 10)
 			moveY++;
-		if (IsKeyDown(KEY_R)) {			
+		if ((IsKeyPressed(KEY_UP) || IsKeyPressed(KEY_SPACE)) && jumped < allowedJumps && abs(moveX) < 10 && ((isInAir && allowedJumps != 1) || (!isInAir))) {
+			isInAir == true ? jumped = allowedJumps : jumped++;
+			moveY = -15;
+			if (waterCol)
+				PlaySound(SoundManagerEntity.JumpWaterSound);
+			else
+				PlaySound(SoundManagerEntity.JumpSound);
+		}
+		if (IsKeyDown(KEY_R)) {
 			isRespawning = true;
 			respawnTime = GetTime();
 			PlaySound(SoundManagerEntity.DeathSound);
-		}
-		if ((IsKeyPressed(KEY_UP) || IsKeyPressed(KEY_SPACE)) && jumped < allowedJumps && abs(moveX) < 10) {
-			if (isInAir && allowedJumps != 1) {
-				jumped = 2;
-				moveY = -15;
-				if (checkColWater(waterArr))
-					PlaySound(SoundManagerEntity.JumpWaterSound);
-				else
-					PlaySound(SoundManagerEntity.JumpSound);
-			}
-			else if (!isInAir) {
-				jumped++;
-				moveY = -15;
-				if (checkColWater(waterArr))
-					PlaySound(SoundManagerEntity.JumpWaterSound);
-				else
-					PlaySound(SoundManagerEntity.JumpSound);
-			}
 		}
 	}
 
@@ -139,106 +119,88 @@ void Player::respawn() {
 	y = (int) spawnPoint.y;
 	moveX = 0;
 	moveY = 0;
-	jumped = allowedJumps;
 }
 
-void Player::collisionX(std::vector <Wall> wallArr, std::vector <DamageZone> damageArr, std::vector <LaunchPad> launchArr, Item& currentItem, SoundLibrary SoundManagerEntity) {
-	if (moveX != 0) {
-		if (CheckCollisionRecs({ (float)x, (float)y, (float) width, (float) height }, { (float)currentItem.x, (float)currentItem.y, (float) currentItem.width, (float)currentItem.height })) {
-			if (currentItem.itemLabel == doubleJump)
-				allowedJumps = 2;
-			else if (currentItem.itemLabel == dash)
-				allowedDash = true;
-			currentItem.itemLabel = none;
-		}
-		for (std::vector <LaunchPad>::iterator it = launchArr.begin(); it != launchArr.end(); it++) {
-			if (CheckCollisionRecs({ (float)it->x, (float)it->y, (float)it->width, (float)it->height }, { (float)x, (float)y + moveX, (float)width, (float)height })) {
-				if (it->rotation == 90)
-					moveX = -30;
-				else if (it->rotation == 270)
-					moveX = 30;
-				PlaySound(SoundManagerEntity.LaunchSound);
-			}
-		}
-		for (std::vector <DamageZone>::iterator it = damageArr.begin(); it != damageArr.end(); it++) {
-			if (CheckCollisionRecs({ (float)it->x, (float)it->y, (float)it->width, (float)it->height }, { (float)x + moveX, (float)y, (float)width, (float)height })) {
-				isRespawning = true;
-				respawnTime = GetTime();
-				PlaySound(SoundManagerEntity.DeathSound);
-			}
-		}
-		for (std::vector <Wall>::iterator it = wallArr.begin(); it != wallArr.end(); it++) {
-			while (moveX) {
-				if (CheckCollisionRecs({ (float)it->x, (float)it->y, (float)it->width, (float)it->height }, { (float)x + moveX, (float)y, (float)width, (float)height })) {
-					if (moveX > 0)
-						moveX--;
-					else if (moveX < 0)
-						moveX++;
-					else 
-						return;				
+bool Player::collision(std::vector <Object> objectArr, SoundLibrary SoundManagerEntity) {
+	isInAir = true;
+	bool returnVal = false;
+	if (moveX != 0 || moveY != 0) {
+		for (std::vector <Object>::iterator it = objectArr.begin(); it != objectArr.end(); it++) {
+			if (CheckCollisionRecs({ (float)it->x, (float)it->y, (float)it->width, (float)it->height }, { (float)x + moveX, (float)y + moveY, (float)width, (float)height })) {
+				switch (it->label) {
+					case damageZone:
+						isRespawning = true;
+						respawnTime = GetTime();
+						PlaySound(SoundManagerEntity.DeathSound);
+						return false;
+						break;
+					case items:
+						Item* temp = (Item*) &(*it);
+						if (temp->itemLabel == doubleJump)
+							allowedJumps = 2;
+						else if (temp->itemLabel == dash)
+							allowedDash = true;
+						temp->itemLabel = none;
+						break;
+					case launch:
+						if (it->rotation == 90)
+							moveX = -30;
+						else if (it->rotation == 180)
+							moveY = -25;
+						else if (it->rotation == 270)
+							moveX = 30;
+						PlaySound(SoundManagerEntity.LaunchSound);
+						break;
+					case wall:
+						int clear = 0;
+						while (moveX != 0 || moveY != 0) {
+							clear = 0;
+							if (CheckCollisionRecs({ (float)it->x, (float)it->y, (float)it->width, (float)it->height }, { (float)x, (float)y + moveY, (float)width, (float)height })) {
+								if (y < it->y)
+									moveY--;
+								else
+									moveY++;
+								if (y < it->y && moveY == 0) {
+									jumped = 0;
+									isInAir = false;
+									isDashed = false;
+								}
+							}
+							else
+								clear++;
+							if (CheckCollisionRecs({ (float)it->x, (float)it->y, (float)it->width, (float)it->height }, { (float)x + moveX, (float)y, (float)width, (float)height })) {
+								if (x < it->x)
+									moveX--;
+								else
+									moveX++;
+							}
+							else
+								clear++;
+							if (clear == 2)
+								break;
+						}
+						break;
+					case water:
+						returnVal = true;
+						break;
 				}
-				else
-					break;
 			}
 		}
 	}
+	return returnVal;
 }
 
-void Player::collisionY(std::vector <Wall> wallArr, std::vector <DamageZone> damageArr, std::vector <LaunchPad> launchArr, Item& currentItem, SoundLibrary SoundManagerEntity) {
-	isInAir = true;;
-	if (moveY != 0) {
-		if (CheckCollisionRecs({ (float)x, (float)y, (float)width, (float)height }, { (float)currentItem.x, (float)currentItem.y, (float)currentItem.width, (float)currentItem.height })) {
-			if (currentItem.itemLabel == doubleJump)
-				allowedJumps = 2;
-			else if (currentItem.itemLabel == dash)
-				allowedDash = true;
-			currentItem.itemLabel = none;
-		}
-		for (std::vector <LaunchPad>::iterator it = launchArr.begin(); it != launchArr.end(); it++) {
-			if (CheckCollisionRecs({ (float)it->x, (float)it->y, (float)it->width, (float)it->height }, { (float)x, (float)y + moveY, (float)width, (float)height })) {
-				if (it->rotation == 180)
-					moveY = -25;
-				else if (it->rotation == 90)
-					moveX = -30;
-				else if (it->rotation == 270)
-					moveX = 30;
-				PlaySound(SoundManagerEntity.LaunchSound);
-			}
-		}
-		for (std::vector <DamageZone>::iterator it = damageArr.begin(); it != damageArr.end(); it++) {
-			if (CheckCollisionRecs({ (float)it->x, (float)it->y, (float)it->width, (float)it->height }, { (float)x, (float)y + moveY, (float)width, (float)height })) {
-				isRespawning = true;
-				respawnTime = GetTime();
-				PlaySound(SoundManagerEntity.DeathSound);
-			}
-		}
-		for (std::vector <Wall>::iterator it = wallArr.begin(); it != wallArr.end(); it++) {
-			while (moveY) {
-				if (CheckCollisionRecs({ (float)it->x, (float)it->y, (float)it->width, (float)it->height }, { (float)x, (float)y + moveY, (float)width, (float)height })) {
-					jumped = 0;
-					isInAir = false;
-					isDashed = false;
-					if (moveY > 0)
-						moveY--;
-					else if (moveY < 0)
-						moveY++;
-					else 
-						return;
-				}
-				else
-					break;
-			}
-		}
+void Player::friction() {
+	if (moveX > 0)
+		moveX--;
+	else if (moveX < 0)
+		moveX++;
+	if (isDashed) {
+		if (moveX > 0)
+			moveX--;
+		else
+			moveX++;
 	}
-}
-
-bool Player::checkColWater(std::vector <Water> waterArr) {
-	for (std::vector <Water>::iterator it = waterArr.begin(); it != waterArr.end(); it++) {
-		if (CheckCollisionRecs({ (float)it->x, (float)it->y, (float)it->width, (float)it->height }, { (float)x, (float)y + moveY, (float)width, (float)height })) {
-			return true;
-		}
-	}
-	return false;
 }
 
 void Player::clearItem() {
@@ -246,12 +208,28 @@ void Player::clearItem() {
 	allowedDash = false;
 }
 
+void Player::unstuck(std::vector <Object> objectArr) {
+	for (std::vector <Object>::iterator it = objectArr.begin(); it != objectArr.end(); it++) {
+		if (it->label == wall) {
+			while (CheckCollisionRecs({ (float)x, (float)y, (float)width, (float)height }, { (float)it->x, (float)it->y, (float)it->width, (float)it->height })) {
+				if (x + width / 2 < it->x + it->width / 2)
+					x--;
+				else
+					x++;
+				if (y + height / 2 < it->y + it->height / 2)
+					y--;
+				else
+					y++;
+			}
+		}
+	}
+}
+
 GameManager::GameManager() {
 	originalH = 720;
 	originalW = 1280;
 	framerate = 60;
 	sceneLabel = title;
-	currentItem = Item();
 	SoundManagerEntity = { NULL };
 }
 

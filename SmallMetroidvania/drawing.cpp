@@ -140,21 +140,6 @@ bool checkBorders(GameManager& GameManagerEntity, MapManager& MapManagerEntity) 
     return true;
 }
 
-void unstuck(GameManager& GameManagerEntity) {
-    for (std::vector <Wall>::iterator it = GameManagerEntity.wallArr.begin(); it != GameManagerEntity.wallArr.end(); it++) {
-        while (CheckCollisionRecs({ (float)GameManagerEntity.player.x, (float)GameManagerEntity.player.y, (float)GameManagerEntity.player.width, (float)GameManagerEntity.player.height }, { (float)it->x, (float)it->y, (float)it->width, (float)it->height })) {
-            if (GameManagerEntity.player.x + GameManagerEntity.player.width / 2 < it->x + it->width / 2)
-                GameManagerEntity.player.x--;
-            else
-                GameManagerEntity.player.x++;
-            if (GameManagerEntity.player.y + GameManagerEntity.player.height / 2 < it->y + it->height / 2)
-                GameManagerEntity.player.y--;
-            else
-                GameManagerEntity.player.y++;
-        }
-    }
-}
-
 void gameDraw(GameManager& GameManagerEntity, MapManager& MapManagerEntity) {
     drawAllObjects(GameManagerEntity);
     if (MapManagerEntity.campaginType == test) {
@@ -182,7 +167,7 @@ void gameDraw(GameManager& GameManagerEntity, MapManager& MapManagerEntity) {
     else 
         DrawRectangle(GameManagerEntity.player.x, GameManagerEntity.player.y, GameManagerEntity.player.width, GameManagerEntity.player.height, PLAYERCOLOR);
     if (checkBorders(GameManagerEntity, MapManagerEntity)) 
-        unstuck(GameManagerEntity);
+        GameManagerEntity.player.unstuck(GameManagerEntity.wallArr);
     GameManagerEntity.player.move(GameManagerEntity.wallArr, GameManagerEntity.damageArr, GameManagerEntity.launchArr, GameManagerEntity.currentItem ,GameManagerEntity.SoundManagerEntity, GameManagerEntity.waterArr);
     if (IsKeyPressed(KEY_TAB)) 
         GameManagerEntity.sceneLabel = menu;
