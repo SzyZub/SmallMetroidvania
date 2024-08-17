@@ -1,6 +1,6 @@
 #include "objects.h"
 
-Item::Item(int readX, int readY, int readWith, int readHeight, int readRotation, ItemLabel readItemLabel) {
+Item::Item(int readX, int readY, int readWith, int readHeight, int readRotation, ItemLabel readItemLabel, bool readCollected) {
 	x = readX;
 	y = readY;
 	width = readWith;
@@ -8,11 +8,13 @@ Item::Item(int readX, int readY, int readWith, int readHeight, int readRotation,
 	rotation = readRotation;
 	itemLabel = readItemLabel;
 	label = items;
+	collected = readCollected;
 }
 
 Item::Item() {
 	label = items;
 	itemLabel = none;
+	collected = false;
 }
 
 Wall::Wall(int readX, int readY, int readWith, int readHeight, int readRotation) {
@@ -70,7 +72,7 @@ Player::Player() {
 	respawnTime = 0;
 }
 
-void Player::move(std::vector <Object> objectArr, SoundLibrary SoundManagerEntity, std::vector <Water> waterArr) {
+void Player::move(std::vector <Object>& objectArr, SoundLibrary SoundManagerEntity) {
 	if(!isRespawning) {
 		bool waterCol = collision(objectArr, SoundManagerEntity);		
 		x += moveX;
@@ -121,9 +123,11 @@ void Player::respawn() {
 	moveY = 0;
 }
 
-bool Player::collision(std::vector <Object> objectArr, SoundLibrary SoundManagerEntity) {
+bool Player::collision(std::vector <Object>& objectArr, SoundLibrary SoundManagerEntity) {
 	isInAir = true;
 	bool returnVal = false;
+	int clear = 0;
+	Item* temp = NULL;
 	if (moveX != 0 || moveY != 0) {
 		for (std::vector <Object>::iterator it = objectArr.begin(); it != objectArr.end(); it++) {
 			if (CheckCollisionRecs({ (float)it->x, (float)it->y, (float)it->width, (float)it->height }, { (float)x + moveX, (float)y + moveY, (float)width, (float)height })) {
@@ -133,14 +137,6 @@ bool Player::collision(std::vector <Object> objectArr, SoundLibrary SoundManager
 						respawnTime = GetTime();
 						PlaySound(SoundManagerEntity.DeathSound);
 						return false;
-						break;
-					case items:
-						Item* temp = (Item*) &(*it);
-						if (temp->itemLabel == doubleJump)
-							allowedJumps = 2;
-						else if (temp->itemLabel == dash)
-							allowedDash = true;
-						temp->itemLabel = none;
 						break;
 					case launch:
 						if (it->rotation == 90)
@@ -152,7 +148,7 @@ bool Player::collision(std::vector <Object> objectArr, SoundLibrary SoundManager
 						PlaySound(SoundManagerEntity.LaunchSound);
 						break;
 					case wall:
-						int clear = 0;
+						clear = 0;
 						while (moveX != 0 || moveY != 0) {
 							clear = 0;
 							if (CheckCollisionRecs({ (float)it->x, (float)it->y, (float)it->width, (float)it->height }, { (float)x, (float)y + moveY, (float)width, (float)height })) {
@@ -182,6 +178,14 @@ bool Player::collision(std::vector <Object> objectArr, SoundLibrary SoundManager
 						break;
 					case water:
 						returnVal = true;
+						break;
+					case items:
+						if (it->itemLabel == doubleJump)
+							allowedJumps = 2;
+						else if (it->itemLabel == dash)
+							allowedDash = true;
+						it->itemLabel = none;
+						it->collected = true;
 						break;
 				}
 			}

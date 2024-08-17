@@ -7,11 +7,7 @@ MapManager::MapManager() {
 }
 
 void MapManager::deloadmap(GameManager& GameManagerEntity) {
-    GameManagerEntity.wallArr.clear();
-    GameManagerEntity.damageArr.clear();
-    GameManagerEntity.launchArr.clear();
-    GameManagerEntity.waterArr.clear();
-    GameManagerEntity.currentItem.itemLabel = none;
+    GameManagerEntity.objectArr.clear();
     GameManagerEntity.player.clearItem();
 }
 
@@ -19,13 +15,12 @@ bool MapManager::loadmap(GameManager& GameManagerEntity) {
     std::string mapData;
     int spawnPointInc = 0;
     Vector2 spawnPoints[4];
-    int tempLabel;
     int val1, val2, val3, val4, val5;
+    ItemLabel tempItemLabel = none;
+    bool isItemCollected = false;
     std::ifstream readFile;
-    if (campaginType == campaign) {
-        std::string mapName = "Maps/Campaign/" + std::to_string(row) + std::to_string(col) + ".txt";
-        readFile.open(mapName);
-    }
+    if (campaginType == campaign) 
+        readFile.open("Maps/Campaign/" + std::to_string(row) + std::to_string(col) + ".txt");
     else
         readFile.open("Maps/Test/Custom.txt");
     if (!readFile.is_open())
@@ -33,35 +28,37 @@ bool MapManager::loadmap(GameManager& GameManagerEntity) {
     while (std::getline(readFile, mapData)) {
         std::size_t pos = mapData.find(' ');
         std::size_t prevPos = pos + 1;
-        tempLabel = std::stoi(mapData.substr(0, pos));
-        switch (tempLabel) {
+        switch (std::stoi(mapData.substr(0, pos))) {
         case 0:
             fillValues(val1, val2, val3, val4, val5, pos, prevPos, mapData);
-            GameManagerEntity.wallArr.push_back(Wall(val1, val2, val3, val4, val5));
+            GameManagerEntity.objectArr.push_back(Wall(val1, val2, val3, val4, val5));
             break;
         case 1:
             fillValues(val1, val2, val3, val4, val5, pos, prevPos, mapData);
-            GameManagerEntity.damageArr.push_back(DamageZone(val1, val2, val3, val4, val5));
+            GameManagerEntity.objectArr.push_back(DamageZone(val1, val2, val3, val4, val5));
             break;
         case 2:
             fillValues(val1, val2, val3, val4, val5, pos, prevPos, mapData);
-            GameManagerEntity.launchArr.push_back(LaunchPad(val1, val2, val3, val4, val5));
+            GameManagerEntity.objectArr.push_back(LaunchPad(val1, val2, val3, val4, val5));
             break;
         case 3:
-            if (GameManagerEntity.player.allowedJumps != 2) {
-                fillValues(val1, val2, val3, val4, val5, pos, prevPos, mapData);
-                GameManagerEntity.currentItem = Item(val1, val2, val3, val4, val5, doubleJump);
-            }
-            break;
+            tempItemLabel = doubleJump;
+            if (GameManagerEntity.player.allowedJumps == 2)
+                isItemCollected = true;
         case 4: 
-            if (GameManagerEntity.player.allowedDash != true) {
-                fillValues(val1, val2, val3, val4, val5, pos, prevPos, mapData);
-                GameManagerEntity.currentItem = Item(val1, val2, val3, val4, val5, dash);
+            if (tempItemLabel == none) {
+                tempItemLabel = dash;
+                if (GameManagerEntity.player.allowedDash == true)
+                    isItemCollected = true;
             }
+            fillValues(val1, val2, val3, val4, val5, pos, prevPos, mapData);
+            GameManagerEntity.objectArr.push_back(Item(val1, val2, val3, val4, val5, tempItemLabel, isItemCollected));
+            tempItemLabel = none;
+            isItemCollected = false;
             break;
         case 5:
             fillValues(val1, val2, val3, val4, val5, pos, prevPos, mapData);
-            GameManagerEntity.waterArr.push_back(Water(val1, val2, val3, val4, val5));
+            GameManagerEntity.objectArr.push_back(Water(val1, val2, val3, val4, val5));
             break;
         case 99:
             pos = mapData.find(' ', prevPos);
@@ -104,24 +101,32 @@ void fillValues(int& val1, int& val2, int& val3, int& val4, int& val5, std::size
 
 void MapManager::savemap(GameManager GameManagerEntity, Vector2 spawnPoints[4], int spawnPointsNum) {
     std::ofstream writeFile("Maps/Test/Custom.txt");
-    for (std::vector <Wall>::iterator it = GameManagerEntity.wallArr.begin(); it != GameManagerEntity.wallArr.end(); it++) 
-        writeFile << 0 << ' ' << it->x << ' ' << it->y << ' ' << it->width << ' ' << it->height << ' ' << it->rotation << '\n';
-    for (std::vector <DamageZone>::iterator it = GameManagerEntity.damageArr.begin(); it != GameManagerEntity.damageArr.end(); it++) 
-        writeFile << 1 << ' ' << it->x << ' ' << it->y << ' ' << it->width << ' ' << it->height << ' ' << it->rotation << '\n';
-    for (std::vector <LaunchPad>::iterator it = GameManagerEntity.launchArr.begin(); it != GameManagerEntity.launchArr.end(); it++) 
-        writeFile << 2 << ' ' << it->x << ' ' << it->y << ' ' << it->width << ' ' << it->height << ' ' << it->rotation << '\n';
-    for (std::vector <Water>::iterator it = GameManagerEntity.waterArr.begin(); it != GameManagerEntity.waterArr.end(); it++)
-        writeFile << 5 << ' ' << it->x << ' ' << it->y << ' ' << it->width << ' ' << it->height << ' ' << it->rotation << '\n';
-    if (GameManagerEntity.currentItem.itemLabel != none) {
-        switch (GameManagerEntity.currentItem.itemLabel) {
-        case doubleJump:
-            writeFile << 3 << ' ';
+    for (std::vector <Object>::iterator it = GameManagerEntity.objectArr.begin(); it != GameManagerEntity.objectArr.end(); it++) {
+        switch (it->label) {
+        case wall:
+            writeFile << 0;
             break;
-        case dash:
-            writeFile << 4 << ' ';
+        case damageZone:
+            writeFile << 1;
+            break;
+        case launch:
+            writeFile << 2;
+            break;
+        case water:
+            writeFile << 5;
+            break;
+        case items:
+            switch (it->itemLabel) {
+            case doubleJump:
+                writeFile << 3;
+                break;
+            case dash:
+                writeFile << 4;
+                break;
+            }
             break;
         }
-        writeFile << GameManagerEntity.currentItem.x << ' ' << GameManagerEntity.currentItem.y << ' ' << GameManagerEntity.currentItem.width << ' ' << GameManagerEntity.currentItem.height << ' ' << GameManagerEntity.currentItem.rotation << '\n';
+        writeFile << ' ' << it->x << ' ' << it->y << ' ' << it->width << ' ' << it->height << ' ' << it->rotation << '\n';
     }
     for (int i = 0; i < spawnPointsNum; i++) 
         writeFile << 99 << ' ' << spawnPoints[i].x << ' ' << spawnPoints[i].y << ' ' << '\n';
@@ -156,11 +161,11 @@ void MapManager::loadCampaignState(GameManager& GameManagerEntity) {
     pos = mapData.find(' ', prevPos);
     tempValue = std::stoi(mapData.substr(prevPos, pos));
     prevPos = pos + 1;
-    GameManagerEntity.player.spawnPoint.x = tempValue;
+    GameManagerEntity.player.spawnPoint.x = (float) tempValue;
     pos = mapData.find(' ', prevPos);
     tempValue = std::stoi(mapData.substr(prevPos, pos));
     prevPos = pos + 1;
-    GameManagerEntity.player.spawnPoint.y = tempValue;
+    GameManagerEntity.player.spawnPoint.y = (float) tempValue;
     std::getline(readFile, mapData);
     pos = mapData.find(' ', prevPos);
     tempValue = std::stoi(mapData.substr(prevPos, pos));

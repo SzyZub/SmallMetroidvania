@@ -42,12 +42,13 @@ class Object {
 public:
 	int x, y, width, height, rotation;
 	EntityLabel label;
+	ItemLabel itemLabel;
+	bool collected;
 };
 
 class Item : public Object {
 public:
-	ItemLabel itemLabel;
-	Item(int readX, int readY, int readWith, int readHeight, int readRotation, ItemLabel readItemLabel);
+	Item(int readX, int readY, int readWith, int readHeight, int readRotation, ItemLabel readItemLabel, bool readConnected);
 	Item();
 };
 
@@ -78,9 +79,9 @@ public:
 	bool isInAir, isRespawning, allowedDash, isDashed;
 	double respawnTime;
 	Vector2 spawnPoint;
-	void move(std::vector <Object> objectArr, SoundLibrary SoundManagerEntity, std::vector <Water> waterArr);
+	void move(std::vector <Object>& objectArr, SoundLibrary SoundManagerEntity);
 	void respawn();
-	bool collision(std::vector <Object> objectArr, SoundLibrary SoundManagerEntity);
+	bool collision(std::vector <Object>& objectArr, SoundLibrary SoundManagerEntity);
 	void clearItem();
 	void unstuck(std::vector <Object> objectArr);
 	void friction();
@@ -94,6 +95,5 @@ public:
 	SoundLibrary SoundManagerEntity;
 	Player player;
 	std::vector <Object> objectArr;
-	std::vector <Water> waterArr;
 	void initSounds();
 };

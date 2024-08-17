@@ -8,40 +8,51 @@ void initScreen(GameManager GameManagerEntity) {
 }
 
 void drawAllObjects(GameManager GameManagerEntity) {
-    for (std::vector <Water>::iterator it = GameManagerEntity.waterArr.begin(); it != GameManagerEntity.waterArr.end(); it++)
-        DrawRectangle(it->x, it->y, it->width, it->height, WATERCOLOR);
-    for (std::vector <DamageZone>::iterator it = GameManagerEntity.damageArr.begin(); it != GameManagerEntity.damageArr.end(); it++) 
-        DrawRectangle(it->x, it->y, it->width, it->height, DAMAGEZONECOLOR);
-    for (std::vector <LaunchPad>::iterator it = GameManagerEntity.launchArr.begin(); it != GameManagerEntity.launchArr.end(); it++) {
-        DrawRectangle(it->x, it->y, it->width, it->height, LAUNCHPADCOLOR1);
-        switch (it->rotation) {
-        case 0:
-            DrawRectangle(it->x + it->width * 3/8, it->y + it->height/2, it->width/4, it->height/2, LAUNCHPADCOLOR2);
+    static Item* temp = NULL;
+    for (std::vector <Object>::iterator it = GameManagerEntity.objectArr.begin(); it != GameManagerEntity.objectArr.end(); it++)
+        switch (it->label) {
+        case water:
+            DrawRectangle(it->x, it->y, it->width, it->height, WATERCOLOR);
             break;
-        case 90:
-            DrawRectangle(it->x, it->y + it->height * 3 / 8, it->width / 2, it->height / 4, LAUNCHPADCOLOR2);
+        case damageZone:
+            DrawRectangle(it->x, it->y, it->width, it->height, DAMAGEZONECOLOR);
             break;
-        case 180:
-            DrawRectangle(it->x + it->width * 3 / 8, it->y, it->width / 4, it->height / 2, LAUNCHPADCOLOR2);
+        case launch:
+            DrawRectangle(it->x, it->y, it->width, it->height, LAUNCHPADCOLOR1);
+            switch (it->rotation) {
+            case 0:
+                DrawRectangle(it->x + it->width * 3 / 8, it->y + it->height / 2, it->width / 4, it->height / 2, LAUNCHPADCOLOR2);
+                break;
+            case 90:
+                DrawRectangle(it->x, it->y + it->height * 3 / 8, it->width / 2, it->height / 4, LAUNCHPADCOLOR2);
+                break;
+            case 180:
+                DrawRectangle(it->x + it->width * 3 / 8, it->y, it->width / 4, it->height / 2, LAUNCHPADCOLOR2);
+                break;
+            case 270:
+                DrawRectangle(it->x + it->width / 2, it->y + it->height * 3 / 8, it->width / 2, it->height / 4, LAUNCHPADCOLOR2);
+                break;
+            }
             break;
-        case 270:
-            DrawRectangle(it->x + it->width / 2, it->y + it->height *3 / 8, it->width / 2, it->height / 4, LAUNCHPADCOLOR2);
+        case wall:
+            DrawRectangle(it->x, it->y, it->width, it->height, WALLCOLOR);
+            break;
+        case items:
+            if (!it->collected) {
+                switch (it->itemLabel) {
+                case doubleJump:
+                    DrawRectangle(it->x, it->y, it->width, it->height, DOUBLEJUMPCOLOR);
+                    break;
+                case dash:
+                    DrawRectangle(it->x, it->y, it->width, it->height, DASHCOLOR);
+                    break;
+                }
+            }
             break;
         }
-    }
-    for (std::vector <Wall>::iterator it = GameManagerEntity.wallArr.begin(); it != GameManagerEntity.wallArr.end(); it++)
-        DrawRectangle(it->x, it->y, it->width, it->height, WALLCOLOR);
-    switch (GameManagerEntity.currentItem.itemLabel) {
-    case doubleJump:
-        DrawRectangle(GameManagerEntity.currentItem.x, GameManagerEntity.currentItem.y, GameManagerEntity.currentItem.width, GameManagerEntity.currentItem.height, DOUBLEJUMPCOLOR);
-        break;
-    case dash:
-        DrawRectangle(GameManagerEntity.currentItem.x, GameManagerEntity.currentItem.y, GameManagerEntity.currentItem.width, GameManagerEntity.currentItem.height, DASHCOLOR);
-        break;
-    }
 }
 
-void mainDraw(GameManager& GameManagerEntity, MapManager& MapManagerEntity) {
+void mainDraw(GameManager& GameManagerEntity, MapManager& MapManagerEntity, EditorDrawer** EditorDrawerEntity) {
     BeginDrawing();
     ClearBackground(BACKGROUNDCOLOR);
     switch (GameManagerEntity.sceneLabel) {
@@ -49,7 +60,7 @@ void mainDraw(GameManager& GameManagerEntity, MapManager& MapManagerEntity) {
         gameDraw(GameManagerEntity, MapManagerEntity);
         break;
     case title:
-        titleDraw(GameManagerEntity);
+        titleDraw(GameManagerEntity, EditorDrawerEntity);
         break;
     case options:
         optionsDraw(GameManagerEntity);
@@ -67,8 +78,7 @@ void mainDraw(GameManager& GameManagerEntity, MapManager& MapManagerEntity) {
         yesOrNoDraw(GameManagerEntity);
         break;
     case edit:
-        static EditorDrawer draw;
-        draw.editDraw(GameManagerEntity, MapManagerEntity);
+        (*EditorDrawerEntity)->editDraw(GameManagerEntity, MapManagerEntity);
         break;
     }
     EndDrawing();
@@ -167,13 +177,17 @@ void gameDraw(GameManager& GameManagerEntity, MapManager& MapManagerEntity) {
     else 
         DrawRectangle(GameManagerEntity.player.x, GameManagerEntity.player.y, GameManagerEntity.player.width, GameManagerEntity.player.height, PLAYERCOLOR);
     if (checkBorders(GameManagerEntity, MapManagerEntity)) 
-        GameManagerEntity.player.unstuck(GameManagerEntity.wallArr);
-    GameManagerEntity.player.move(GameManagerEntity.wallArr, GameManagerEntity.damageArr, GameManagerEntity.launchArr, GameManagerEntity.currentItem ,GameManagerEntity.SoundManagerEntity, GameManagerEntity.waterArr);
+        GameManagerEntity.player.unstuck(GameManagerEntity.objectArr);
+    GameManagerEntity.player.move(GameManagerEntity.objectArr, GameManagerEntity.SoundManagerEntity);
     if (IsKeyPressed(KEY_TAB)) 
         GameManagerEntity.sceneLabel = menu;
 }
 
-void titleDraw(GameManager& GameManagerEntity) {
+void titleDraw(GameManager& GameManagerEntity, EditorDrawer** EditorDrawerEntity) {
+    if ((*EditorDrawerEntity) != NULL) {
+        delete (*EditorDrawerEntity);
+        (*EditorDrawerEntity) = NULL;
+    }
     DrawText("Start the game", (GameManagerEntity.originalW - MeasureText("Start the game", MENUFONT))/2, GameManagerEntity.originalH / 8 - MENUFONT / 2, MENUFONT, BLACK);
     DrawText("Editor", (GameManagerEntity.originalW - MeasureText("Editor", MENUFONT)) / 2, GameManagerEntity.originalH * 3 / 8 - MENUFONT / 2, MENUFONT, BLACK);
     DrawText("Options", (GameManagerEntity.originalW - MeasureText("Options", MENUFONT)) / 2, GameManagerEntity.originalH * 5 / 8 - MENUFONT / 2, MENUFONT, BLACK);
@@ -184,6 +198,7 @@ void titleDraw(GameManager& GameManagerEntity) {
         if (y < GameManagerEntity.originalH / 4) 
             GameManagerEntity.sceneLabel = choosing;       
         else if (y < GameManagerEntity.originalH / 2) {
+            (*EditorDrawerEntity) = new EditorDrawer();
             GameManagerEntity.sceneLabel = edit;
             GameManagerEntity.player.respawnTime = 0;
         }
@@ -257,8 +272,7 @@ void yesOrNoDraw(GameManager& GameManagerEntity) {
                 GameManagerEntity.sceneLabel = options;
             }
             else if (x > (GameManagerEntity.originalW - MeasureText("NO", MENUFONT)) * 3 / 4 - MeasureText("NO", MENUFONT) / 3 && x < (GameManagerEntity.originalW - MeasureText("NO", MENUFONT)) * 3 / 4 + MeasureText("NO", MENUFONT) * 4 / 3) 
-                GameManagerEntity.sceneLabel = options;
-            
+                GameManagerEntity.sceneLabel = options;       
         }
     }
 }
@@ -309,27 +323,9 @@ void EditorDrawer::editDraw(GameManager& GameManagerEntity, MapManager MapManage
         else if (IsKeyPressed(KEY_PERIOD))
             isDrawBlock = false;
         else if (IsKeyPressed(KEY_D)) {
-            for (std::vector <DamageZone>::iterator it = GameManagerEntity.damageArr.begin(); it != GameManagerEntity.damageArr.end(); it++) {
+            for (std::vector <Object>::iterator it = GameManagerEntity.objectArr.begin(); it != GameManagerEntity.objectArr.end(); it++) {
                 if (CheckCollisionPointRec({ (float)x, (float)y }, { (float)it->x, (float)it->y, (float)it->width, (float)it->height })) {
-                    GameManagerEntity.damageArr.erase(it);
-                    return;
-                }
-            }
-            for (std::vector <Wall>::iterator it = GameManagerEntity.wallArr.begin(); it != GameManagerEntity.wallArr.end(); it++) {
-                if (CheckCollisionPointRec({ (float)x, (float)y }, { (float)it->x, (float)it->y, (float)it->width, (float)it->height })) {
-                    GameManagerEntity.wallArr.erase(it);
-                    return;
-                }
-            }
-            for (std::vector <LaunchPad>::iterator it = GameManagerEntity.launchArr.begin(); it != GameManagerEntity.launchArr.end(); it++) {
-                if (CheckCollisionPointRec({ (float)x, (float)y }, { (float)it->x, (float)it->y, (float)it->width, (float)it->height })) {
-                    GameManagerEntity.launchArr.erase(it);
-                    return;
-                }
-            }
-            for (std::vector <Water>::iterator it = GameManagerEntity.waterArr.begin(); it != GameManagerEntity.waterArr.end(); it++) {
-                if (CheckCollisionPointRec({ (float)x, (float)y }, { (float)it->x, (float)it->y, (float)it->width, (float)it->height })) {
-                    GameManagerEntity.waterArr.erase(it);
+                    GameManagerEntity.objectArr.erase(it);
                     return;
                 }
             }
@@ -342,21 +338,25 @@ void EditorDrawer::editDraw(GameManager& GameManagerEntity, MapManager MapManage
                     spawnPointInc--;
                 }
             }
-            if (CheckCollisionPointRec({ (float)x, (float)y }, { (float)GameManagerEntity.currentItem.x, (float)GameManagerEntity.currentItem.y, 32, 32 })) 
-                GameManagerEntity.currentItem.itemLabel = none;
         }
         else if (IsKeyPressed(KEY_Q))
             isExitView = !isExitView;
         else if (IsKeyPressed(KEY_R)) {
-            for (std::vector <LaunchPad>::iterator it = GameManagerEntity.launchArr.begin(); it != GameManagerEntity.launchArr.end(); it++) {
+            for (std::vector <Object>::iterator it = GameManagerEntity.objectArr.begin(); it != GameManagerEntity.objectArr.end(); it++) {
                 if (CheckCollisionPointRec({ (float)x, (float)y }, { (float)it->x, (float)it->y, (float)it->width, (float)it->height })) {
-                    it->rotation += 90;
-                    it->rotation %= 360;
+                    switch (it->label) {
+                    case launch:
+                        it->rotation += 90;
+                        it->rotation %= 360;
+                        break;
+                    case items:
+                        Item* temp = (Item*)&(*it);
+                        temp->itemLabel = (ItemLabel)((temp->itemLabel) % 2 + 1);
+                        break;
+                    }
                     return;
                 }
-            }
-            if (CheckCollisionPointRec({ (float)x, (float)y }, { (float)GameManagerEntity.currentItem.x, (float)GameManagerEntity.currentItem.y, (float)GameManagerEntity.currentItem.width, (float)GameManagerEntity.currentItem.height }))                
-                GameManagerEntity.currentItem.itemLabel = (ItemLabel)((GameManagerEntity.currentItem.itemLabel)%2 + 1);           
+            }      
         }
         if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
             if (isDrawBlock == false) {
@@ -366,14 +366,8 @@ void EditorDrawer::editDraw(GameManager& GameManagerEntity, MapManager MapManage
                     isDrawBlock = true;
                 }
                 else {
-                    for (std::vector <DamageZone>::iterator it = GameManagerEntity.damageArr.begin(); it != GameManagerEntity.damageArr.end(); it++) 
-                        if (CheckCollisionRecs({ (float)x, (float)y, 32, 32 }, { (float)it->x, (float)it->y, (float)it->width, (float)it->height })) 
-                            return;
-                    for (std::vector <Wall>::iterator it = GameManagerEntity.wallArr.begin(); it != GameManagerEntity.wallArr.end(); it++) 
-                        if (CheckCollisionRecs({ (float)x + 1, (float)y + 1, 31, 31 }, { (float)it->x, (float)it->y, (float)it->width, (float)it->height })) 
-                            return;
-                    for (std::vector <LaunchPad>::iterator it = GameManagerEntity.launchArr.begin(); it != GameManagerEntity.launchArr.end(); it++) 
-                        if (CheckCollisionRecs({ (float)x + 1, (float)y + 1, 31, 31 }, { (float)it->x, (float)it->y, (float)it->width, (float)it->height })) 
+                    for (std::vector <Object>::iterator it = GameManagerEntity.objectArr.begin(); it != GameManagerEntity.objectArr.end(); it++) 
+                        if (CheckCollisionRecs({ (float)x + 1, (float)y + 1, (float)GameManagerEntity.player.width - 1, (float)GameManagerEntity.player.height - 1 }, { (float)it->x, (float)it->y, (float)it->width, (float)it->height }))
                             return;
                     if (editMaterial == player && spawnPointInc < 4) {
                         spawnPoints[spawnPointInc].x = (float)x;
@@ -381,22 +375,22 @@ void EditorDrawer::editDraw(GameManager& GameManagerEntity, MapManager MapManage
                         spawnPointInc++;
                     }
                     else if (editMaterial == items) 
-                        GameManagerEntity.currentItem = Item(x, y, 32, 32, 0, doubleJump);
+                        GameManagerEntity.objectArr.push_back(Item(x, y, 32, 32, 0, doubleJump, false));                   
                 }
             }
             else if (isDrawBlock == true) {
                 switch (editMaterial) {
                 case wall:
-                    GameManagerEntity.wallArr.push_back(Wall(prevX > x ? x - 2 : prevX - 2, prevY > y ? y - 2 : prevY - 2, abs(x - prevX) + 4, abs(y - prevY) + 4, 0));
+                    GameManagerEntity.objectArr.push_back(Wall(prevX > x ? x - 2 : prevX - 2, prevY > y ? y - 2 : prevY - 2, abs(x - prevX) + 4, abs(y - prevY) + 4, 0));
                     break;
                 case damageZone:
-                    GameManagerEntity.damageArr.push_back(DamageZone(prevX > x ? x - 2 : prevX - 2, prevY > y ? y - 2 : prevY - 2, abs(x - prevX) + 4, abs(y - prevY) + 4, 0));
+                    GameManagerEntity.objectArr.push_back(DamageZone(prevX > x ? x - 2 : prevX - 2, prevY > y ? y - 2 : prevY - 2, abs(x - prevX) + 4, abs(y - prevY) + 4, 0));
                     break;
                 case launch:
-                    GameManagerEntity.launchArr.push_back(LaunchPad(prevX > x ? x - 2 : prevX - 2, prevY > y ? y - 2 : prevY - 2, abs(x - prevX) + 4, abs(y - prevY) + 4, 0));
+                    GameManagerEntity.objectArr.push_back(LaunchPad(prevX > x ? x - 2 : prevX - 2, prevY > y ? y - 2 : prevY - 2, abs(x - prevX) + 4, abs(y - prevY) + 4, 0));
                     break;
                 case water:
-                    GameManagerEntity.waterArr.push_back(Water(prevX > x ? x - 2 : prevX - 2, prevY > y ? y - 2 : prevY - 2, abs(x - prevX) + 4, abs(y - prevY) + 4, 0));
+                    GameManagerEntity.objectArr.push_back(Water(prevX > x ? x - 2 : prevX - 2, prevY > y ? y - 2 : prevY - 2, abs(x - prevX) + 4, abs(y - prevY) + 4, 0));
                     break;
                 }
                 isDrawBlock = false;

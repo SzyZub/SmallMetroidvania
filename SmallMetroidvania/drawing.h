@@ -13,18 +13,6 @@
 #define DASHCOLOR {0, 255, 0, 255}
 #define MENUFONT 64
 
-void initScreen(GameManager GameManagerEntity);
-void drawAllObjects(GameManager GameManagerEntity);
-void mainDraw(GameManager& GameManagerEntity, MapManager& MapManagerEntity);
-void errorLoadDraw(GameManager& GameManagerEntity, MapManager& MapManagerEntity);
-void chooseMap(GameManager& GameManagerEntity, MapManager& MapManagerEntity);
-bool checkBorders(GameManager& GameManagerEntity, MapManager& MapManagerEntity);
-void gameDraw(GameManager& GameManagerEntity, MapManager& MapManagerEntity);
-void titleDraw(GameManager& GameManagerEntity);
-void menuDraw(GameManager& GameManagerEntity, MapManager MapManagerEntity);
-void optionsDraw(GameManager& GameManagerEntity);
-void yesOrNoDraw(GameManager& GameManagerEntity);
-
 class EditorDrawer {
 private:
     bool isEditMode, isDrawBlock, isExitView, isMeasure;
@@ -35,3 +23,15 @@ public:
     EditorDrawer();
     void editDraw(GameManager& GameManagerEntity, MapManager MapManagerEntity);
 };
+
+void initScreen(GameManager GameManagerEntity);
+void drawAllObjects(GameManager GameManagerEntity);
+void mainDraw(GameManager& GameManagerEntity, MapManager& MapManagerEntity, EditorDrawer** EditorDrawerEntity);
+void errorLoadDraw(GameManager& GameManagerEntity, MapManager& MapManagerEntity);
+void chooseMap(GameManager& GameManagerEntity, MapManager& MapManagerEntity);
+bool checkBorders(GameManager& GameManagerEntity, MapManager& MapManagerEntity);
+void gameDraw(GameManager& GameManagerEntity, MapManager& MapManagerEntity);
+void titleDraw(GameManager& GameManagerEntity, EditorDrawer** EditorDrawerEntity);
+void menuDraw(GameManager& GameManagerEntity, MapManager MapManagerEntity);
+void optionsDraw(GameManager& GameManagerEntity);
+void yesOrNoDraw(GameManager& GameManagerEntity);
