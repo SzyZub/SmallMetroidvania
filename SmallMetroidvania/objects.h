@@ -1,6 +1,13 @@
 #pragma once
 #include "raylib.h"
 #include <vector>
+ 
+constexpr int PLAYERSIZE = 24;
+constexpr int PLAYERMAXX = 5;
+constexpr int PLAYERMAXY = 12;
+constexpr int PLAYERMAXDASH = 20;
+constexpr int GRAVITY = 1;
+constexpr int PLAYERACC = 2;
 
 typedef enum SceneLabel {
 	game = 0,

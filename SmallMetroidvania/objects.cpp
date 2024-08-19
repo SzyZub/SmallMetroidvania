@@ -3,9 +3,9 @@
 Item::Item(int readX, int readY, int readWith, int readHeight, int readRotation, ItemLabel readItemLabel, bool readCollected) {
 	x = readX;
 	y = readY;
-	width = readWith;
-	height = readHeight;
-	rotation = readRotation;
+	width = PLAYERSIZE;
+	height = PLAYERSIZE;
+	rotation = 0;
 	itemLabel = readItemLabel;
 	label = items;
 	collected = readCollected;
@@ -22,7 +22,7 @@ Wall::Wall(int readX, int readY, int readWith, int readHeight, int readRotation)
 	y = readY;
 	width = readWith;
 	height = readHeight;
-	rotation = readRotation;
+	rotation = 0;
 	label = wall;
 }
 
@@ -31,7 +31,7 @@ DamageZone::DamageZone(int readX, int readY, int readWith, int readHeight, int r
 	y = readY;
 	width = readWith;
 	height = readHeight;
-	rotation = readRotation;
+	rotation = 0;
 	label = damageZone;
 }
 
@@ -49,7 +49,7 @@ Water::Water(int readX, int readY, int readWith, int readHeight, int readRotatio
 	y = readY;
 	width = readWith;
 	height = readHeight;
-	rotation = readRotation;
+	rotation = 0;
 	label = water;
 }
 
@@ -59,8 +59,8 @@ Player::Player() {
 	y = -50;
 	moveX = 0;
 	moveY = 0;
-	width = 32;
-	height = 32;
+	width = PLAYERSIZE;
+	height = PLAYERSIZE;
 	rotation = 0;
 	jumped = 0;
 	allowedJumps = 1;
@@ -80,28 +80,28 @@ void Player::move(std::vector <Object>& objectArr, SoundLibrary SoundManagerEnti
 		friction();
 		if (IsKeyDown(KEY_LEFT_SHIFT) && allowedDash && !isDashed) {
 			if (moveX > 0) 
-				moveX = 30;
+				moveX = PLAYERMAXDASH;
 			else if (moveX < 0)
-				moveX = -30;
+				moveX = -PLAYERMAXDASH;
 			moveY = 0;
 			isDashed = true;
 		}
-		if (IsKeyDown(KEY_RIGHT) && moveX < 6)
-			moveX += 3;
-		else if (IsKeyDown(KEY_LEFT) && moveX > -6)
-			moveX -= 3;	
+		if (IsKeyDown(KEY_RIGHT) && moveX < PLAYERMAXX)
+			moveX += PLAYERACC;
+		else if (IsKeyDown(KEY_LEFT) && moveX > -PLAYERMAXX)
+			moveX -= PLAYERACC;
 		if (waterCol) {
 			isDashed = false;
 			isInAir = false;
-			if (moveY < 3)
-				moveY++;
+			if (moveY < PLAYERMAXY/2)
+				moveY += GRAVITY;
 			if (moveY > 0) 
 				jumped = allowedJumps - 1;			
-		} else if (!isDashed || abs(moveX) < 10)
-			moveY++;
-		if ((IsKeyPressed(KEY_UP) || IsKeyPressed(KEY_SPACE)) && jumped < allowedJumps && abs(moveX) < 10 && ((isInAir && allowedJumps != 1) || (!isInAir))) {
+		} else if (!isDashed || abs(moveX) < PLAYERMAXDASH / 2)
+			moveY += GRAVITY;
+		if ((IsKeyPressed(KEY_UP) || IsKeyPressed(KEY_SPACE)) && jumped < allowedJumps && abs(moveX) < PLAYERMAXDASH / 2 && ((isInAir && allowedJumps != 1) || (!isInAir))) {
 			isInAir == true ? jumped = allowedJumps : jumped++;
-			moveY = -15;
+			moveY = -PLAYERMAXY;
 			if (waterCol)
 				PlaySound(SoundManagerEntity.JumpWaterSound);
 			else
@@ -139,12 +139,18 @@ bool Player::collision(std::vector <Object>& objectArr, SoundLibrary SoundManage
 						return false;
 						break;
 					case launch:
-						if (it->rotation == 90)
-							moveX = -30;
-						else if (it->rotation == 180)
-							moveY = -25;
-						else if (it->rotation == 270)
-							moveX = 30;
+						if (it->rotation == 90) {
+							moveX = -PLAYERMAXX * 6;
+							moveY = 0;
+						}
+						else if (it->rotation == 180) {
+							moveY = -PLAYERMAXX * 5;
+							moveX = 0;
+						}
+						else if (it->rotation == 270) {
+							moveX = PLAYERMAXX * 6;
+							moveY = 0;
+						}
 						PlaySound(SoundManagerEntity.LaunchSound);
 						break;
 					case wall:
@@ -196,14 +202,14 @@ bool Player::collision(std::vector <Object>& objectArr, SoundLibrary SoundManage
 
 void Player::friction() {
 	if (moveX > 0)
-		moveX--;
+		moveX -= GRAVITY;
 	else if (moveX < 0)
-		moveX++;
+		moveX += GRAVITY;
 	if (isDashed) {
 		if (moveX > 0)
-			moveX--;
+			moveX -= GRAVITY;
 		else
-			moveX++;
+			moveX += GRAVITY;
 	}
 }
 

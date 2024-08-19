@@ -20,8 +20,6 @@ int main(void)
 //Shooting enemies
 //Moving platforms/enemies
 //Sucking in block
-//Make every block etc smaller
 //make a victory screen
 //make a timer that will show how long you have played the game
 //testing directly into editor
-//make player size lower
