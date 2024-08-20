@@ -12,6 +12,8 @@ void MapManager::deloadmap(GameManager& GameManagerEntity) {
 }
 
 bool MapManager::loadmap(GameManager& GameManagerEntity) {
+    GameManagerEntity.isAnnounce = false;
+    GameManagerEntity.announceText.clear();
     std::string mapData;
     int spawnPointInc = 0;
     Vector2 spawnPoints[4];
@@ -59,6 +61,11 @@ bool MapManager::loadmap(GameManager& GameManagerEntity) {
         case 5:
             fillValues(val1, val2, val3, val4, val5, pos, prevPos, mapData);
             GameManagerEntity.objectArr.push_back(Water(val1, val2, val3, val4, val5));
+            break;
+        case 98:
+            GameManagerEntity.announceText = mapData.substr(pos+1, mapData.length());
+            GameManagerEntity.player.respawnTime = GetTime();
+            GameManagerEntity.isAnnounce = true;
             break;
         case 99:
             pos = mapData.find(' ', prevPos);
@@ -130,6 +137,8 @@ void MapManager::savemap(GameManager GameManagerEntity, Vector2 spawnPoints[4], 
     }
     for (int i = 0; i < spawnPointsNum; i++) 
         writeFile << 99 << ' ' << spawnPoints[i].x << ' ' << spawnPoints[i].y << ' ' << '\n';
+    if (GameManagerEntity.announceText.length() != 0) 
+        writeFile << 98 << GameManagerEntity.announceText;
     writeFile.close();
 }
 
@@ -140,7 +149,7 @@ void saveCampaignState(GameManager GameManagerEntity, MapManager MapManagerEntit
     if (MapManagerEntity.campaginType == campaign)
         writeFile.open("Maps/Campaign/CampaignSave.txt");
     writeFile << GameManagerEntity.player.spawnPoint.x << ' ' << GameManagerEntity.player.spawnPoint.y << '\n';
-    writeFile << MapManagerEntity.row << ' ' << MapManagerEntity.col << '\n';
+    writeFile << MapManagerEntity.row << ' ' << MapManagerEntity.col << ' ' << GameManagerEntity.totalTime << '\n';
     writeFile << GameManagerEntity.player.allowedJumps << ' ' << (GameManagerEntity.player.allowedDash == true) ? 1 : 0 << '\n';
     writeFile.close();
 }
@@ -158,31 +167,27 @@ void MapManager::loadCampaignState(GameManager& GameManagerEntity) {
     std::getline(readFile, mapData);
     std::size_t pos = mapData.find(' ');
     std::size_t prevPos = 0;
-    pos = mapData.find(' ', prevPos);
-    tempValue = std::stoi(mapData.substr(prevPos, pos));
-    prevPos = pos + 1;
+    getData(pos, prevPos, mapData, tempValue);
     GameManagerEntity.player.spawnPoint.x = (float) tempValue;
-    pos = mapData.find(' ', prevPos);
-    tempValue = std::stoi(mapData.substr(prevPos, pos));
-    prevPos = pos + 1;
+    getData(pos, prevPos, mapData, tempValue);
     GameManagerEntity.player.spawnPoint.y = (float) tempValue;
     std::getline(readFile, mapData);
-    pos = mapData.find(' ', prevPos);
-    tempValue = std::stoi(mapData.substr(prevPos, pos));
-    prevPos = pos + 1;
+    getData(pos, prevPos, mapData, tempValue);
     row = tempValue;
-    pos = mapData.find(' ', prevPos);
-    tempValue = std::stoi(mapData.substr(prevPos, pos));
-    prevPos = pos + 1;
+    getData(pos, prevPos, mapData, tempValue);
     col = tempValue;
+    getData(pos, prevPos, mapData, tempValue);
+    GameManagerEntity.totalTime = tempValue;
     std::getline(readFile, mapData);
-    pos = mapData.find(' ', prevPos);
-    tempValue = std::stoi(mapData.substr(prevPos, pos));
-    prevPos = pos + 1;
+    getData(pos, prevPos, mapData, tempValue);
     GameManagerEntity.player.allowedJumps = tempValue;
-    pos = mapData.find(' ', prevPos);
-    tempValue = std::stoi(mapData.substr(prevPos, pos));
-    prevPos = pos + 1;
+    getData(pos, prevPos, mapData, tempValue);
     GameManagerEntity.player.allowedDash = tempValue;
     readFile.close();
+}
+
+void getData(std::size_t& pos, std::size_t& prevPos, std::string& mapData, int& tempValue) {
+    pos = mapData.find(' ', prevPos);
+    tempValue = std::stoi(mapData.substr(prevPos, pos));
+    prevPos = pos + 1;
 }

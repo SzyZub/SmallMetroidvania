@@ -1,4 +1,4 @@
-#include "drawing.h"
+#include "drawing.h"+
 
 void initScreen(GameManager GameManagerEntity) {
     InitWindow(GameManagerEntity.originalW, GameManagerEntity.originalH, "MetroidCube");
@@ -73,7 +73,7 @@ void mainDraw(GameManager& GameManagerEntity, MapManager& MapManagerEntity, Edit
         gameDraw(GameManagerEntity, MapManagerEntity);
         break;
     case title:
-        titleDraw(GameManagerEntity, EditorDrawerEntity);
+        titleDraw(GameManagerEntity, EditorDrawerEntity, MapManagerEntity);
         break;
     case options:
         optionsDraw(GameManagerEntity);
@@ -93,6 +93,8 @@ void mainDraw(GameManager& GameManagerEntity, MapManager& MapManagerEntity, Edit
     case edit:
         (*EditorDrawerEntity)->editDraw(GameManagerEntity, MapManagerEntity);
         break;
+    case victory:
+        victoryDraw(GameManagerEntity, MapManagerEntity);
     }
     EndDrawing();
 }
@@ -164,6 +166,8 @@ bool checkBorders(GameManager& GameManagerEntity, MapManager& MapManagerEntity) 
 }
 
 void gameDraw(GameManager& GameManagerEntity, MapManager& MapManagerEntity) {
+    if (GameManagerEntity.isAnnounce && GameManagerEntity.player.respawnTime + 8 > GetTime())
+        announce(GameManagerEntity, GameManagerEntity.announceText);
     drawAllObjects(GameManagerEntity);
     if (MapManagerEntity.campaginType == test) {
         if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
@@ -194,9 +198,14 @@ void gameDraw(GameManager& GameManagerEntity, MapManager& MapManagerEntity) {
     GameManagerEntity.player.move(GameManagerEntity.objectArr, GameManagerEntity.SoundManagerEntity);
     if (IsKeyPressed(KEY_TAB)) 
         GameManagerEntity.sceneLabel = menu;
+    GameManagerEntity.totalTime++;
 }
 
-void titleDraw(GameManager& GameManagerEntity, EditorDrawer** EditorDrawerEntity) {
+void announce(GameManager GameManagerEntity, std::string text) {
+    DrawText(text.c_str(), (GameManagerEntity.originalW - MeasureText(text.c_str(), MENUFONT)) / 2, GameManagerEntity.originalH * 2 / 10 - MENUFONT / 2, MENUFONT, BLACK);
+}
+
+void titleDraw(GameManager& GameManagerEntity, EditorDrawer** EditorDrawerEntity, MapManager& MapManagerEntity) {
     if ((*EditorDrawerEntity) != NULL) {
         delete (*EditorDrawerEntity);
         (*EditorDrawerEntity) = NULL;
@@ -212,6 +221,8 @@ void titleDraw(GameManager& GameManagerEntity, EditorDrawer** EditorDrawerEntity
             GameManagerEntity.sceneLabel = choosing;       
         else if (y < GameManagerEntity.originalH / 2) {
             (*EditorDrawerEntity) = new EditorDrawer();
+            MapManagerEntity.campaginType = test;
+            MapManagerEntity.loadmap(GameManagerEntity);
             GameManagerEntity.sceneLabel = edit;
             GameManagerEntity.player.respawnTime = 0;
         }
@@ -465,5 +476,22 @@ EditorDrawer::EditorDrawer() {
     for (int i = 0; i < 4; i++) {
         spawnPoints->x = 0;
         spawnPoints->y = 0;
+    }
+}
+
+void victoryDraw(GameManager& GameManagerEntity, MapManager MapManagerEntity) {
+    DrawText("Congratulations!", (GameManagerEntity.originalW - MeasureText("Congratulations!", MENUFONT)) / 2, GameManagerEntity.originalH / 10 - MENUFONT / 2, MENUFONT, BLACK);
+    DrawText("You won in:", (GameManagerEntity.originalW - MeasureText("You won in:", MENUFONT)) / 2, GameManagerEntity.originalH * 2/ 10 - MENUFONT / 2, MENUFONT, BLACK);
+    DrawText("You won in:", (GameManagerEntity.originalW - MeasureText("You won in:", MENUFONT)) / 2, GameManagerEntity.originalH * 2 / 10 - MENUFONT / 2, MENUFONT, BLACK);
+    DrawText(TextFormat("%ih", (GameManagerEntity.totalTime/60) / 3600), (GameManagerEntity.originalW - MeasureText(TextFormat("%ih", (GameManagerEntity.totalTime % 216000) / 3600), MENUFONT)) / 4, GameManagerEntity.originalH * 4 / 10 - MENUFONT / 2, MENUFONT, BLACK);
+    DrawText(TextFormat("%imin", ((GameManagerEntity.totalTime / 60) / 60) % 60), (GameManagerEntity.originalW - MeasureText(TextFormat("%imin", (GameManagerEntity.totalTime % 3600) / 60), MENUFONT)) * 2 / 4, GameManagerEntity.originalH * 4 / 10 - MENUFONT / 2, MENUFONT, BLACK);
+    DrawText(TextFormat("%is", (GameManagerEntity.totalTime / 60) % 60), (GameManagerEntity.originalW - MeasureText(TextFormat("%is", GameManagerEntity.totalTime % 60), MENUFONT)) * 3 / 4, GameManagerEntity.originalH * 4 / 10 - MENUFONT / 2, MENUFONT, BLACK);
+    DrawText("Go back to menu", (GameManagerEntity.originalW - MeasureText("Go back to menu", MENUFONT)) / 2, GameManagerEntity.originalH * 9 / 10 - MENUFONT / 2, MENUFONT, BLACK);
+    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+        PlaySound(GameManagerEntity.SoundManagerEntity.SelectSound);
+        int y = GetMouseY();
+        int x = GetMouseX();
+        if (y > GameManagerEntity.originalH * 8 / 10 - MENUFONT / 2)
+            GameManagerEntity.sceneLabel = title;
     }
 }

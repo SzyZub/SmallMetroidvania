@@ -240,6 +240,8 @@ GameManager::GameManager() {
 	originalW = 1280;
 	framerate = 60;
 	sceneLabel = title;
+	totalTime = 0;
+	isAnnounce = true;
 	SoundManagerEntity = { NULL };
 }
 

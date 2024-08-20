@@ -31,7 +31,9 @@ void errorLoadDraw(GameManager& GameManagerEntity, MapManager& MapManagerEntity)
 void chooseMap(GameManager& GameManagerEntity, MapManager& MapManagerEntity);
 bool checkBorders(GameManager& GameManagerEntity, MapManager& MapManagerEntity);
 void gameDraw(GameManager& GameManagerEntity, MapManager& MapManagerEntity);
-void titleDraw(GameManager& GameManagerEntity, EditorDrawer** EditorDrawerEntity);
+void announce(GameManager GameManagerEntity, std::string text);
+void titleDraw(GameManager& GameManagerEntity, EditorDrawer** EditorDrawerEntity, MapManager& MapManagerEntity);
 void menuDraw(GameManager& GameManagerEntity, MapManager MapManagerEntity);
 void optionsDraw(GameManager& GameManagerEntity);
 void yesOrNoDraw(GameManager& GameManagerEntity);
+void victoryDraw(GameManager& GameManagerEntity, MapManager MapManagerEntity);

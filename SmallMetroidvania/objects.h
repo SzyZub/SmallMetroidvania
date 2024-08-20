@@ -1,5 +1,6 @@
 #pragma once
 #include "raylib.h"
+#include <string>
 #include <vector>
  
 constexpr int PLAYERSIZE = 24;
@@ -18,7 +19,8 @@ typedef enum SceneLabel {
 	choosing,
 	menu,
 	errorLoad,
-	choice
+	choice,
+	victory
 }SceneLabel;
 
 typedef enum EntityLabel {
@@ -98,6 +100,9 @@ class GameManager {
 public:
 	GameManager();
 	int originalW, originalH, framerate;
+	long long totalTime;
+	bool isAnnounce;
+	std::string announceText;
 	SceneLabel sceneLabel;
 	SoundLibrary SoundManagerEntity;
 	Player player;
