@@ -59,6 +59,9 @@ void drawAllObjects(GameManager GameManagerEntity) {
                 case dash:
                     DrawRectangle(it->x, it->y, it->width, it->height, DASHCOLOR);
                     break;
+                case trophy:
+                    DrawRectangle(it->x, it->y, it->width, it->height, TROPHYCOLOR);
+                    break;
                 }
             }
             break;
@@ -71,6 +74,10 @@ void mainDraw(GameManager& GameManagerEntity, MapManager& MapManagerEntity, Edit
     switch (GameManagerEntity.sceneLabel) {
     case game: 
         gameDraw(GameManagerEntity, MapManagerEntity);
+        if (GameManagerEntity.player.isVictory == true) {
+            GameManagerEntity.sceneLabel = victory;
+            MapManagerEntity.deloadmap(GameManagerEntity);
+        }
         break;
     case title:
         titleDraw(GameManagerEntity, EditorDrawerEntity, MapManagerEntity);
@@ -198,7 +205,8 @@ void gameDraw(GameManager& GameManagerEntity, MapManager& MapManagerEntity) {
     GameManagerEntity.player.move(GameManagerEntity.objectArr, GameManagerEntity.SoundManagerEntity);
     if (IsKeyPressed(KEY_TAB)) 
         GameManagerEntity.sceneLabel = menu;
-    GameManagerEntity.totalTime++;
+    if(MapManagerEntity.campaginType == campaign)
+        GameManagerEntity.totalTime++;
 }
 
 void announce(GameManager GameManagerEntity, std::string text) {
@@ -375,7 +383,7 @@ void EditorDrawer::editDraw(GameManager& GameManagerEntity, MapManager MapManage
                         break;
                     case items:
                         Item* temp = (Item*)&(*it);
-                        temp->itemLabel = (ItemLabel)((temp->itemLabel) % 2 + 1);
+                        temp->itemLabel = (ItemLabel)((temp->itemLabel) % 3 + 1);
                         break;
                     }
                     return;
@@ -481,11 +489,13 @@ EditorDrawer::EditorDrawer() {
 
 void victoryDraw(GameManager& GameManagerEntity, MapManager MapManagerEntity) {
     DrawText("Congratulations!", (GameManagerEntity.originalW - MeasureText("Congratulations!", MENUFONT)) / 2, GameManagerEntity.originalH / 10 - MENUFONT / 2, MENUFONT, BLACK);
-    DrawText("You won in:", (GameManagerEntity.originalW - MeasureText("You won in:", MENUFONT)) / 2, GameManagerEntity.originalH * 2/ 10 - MENUFONT / 2, MENUFONT, BLACK);
-    DrawText("You won in:", (GameManagerEntity.originalW - MeasureText("You won in:", MENUFONT)) / 2, GameManagerEntity.originalH * 2 / 10 - MENUFONT / 2, MENUFONT, BLACK);
-    DrawText(TextFormat("%ih", (GameManagerEntity.totalTime/60) / 3600), (GameManagerEntity.originalW - MeasureText(TextFormat("%ih", (GameManagerEntity.totalTime % 216000) / 3600), MENUFONT)) / 4, GameManagerEntity.originalH * 4 / 10 - MENUFONT / 2, MENUFONT, BLACK);
-    DrawText(TextFormat("%imin", ((GameManagerEntity.totalTime / 60) / 60) % 60), (GameManagerEntity.originalW - MeasureText(TextFormat("%imin", (GameManagerEntity.totalTime % 3600) / 60), MENUFONT)) * 2 / 4, GameManagerEntity.originalH * 4 / 10 - MENUFONT / 2, MENUFONT, BLACK);
-    DrawText(TextFormat("%is", (GameManagerEntity.totalTime / 60) % 60), (GameManagerEntity.originalW - MeasureText(TextFormat("%is", GameManagerEntity.totalTime % 60), MENUFONT)) * 3 / 4, GameManagerEntity.originalH * 4 / 10 - MENUFONT / 2, MENUFONT, BLACK);
+    if (MapManagerEntity.campaginType == campaign) {
+        DrawText("You won in:", (GameManagerEntity.originalW - MeasureText("You won in:", MENUFONT)) / 2, GameManagerEntity.originalH * 2 / 10 - MENUFONT / 2, MENUFONT, BLACK);
+        DrawText("You won in:", (GameManagerEntity.originalW - MeasureText("You won in:", MENUFONT)) / 2, GameManagerEntity.originalH * 2 / 10 - MENUFONT / 2, MENUFONT, BLACK);
+        DrawText(TextFormat("%ih", (GameManagerEntity.totalTime / 60) / 3600), (GameManagerEntity.originalW - MeasureText(TextFormat("%ih", (GameManagerEntity.totalTime % 216000) / 3600), MENUFONT)) / 4, GameManagerEntity.originalH * 4 / 10 - MENUFONT / 2, MENUFONT, BLACK);
+        DrawText(TextFormat("%imin", ((GameManagerEntity.totalTime / 60) / 60) % 60), (GameManagerEntity.originalW - MeasureText(TextFormat("%imin", (GameManagerEntity.totalTime % 3600) / 60), MENUFONT)) * 2 / 4, GameManagerEntity.originalH * 4 / 10 - MENUFONT / 2, MENUFONT, BLACK);
+        DrawText(TextFormat("%is", (GameManagerEntity.totalTime / 60) % 60), (GameManagerEntity.originalW - MeasureText(TextFormat("%is", GameManagerEntity.totalTime % 60), MENUFONT)) * 3 / 4, GameManagerEntity.originalH * 4 / 10 - MENUFONT / 2, MENUFONT, BLACK);
+    }
     DrawText("Go back to menu", (GameManagerEntity.originalW - MeasureText("Go back to menu", MENUFONT)) / 2, GameManagerEntity.originalH * 9 / 10 - MENUFONT / 2, MENUFONT, BLACK);
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
         PlaySound(GameManagerEntity.SoundManagerEntity.SelectSound);
@@ -493,5 +503,6 @@ void victoryDraw(GameManager& GameManagerEntity, MapManager MapManagerEntity) {
         int x = GetMouseX();
         if (y > GameManagerEntity.originalH * 8 / 10 - MENUFONT / 2)
             GameManagerEntity.sceneLabel = title;
+        GameManagerEntity.player.isVictory = false;
     }
 }

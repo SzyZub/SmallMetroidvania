@@ -69,6 +69,7 @@ Player::Player() {
 	isRespawning = false;
 	isDashed = false;
 	allowedDash = false;
+	isVictory = false;
 	respawnTime = 0;
 }
 
@@ -186,10 +187,13 @@ bool Player::collision(std::vector <Object>& objectArr, SoundLibrary SoundManage
 						returnVal = true;
 						break;
 					case items:
+						PlaySound(SoundManagerEntity.PickUp);
 						if (it->itemLabel == doubleJump)
 							allowedJumps = 2;
 						else if (it->itemLabel == dash)
 							allowedDash = true;
+						else if (it->itemLabel == trophy) 
+							isVictory = true;
 						it->itemLabel = none;
 						it->collected = true;
 						break;
@@ -251,5 +255,6 @@ void GameManager::initSounds() {
 	SoundManagerEntity.DeathSound = LoadSound("Sounds/death.wav");
 	SoundManagerEntity.LaunchSound = LoadSound("Sounds/launch.wav");
 	SoundManagerEntity.SelectSound = LoadSound("Sounds/select.wav");
+	SoundManagerEntity.PickUp = LoadSound("Sounds/pickUp.wav");
 	SoundManagerEntity.Volume = 10;
 }

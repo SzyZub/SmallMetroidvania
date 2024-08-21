@@ -16,7 +16,7 @@ bool MapManager::loadmap(GameManager& GameManagerEntity) {
     GameManagerEntity.announceText.clear();
     std::string mapData;
     int spawnPointInc = 0;
-    Vector2 spawnPoints[4];
+    Vector2 spawnPoints[4] = { 0, 0 };
     int val1, val2, val3, val4, val5;
     ItemLabel tempItemLabel = none;
     bool isItemCollected = false;
@@ -53,6 +53,9 @@ bool MapManager::loadmap(GameManager& GameManagerEntity) {
                 if (GameManagerEntity.player.allowedDash == true)
                     isItemCollected = true;
             }
+        case 6:
+            if (tempItemLabel == none) 
+                tempItemLabel = trophy;
             fillValues(val1, val2, val3, val4, val5, pos, prevPos, mapData);
             GameManagerEntity.objectArr.push_back(Item(val1, val2, val3, val4, val5, tempItemLabel, isItemCollected));
             tempItemLabel = none;
@@ -129,6 +132,9 @@ void MapManager::savemap(GameManager GameManagerEntity, Vector2 spawnPoints[4], 
                 break;
             case dash:
                 writeFile << 4;
+                break;
+            case trophy:
+                writeFile << 6;
                 break;
             }
             break;
