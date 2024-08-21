@@ -50,6 +50,16 @@ bool MapManager::loadmap(GameManager& GameManagerEntity) {
             GameManagerEntity.objectArr.push_back(Wall(val1, val2, val3, val4, val5));
             GameManagerEntity.objectArr.back().wallColor = green;
             break;
+        case 13:
+            fillValues(val1, val2, val3, val4, val5, pos, prevPos, mapData);
+            GameManagerEntity.objectArr.push_back(Wall(val1, val2, val3, val4, val5));
+            GameManagerEntity.objectArr.back().wallColor = popOff;
+            break;
+        case 14:
+            fillValues(val1, val2, val3, val4, val5, pos, prevPos, mapData);
+            GameManagerEntity.objectArr.push_back(Wall(val1, val2, val3, val4, val5));
+            GameManagerEntity.objectArr.back().wallColor = popOn;
+            break;
         case 1:
             fillValues(val1, val2, val3, val4, val5, pos, prevPos, mapData);
             GameManagerEntity.objectArr.push_back(DamageZone(val1, val2, val3, val4, val5));
@@ -87,6 +97,12 @@ bool MapManager::loadmap(GameManager& GameManagerEntity) {
             if (tempItemLabel == none) {
                 tempItemLabel = greenKey;
                 if (GameManagerEntity.player.hasGreen == true)
+                    isItemCollected = true;
+            }
+        case 15:
+            if (tempItemLabel == none) {
+                tempItemLabel = popControl;
+                if (GameManagerEntity.player.hasPopControl == true)
                     isItemCollected = true;
             }
             fillValues(val1, val2, val3, val4, val5, pos, prevPos, mapData);
@@ -160,6 +176,12 @@ void MapManager::savemap(GameManager GameManagerEntity, Vector2 spawnPoints[4], 
             case green:
                 writeFile << 12;
                 break;
+            case popOff:
+                writeFile << 13;
+                break;
+            case popOn:
+                writeFile << 14;
+                break;
             }
             break;
         case damageZone:
@@ -191,6 +213,9 @@ void MapManager::savemap(GameManager GameManagerEntity, Vector2 spawnPoints[4], 
             case greenKey:
                 writeFile << 9;
                 break;
+            case popControl:
+                writeFile << 15;
+                break;
             }
             break;
         }
@@ -211,7 +236,7 @@ void saveCampaignState(GameManager GameManagerEntity, MapManager MapManagerEntit
         writeFile.open("Maps/Campaign/CampaignSave.txt");
     writeFile << GameManagerEntity.player.spawnPoint.x << ' ' << GameManagerEntity.player.spawnPoint.y << '\n';
     writeFile << MapManagerEntity.row << ' ' << MapManagerEntity.col << ' ' << GameManagerEntity.totalTime << '\n';
-    writeFile << GameManagerEntity.player.allowedJumps << ' ' << ((GameManagerEntity.player.allowedDash == true) ? 1 : 0) << ' ' << ((GameManagerEntity.player.hasRed == true) ? 1 : 0) << ' ' << ((GameManagerEntity.player.hasBlue == true) ? 1 : 0) << ' ' << ((GameManagerEntity.player.hasGreen == true) ? 1 : 0) << '\n';
+    writeFile << GameManagerEntity.player.allowedJumps << ' ' << ((GameManagerEntity.player.allowedDash == true) ? 1 : 0) << ' ' << ((GameManagerEntity.player.hasRed == true) ? 1 : 0) << ' ' << ((GameManagerEntity.player.hasBlue == true) ? 1 : 0) << ' ' << ((GameManagerEntity.player.hasGreen == true) ? 1 : 0) << ' ' << ((GameManagerEntity.player.hasPopControl == true) ? 1 : 0) << '\n';
     writeFile.close();
 }
 
@@ -250,6 +275,8 @@ void MapManager::loadCampaignState(GameManager& GameManagerEntity) {
     GameManagerEntity.player.hasBlue = tempValue;
     getData(pos, prevPos, mapData, tempValue);
     GameManagerEntity.player.hasGreen = tempValue;
+    getData(pos, prevPos, mapData, tempValue);
+    GameManagerEntity.player.hasPopControl = tempValue;
     readFile.close();
 }
 

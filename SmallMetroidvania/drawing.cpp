@@ -48,8 +48,11 @@ void drawAllObjects(GameManager GameManagerEntity) {
             }
             break;
         case wall:
-            if (it->wallColor == red && GameManagerEntity.player.hasRed == false || it->wallColor == blue && GameManagerEntity.player.hasBlue == false || it->wallColor == green && GameManagerEntity.player.hasGreen == false || it->wallColor == noColor) {
-                DrawRectangle(it->x, it->y, it->width, it->height, WALLCOLOR);
+            if (it->wallColor == red && GameManagerEntity.player.hasRed == false || it->wallColor == blue && GameManagerEntity.player.hasBlue == false || it->wallColor == green && GameManagerEntity.player.hasGreen == false || it->wallColor == noColor || it->wallColor == popOff || it->wallColor == popOn) {
+                if (it->wallColor == popOff && GameManagerEntity.player.popState == false || it->wallColor == popOn && GameManagerEntity.player.popState == true)
+                    DrawRectangle(it->x, it->y, it->width, it->height, { 10, 10, 10, 80 });
+                else 
+                    DrawRectangle(it->x, it->y, it->width, it->height, WALLCOLOR);
                 switch (it->wallColor) {
                 case red:
                     DrawRectangle(it->x + 8, it->y + 8, it->width - 16, it->height - 16, RED);
@@ -59,6 +62,10 @@ void drawAllObjects(GameManager GameManagerEntity) {
                     break;
                 case green:
                     DrawRectangle(it->x + 8, it->y + 8, it->width - 16, it->height - 16, GREEN);
+                    break;
+                case popOff:
+                case popOn:
+                    DrawRectangle(it->x + 12, it->y + 12, it->width - 24, it->height - 24, BACKGROUNDCOLOR);
                     break;
                 }
             }
@@ -86,6 +93,10 @@ void drawAllObjects(GameManager GameManagerEntity) {
                 case greenKey:
                     DrawRectangle(it->x, it->y, it->width, it->height, GREEN);
                     DrawRectangle(it->x + it->width / 3, it->y + it->height / 3, it->width / 3, it->height / 3, WHITE);
+                    break;
+                case popControl:
+                    DrawRectangle(it->x, it->y, it->width, it->height, BLACK);
+                    DrawRectangle(it->x + it->width / 2 - 4, it->y - 12, 8, 12, BLACK);
                     break;
                 }
             }
@@ -176,12 +187,14 @@ bool checkBorders(GameManager& GameManagerEntity, MapManager& MapManagerEntity) 
     bool tempRed = GameManagerEntity.player.hasRed;
     bool tempBlue = GameManagerEntity.player.hasBlue;
     bool tempGreen = GameManagerEntity.player.hasGreen;
+    bool hasControl = GameManagerEntity.player.hasPopControl;
     MapManagerEntity.deloadmap(GameManagerEntity);
     GameManagerEntity.player.allowedJumps = tempAllowedJump;
     GameManagerEntity.player.allowedDash = tempAllowedDash;
     GameManagerEntity.player.hasRed = tempRed;
     GameManagerEntity.player.hasBlue = tempBlue;
     GameManagerEntity.player.hasGreen = tempGreen;
+    GameManagerEntity.player.hasPopControl = hasControl;
     if (GameManagerEntity.player.x > GameManagerEntity.originalW- GameManagerEntity.player.width / 2) {
         MapManagerEntity.col++;
         GameManagerEntity.player.x = -GameManagerEntity.player.width/2;
@@ -212,6 +225,7 @@ void gameDraw(GameManager& GameManagerEntity, MapManager& MapManagerEntity) {
             GameManagerEntity.player.spawnPoint.x = (float)GetMouseX();
             GameManagerEntity.player.spawnPoint.y = (float)GetMouseY();
             GameManagerEntity.player.respawn();
+            MapManagerEntity.deloadmap(GameManagerEntity);
             MapManagerEntity.loadmap(GameManagerEntity);
         }
         if (IsKeyPressed(KEY_ONE))
@@ -413,10 +427,10 @@ void EditorDrawer::editDraw(GameManager& GameManagerEntity, MapManager MapManage
                         it->rotation %= 360;
                         break;
                     case items:
-                        it->itemLabel = (ItemLabel)((it->itemLabel) % 6 + 1);
+                        it->itemLabel = (ItemLabel)((it->itemLabel) % 7 + 1);
                         break;
                     case wall:
-                        it->wallColor = (WallColor)(((it->wallColor) + 1) % 4);
+                        it->wallColor = (WallColor)(((it->wallColor) + 1) % 6);
                         break;
                     }
                     return;

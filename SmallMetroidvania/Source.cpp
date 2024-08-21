@@ -14,7 +14,5 @@ int main(void)
     return 0;
 }
 
-//Add popping in walls(when you click they change the state from on to off and reverse) and item that unlocks them
 //Shooting enemies
-//Moving platforms/enemies
 //Sucking in block

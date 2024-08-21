@@ -74,6 +74,8 @@ Player::Player() {
 	hasBlue = false;
 	hasRed = false;
 	hasGreen = false;
+	hasPopControl = false;
+	popState = 0;
 	respawnTime = 0;
 }
 
@@ -117,6 +119,8 @@ void Player::move(std::vector <Object>& objectArr, SoundLibrary SoundManagerEnti
 			respawnTime = GetTime();
 			PlaySound(SoundManagerEntity.DeathSound);
 		}
+		if (IsKeyPressed(KEY_E) && hasPopControl)
+			popState = !popState;
 	}
 
 }
@@ -126,6 +130,7 @@ void Player::respawn() {
 	y = (int) spawnPoint.y;
 	moveX = 0;
 	moveY = 0;
+	popState = true;
 }
 
 bool Player::collision(std::vector <Object>& objectArr, SoundLibrary SoundManagerEntity) {
@@ -160,7 +165,13 @@ bool Player::collision(std::vector <Object>& objectArr, SoundLibrary SoundManage
 						break;
 					case wall:
 						clear = 0;
-						if (it->wallColor == red && hasRed == false || it->wallColor == blue && hasBlue == false || it->wallColor == green && hasGreen == false || it->wallColor == noColor) {
+						if (it->wallColor == red && hasRed == false || it->wallColor == blue && hasBlue == false || it->wallColor == green && hasGreen == false || it->wallColor == noColor || it->wallColor == popOff && popState == true || it->wallColor == popOn && popState == false) {
+							if (CheckCollisionRecs({ (float)it->x, (float)it->y, (float)it->width, (float)it->height }, { (float)x, (float)y, (float)width, (float)height }) && (it->wallColor == popOff || it->wallColor == popOn)) {
+								isRespawning = true;
+								respawnTime = GetTime();
+								PlaySound(SoundManagerEntity.DeathSound);
+								return false;
+							}
 							while (moveX != 0 || moveY != 0) {
 								clear = 0;
 								if (CheckCollisionRecs({ (float)it->x, (float)it->y, (float)it->width, (float)it->height }, { (float)x, (float)y + moveY, (float)width, (float)height })) {
@@ -214,6 +225,9 @@ bool Player::collision(std::vector <Object>& objectArr, SoundLibrary SoundManage
 						case greenKey:
 							hasGreen = true;
 							break;
+						case popControl:
+							hasPopControl = true;
+							break;
 						}
 						it->itemLabel = none;
 						it->collected = true;
@@ -244,6 +258,7 @@ void Player::clearItem() {
 	hasRed = false;
 	hasBlue = false;
 	hasGreen = false;
+	hasPopControl = false;
 }
 
 void Player::unstuck(std::vector <Object> objectArr) {
