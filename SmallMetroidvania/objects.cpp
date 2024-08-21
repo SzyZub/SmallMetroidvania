@@ -24,6 +24,7 @@ Wall::Wall(int readX, int readY, int readWith, int readHeight, int readRotation)
 	height = readHeight;
 	rotation = 0;
 	label = wall;
+	wallColor = noColor;
 }
 
 DamageZone::DamageZone(int readX, int readY, int readWith, int readHeight, int readRotation) {
@@ -70,6 +71,9 @@ Player::Player() {
 	isDashed = false;
 	allowedDash = false;
 	isVictory = false;
+	hasBlue = false;
+	hasRed = false;
+	hasGreen = false;
 	respawnTime = 0;
 }
 
@@ -156,44 +160,61 @@ bool Player::collision(std::vector <Object>& objectArr, SoundLibrary SoundManage
 						break;
 					case wall:
 						clear = 0;
-						while (moveX != 0 || moveY != 0) {
-							clear = 0;
-							if (CheckCollisionRecs({ (float)it->x, (float)it->y, (float)it->width, (float)it->height }, { (float)x, (float)y + moveY, (float)width, (float)height })) {
-								if (y < it->y)
-									moveY--;
-								else
-									moveY++;
-								if (y < it->y && moveY == 0) {
-									jumped = 0;
-									isInAir = false;
-									isDashed = false;
+						if (it->wallColor == red && hasRed == false || it->wallColor == blue && hasBlue == false || it->wallColor == green && hasGreen == false || it->wallColor == noColor) {
+							while (moveX != 0 || moveY != 0) {
+								clear = 0;
+								if (CheckCollisionRecs({ (float)it->x, (float)it->y, (float)it->width, (float)it->height }, { (float)x, (float)y + moveY, (float)width, (float)height })) {
+									if (y < it->y)
+										moveY--;
+									else
+										moveY++;
+									if (y < it->y && moveY == 0) {
+										jumped = 0;
+										isInAir = false;
+										isDashed = false;
+									}
 								}
-							}
-							else
-								clear++;
-							if (CheckCollisionRecs({ (float)it->x, (float)it->y, (float)it->width, (float)it->height }, { (float)x + moveX, (float)y, (float)width, (float)height })) {
-								if (x < it->x)
-									moveX--;
 								else
-									moveX++;
+									clear++;
+								if (CheckCollisionRecs({ (float)it->x, (float)it->y, (float)it->width, (float)it->height }, { (float)x + moveX, (float)y, (float)width, (float)height })) {
+									if (x < it->x)
+										moveX--;
+									else
+										moveX++;
+								}
+								else
+									clear++;
+								if (clear == 2)
+									break;
 							}
-							else
-								clear++;
-							if (clear == 2)
-								break;
 						}
 						break;
 					case water:
 						returnVal = true;
 						break;
 					case items:
-						PlaySound(SoundManagerEntity.PickUp);
-						if (it->itemLabel == doubleJump)
+						if (!it->collected)
+							PlaySound(SoundManagerEntity.PickUp);
+						switch (it->itemLabel) {
+						case doubleJump:
 							allowedJumps = 2;
-						else if (it->itemLabel == dash)
+							break;
+						case dash:
 							allowedDash = true;
-						else if (it->itemLabel == trophy) 
+							break;
+						case trophy:
 							isVictory = true;
+							break;
+						case redKey:
+							hasRed = true;
+							break;
+						case blueKey:
+							hasBlue = true;
+							break;
+						case greenKey:
+							hasGreen = true;
+							break;
+						}
 						it->itemLabel = none;
 						it->collected = true;
 						break;
@@ -220,6 +241,9 @@ void Player::friction() {
 void Player::clearItem() {
 	allowedJumps = 1;
 	allowedDash = false;
+	hasRed = false;
+	hasBlue = false;
+	hasGreen = false;
 }
 
 void Player::unstuck(std::vector <Object> objectArr) {

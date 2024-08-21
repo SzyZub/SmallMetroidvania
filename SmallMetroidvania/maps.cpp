@@ -35,6 +35,21 @@ bool MapManager::loadmap(GameManager& GameManagerEntity) {
             fillValues(val1, val2, val3, val4, val5, pos, prevPos, mapData);
             GameManagerEntity.objectArr.push_back(Wall(val1, val2, val3, val4, val5));
             break;
+        case 10:
+            fillValues(val1, val2, val3, val4, val5, pos, prevPos, mapData);
+            GameManagerEntity.objectArr.push_back(Wall(val1, val2, val3, val4, val5));
+            GameManagerEntity.objectArr.back().wallColor = red;
+            break;
+        case 11:
+            fillValues(val1, val2, val3, val4, val5, pos, prevPos, mapData);
+            GameManagerEntity.objectArr.push_back(Wall(val1, val2, val3, val4, val5));
+            GameManagerEntity.objectArr.back().wallColor = blue;
+            break;
+        case 12:
+            fillValues(val1, val2, val3, val4, val5, pos, prevPos, mapData);
+            GameManagerEntity.objectArr.push_back(Wall(val1, val2, val3, val4, val5));
+            GameManagerEntity.objectArr.back().wallColor = green;
+            break;
         case 1:
             fillValues(val1, val2, val3, val4, val5, pos, prevPos, mapData);
             GameManagerEntity.objectArr.push_back(DamageZone(val1, val2, val3, val4, val5));
@@ -56,6 +71,24 @@ bool MapManager::loadmap(GameManager& GameManagerEntity) {
         case 6:
             if (tempItemLabel == none) 
                 tempItemLabel = trophy;
+        case 7:
+            if (tempItemLabel == none) {
+                tempItemLabel = redKey;
+                if (GameManagerEntity.player.hasRed == true)
+                    isItemCollected = true;
+            }
+        case 8:
+            if (tempItemLabel == none) {
+                tempItemLabel = blueKey;
+                if (GameManagerEntity.player.hasBlue == true)
+                    isItemCollected = true;
+            }
+        case 9:
+            if (tempItemLabel == none) {
+                tempItemLabel = greenKey;
+                if (GameManagerEntity.player.hasGreen == true)
+                    isItemCollected = true;
+            }
             fillValues(val1, val2, val3, val4, val5, pos, prevPos, mapData);
             GameManagerEntity.objectArr.push_back(Item(val1, val2, val3, val4, val5, tempItemLabel, isItemCollected));
             tempItemLabel = none;
@@ -114,7 +147,20 @@ void MapManager::savemap(GameManager GameManagerEntity, Vector2 spawnPoints[4], 
     for (std::vector <Object>::iterator it = GameManagerEntity.objectArr.begin(); it != GameManagerEntity.objectArr.end(); it++) {
         switch (it->label) {
         case wall:
-            writeFile << 0;
+            switch (it->wallColor) {
+            case noColor:
+                writeFile << 0;
+                break;
+            case red:
+                writeFile << 10;
+                break;
+            case blue:
+                writeFile << 11;
+                break;
+            case green:
+                writeFile << 12;
+                break;
+            }
             break;
         case damageZone:
             writeFile << 1;
@@ -136,6 +182,15 @@ void MapManager::savemap(GameManager GameManagerEntity, Vector2 spawnPoints[4], 
             case trophy:
                 writeFile << 6;
                 break;
+            case redKey:
+                writeFile << 7;
+                break;
+            case blueKey:
+                writeFile << 8;
+                break;
+            case greenKey:
+                writeFile << 9;
+                break;
             }
             break;
         }
@@ -156,7 +211,7 @@ void saveCampaignState(GameManager GameManagerEntity, MapManager MapManagerEntit
         writeFile.open("Maps/Campaign/CampaignSave.txt");
     writeFile << GameManagerEntity.player.spawnPoint.x << ' ' << GameManagerEntity.player.spawnPoint.y << '\n';
     writeFile << MapManagerEntity.row << ' ' << MapManagerEntity.col << ' ' << GameManagerEntity.totalTime << '\n';
-    writeFile << GameManagerEntity.player.allowedJumps << ' ' << (GameManagerEntity.player.allowedDash == true) ? 1 : 0 << '\n';
+    writeFile << GameManagerEntity.player.allowedJumps << ' ' << ((GameManagerEntity.player.allowedDash == true) ? 1 : 0) << ' ' << ((GameManagerEntity.player.hasRed == true) ? 1 : 0) << ' ' << ((GameManagerEntity.player.hasBlue == true) ? 1 : 0) << ' ' << ((GameManagerEntity.player.hasGreen == true) ? 1 : 0) << '\n';
     writeFile.close();
 }
 
@@ -189,6 +244,12 @@ void MapManager::loadCampaignState(GameManager& GameManagerEntity) {
     GameManagerEntity.player.allowedJumps = tempValue;
     getData(pos, prevPos, mapData, tempValue);
     GameManagerEntity.player.allowedDash = tempValue;
+    getData(pos, prevPos, mapData, tempValue);
+    GameManagerEntity.player.hasRed = tempValue;
+    getData(pos, prevPos, mapData, tempValue);
+    GameManagerEntity.player.hasBlue = tempValue;
+    getData(pos, prevPos, mapData, tempValue);
+    GameManagerEntity.player.hasGreen = tempValue;
     readFile.close();
 }
 

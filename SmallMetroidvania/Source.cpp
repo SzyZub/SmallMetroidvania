@@ -14,7 +14,6 @@ int main(void)
     return 0;
 }
 
-//Add 3 different key cards and gates for them
 //Add popping in walls(when you click they change the state from on to off and reverse) and item that unlocks them
 //Shooting enemies
 //Moving platforms/enemies

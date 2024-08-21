@@ -36,7 +36,10 @@ typedef enum ItemLabel {
 	none,
 	doubleJump,
 	dash,
-	trophy
+	trophy,
+	redKey,
+	blueKey,
+	greenKey
 }ItemLabel;
 
 typedef struct SoundLibrary {
@@ -49,12 +52,20 @@ typedef struct SoundLibrary {
 	int Volume;
 }SoundLibrary;
 
+typedef enum WallColor {
+	noColor,
+	red,
+	blue, 
+	green
+}WallColor;
+
 class Object {
 public:
 	int x, y, width, height, rotation;
 	EntityLabel label;
 	ItemLabel itemLabel;
 	bool collected;
+	WallColor wallColor;
 };
 
 class Item : public Object {
@@ -87,7 +98,7 @@ class Player : public Object {
 public:
 	Player();
 	int moveX, moveY, jumped, allowedJumps;
-	bool isInAir, isRespawning, allowedDash, isDashed, isVictory;
+	bool isInAir, isRespawning, allowedDash, isDashed, isVictory, hasRed, hasBlue, hasGreen;
 	double respawnTime;
 	Vector2 spawnPoint;
 	void move(std::vector <Object>& objectArr, SoundLibrary SoundManagerEntity);

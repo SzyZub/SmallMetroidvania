@@ -48,7 +48,20 @@ void drawAllObjects(GameManager GameManagerEntity) {
             }
             break;
         case wall:
-            DrawRectangle(it->x, it->y, it->width, it->height, WALLCOLOR);
+            if (it->wallColor == red && GameManagerEntity.player.hasRed == false || it->wallColor == blue && GameManagerEntity.player.hasBlue == false || it->wallColor == green && GameManagerEntity.player.hasGreen == false || it->wallColor == noColor) {
+                DrawRectangle(it->x, it->y, it->width, it->height, WALLCOLOR);
+                switch (it->wallColor) {
+                case red:
+                    DrawRectangle(it->x + 8, it->y + 8, it->width - 16, it->height - 16, RED);
+                    break;
+                case blue:
+                    DrawRectangle(it->x + 8, it->y + 8, it->width - 16, it->height - 16, BLUE);
+                    break;
+                case green:
+                    DrawRectangle(it->x + 8, it->y + 8, it->width - 16, it->height - 16, GREEN);
+                    break;
+                }
+            }
             break;
         case items:
             if (!it->collected) {
@@ -61,6 +74,18 @@ void drawAllObjects(GameManager GameManagerEntity) {
                     break;
                 case trophy:
                     DrawRectangle(it->x, it->y, it->width, it->height, TROPHYCOLOR);
+                    break;
+                case redKey:
+                    DrawRectangle(it->x, it->y, it->width, it->height, RED);
+                    DrawRectangle(it->x + it->width/3, it->y+ it->height / 3, it->width/3, it->height/3, WHITE);
+                    break;
+                case blueKey:
+                    DrawRectangle(it->x, it->y, it->width, it->height, BLUE);
+                    DrawRectangle(it->x + it->width / 3, it->y + it->height / 3, it->width / 3, it->height / 3, WHITE);
+                    break;
+                case greenKey:
+                    DrawRectangle(it->x, it->y, it->width, it->height, GREEN);
+                    DrawRectangle(it->x + it->width / 3, it->y + it->height / 3, it->width / 3, it->height / 3, WHITE);
                     break;
                 }
             }
@@ -148,9 +173,15 @@ bool checkBorders(GameManager& GameManagerEntity, MapManager& MapManagerEntity) 
         return false;
     int tempAllowedJump = GameManagerEntity.player.allowedJumps;
     bool tempAllowedDash = GameManagerEntity.player.allowedDash;
+    bool tempRed = GameManagerEntity.player.hasRed;
+    bool tempBlue = GameManagerEntity.player.hasBlue;
+    bool tempGreen = GameManagerEntity.player.hasGreen;
     MapManagerEntity.deloadmap(GameManagerEntity);
     GameManagerEntity.player.allowedJumps = tempAllowedJump;
     GameManagerEntity.player.allowedDash = tempAllowedDash;
+    GameManagerEntity.player.hasRed = tempRed;
+    GameManagerEntity.player.hasBlue = tempBlue;
+    GameManagerEntity.player.hasGreen = tempGreen;
     if (GameManagerEntity.player.x > GameManagerEntity.originalW- GameManagerEntity.player.width / 2) {
         MapManagerEntity.col++;
         GameManagerEntity.player.x = -GameManagerEntity.player.width/2;
@@ -382,8 +413,10 @@ void EditorDrawer::editDraw(GameManager& GameManagerEntity, MapManager MapManage
                         it->rotation %= 360;
                         break;
                     case items:
-                        Item* temp = (Item*)&(*it);
-                        temp->itemLabel = (ItemLabel)((temp->itemLabel) % 3 + 1);
+                        it->itemLabel = (ItemLabel)((it->itemLabel) % 6 + 1);
+                        break;
+                    case wall:
+                        it->wallColor = (WallColor)(((it->wallColor) + 1) % 4);
                         break;
                     }
                     return;
