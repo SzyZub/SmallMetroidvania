@@ -54,6 +54,15 @@ Water::Water(int readX, int readY, int readWith, int readHeight, int readRotatio
 	label = water;
 }
 
+GravWall::GravWall(int readX, int readY, int readWith, int readHeight, int readRotation) {
+	x = readX;
+	y = readY;
+	width = readWith;
+	height = readHeight;
+	rotation = readRotation;
+	label = gravWall;
+}
+
 Player::Player() {
 	spawnPoint = { -50, -50 };
 	x = -50;
@@ -140,6 +149,26 @@ bool Player::collision(std::vector <Object>& objectArr, SoundLibrary SoundManage
 	Item* temp = NULL;
 	if (moveX != 0 || moveY != 0) {
 		for (std::vector <Object>::iterator it = objectArr.begin(); it != objectArr.end(); it++) {
+			if (it->label == gravWall) {
+				switch (it->rotation) {
+				case 0:
+					if (CheckCollisionRecs({ (float)it->x, (float)it->y, (float)it->width, (float)it->height + 12 * height }, { (float)x, (float)y, (float)width, (float)height }))
+						moveY = -3;
+					break;
+				case 90:
+					if (CheckCollisionRecs({ (float)it->x - it->width - 12 * width, (float)it->y, (float)it->width + 12 * width, (float)it->height }, { (float)x, (float)y, (float)width, (float)height }))
+						moveX = 3;
+					break;
+				case 180:
+					if (CheckCollisionRecs({ (float)it->x, (float)it->y - 12 * height, (float)it->width, (float)it->height + 12 * height }, { (float)x, (float)y, (float)width, (float)height }))
+						moveY = 3;
+					break;
+				case 270:
+					if (CheckCollisionRecs({ (float)it->x, (float)it->y, (float)it->width + 12 * width, (float)it->height }, { (float)x, (float)y, (float)width, (float)height }))
+						moveX = -3;
+					break;
+				}
+			}
 			if (CheckCollisionRecs({ (float)it->x, (float)it->y, (float)it->width, (float)it->height }, { (float)x + moveX, (float)y + moveY, (float)width, (float)height })) {
 				switch (it->label) {
 					case damageZone:
@@ -202,6 +231,35 @@ bool Player::collision(std::vector <Object>& objectArr, SoundLibrary SoundManage
 						break;
 					case water:
 						returnVal = true;
+						break;
+					case gravWall:
+						clear = 0;
+						while (moveX != 0 || moveY != 0) {
+							clear = 0;
+							if (CheckCollisionRecs({ (float)it->x, (float)it->y, (float)it->width, (float)it->height }, { (float)x, (float)y + moveY, (float)width, (float)height })) {
+								if (y < it->y)
+									moveY--;
+								else
+									moveY++;
+								if (y < it->y && moveY == 0) {
+									jumped = 0;
+									isInAir = false;
+									isDashed = false;
+								}
+							}
+							else
+								clear++;
+							if (CheckCollisionRecs({ (float)it->x, (float)it->y, (float)it->width, (float)it->height }, { (float)x + moveX, (float)y, (float)width, (float)height })) {
+								if (x < it->x)
+									moveX--;
+								else
+									moveX++;
+							}
+							else
+								clear++;
+							if (clear == 2)
+								break;
+						}
 						break;
 					case items:
 						if (!it->collected)

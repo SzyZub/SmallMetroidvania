@@ -114,6 +114,10 @@ bool MapManager::loadmap(GameManager& GameManagerEntity) {
             fillValues(val1, val2, val3, val4, val5, pos, prevPos, mapData);
             GameManagerEntity.objectArr.push_back(Water(val1, val2, val3, val4, val5));
             break;
+        case 16:
+            fillValues(val1, val2, val3, val4, val5, pos, prevPos, mapData);
+            GameManagerEntity.objectArr.push_back(GravWall(val1, val2, val3, val4, val5));
+            break;
         case 98:
             GameManagerEntity.announceText = mapData.substr(pos+1, mapData.length());
             GameManagerEntity.player.respawnTime = GetTime();
@@ -192,6 +196,9 @@ void MapManager::savemap(GameManager GameManagerEntity, Vector2 spawnPoints[4], 
             break;
         case water:
             writeFile << 5;
+            break;
+        case gravWall:
+            writeFile << 16;
             break;
         case items:
             switch (it->itemLabel) {

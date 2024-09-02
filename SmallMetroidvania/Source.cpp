@@ -15,4 +15,3 @@ int main(void)
 }
 
 //Shooting enemies
-//Sucking in block

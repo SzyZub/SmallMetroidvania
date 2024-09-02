@@ -29,7 +29,8 @@ typedef enum EntityLabel {
 	damageZone,
 	launch,
 	items,
-	water
+	water,
+	gravWall
 }EntityLabel;
 
 typedef enum ItemLabel {
@@ -95,6 +96,11 @@ public:
 class Water : public Object {
 public:
 	Water(int readX, int readY, int readWith, int readHeight, int readRotation);
+};
+
+class GravWall : public Object {
+public:
+	GravWall(int readX, int readY, int readWith, int readHeight, int readRotation);
 };
 
 class Player : public Object {

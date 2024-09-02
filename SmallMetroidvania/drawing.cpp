@@ -17,6 +17,29 @@ void drawAllObjects(GameManager GameManagerEntity) {
         case damageZone:
             DrawRectangle(it->x, it->y, it->width, it->height, DAMAGEZONECOLOR);
             break;
+        case gravWall:
+            DrawRectangle(it->x, it->y, it->width, it->height, GRAVCOLOR);
+            if (GameManagerEntity.sceneLabel == edit) {
+                switch (it->rotation) {
+                case 0:
+                    DrawLineEx({ (float)it->x, (float)it->y + it->height}, { (float)it->x, (float)it->y + PLAYERSIZE*12  + it->height}, 6, BLACK);
+                    DrawLineEx({ (float)it->x + it->width, (float)it->y + it->height }, { (float)it->x + it->width, (float)it->y + PLAYERSIZE * 12 + it->height }, 6, BLACK);
+                    break;
+                case 90:
+                    DrawLineEx({ (float)it->x, (float)it->y }, { (float)it->x - PLAYERSIZE* 12, (float)it->y}, 6, BLACK);
+                    DrawLineEx({ (float)it->x, (float)it->y + it->height}, { (float)it->x - PLAYERSIZE * 12, (float)it->y + it->height }, 6, BLACK);
+                    break;
+                case 180:
+                    DrawLineEx({ (float)it->x, (float)it->y }, { (float)it->x, (float)it->y - PLAYERSIZE * 12}, 6, BLACK);
+                    DrawLineEx({ (float)it->x + it->width, (float)it->y }, { (float)it->x + it->width, (float)it->y - PLAYERSIZE * 12}, 6, BLACK);
+                    break;
+                case 270:
+                    DrawLineEx({ (float)it->x, (float)it->y }, { (float)it->x +it->width + PLAYERSIZE * 12, (float)it->y}, 6, BLACK);
+                    DrawLineEx({ (float)it->x, (float)it->y + it->height}, { (float)it->x + it->width + PLAYERSIZE * 12, (float)it->y + it->height }, 6, BLACK);
+                    break;
+                }
+            }
+            break;
         case launch:
             DrawRectangle(it->x, it->y, it->width, it->height, LAUNCHPADCOLOR1);
             switch (it->rotation) {
@@ -232,6 +255,14 @@ void gameDraw(GameManager& GameManagerEntity, MapManager& MapManagerEntity) {
             GameManagerEntity.player.allowedJumps = 2;
         else if (IsKeyPressed(KEY_TWO))
             GameManagerEntity.player.allowedDash = true;
+        else if (IsKeyPressed(KEY_THREE))
+            GameManagerEntity.player.hasRed = true;
+        else if (IsKeyPressed(KEY_FOUR))
+            GameManagerEntity.player.hasGreen = true;
+        else if (IsKeyPressed(KEY_FIVE))
+            GameManagerEntity.player.hasBlue = true;
+        else if (IsKeyPressed(KEY_SIX))
+            GameManagerEntity.player.hasPopControl = true;
     }
     if (GameManagerEntity.player.isRespawning) {
         DrawText(TextFormat("Respawning in: %i", (int)(GameManagerEntity.player.respawnTime + 4 - GetTime())), (GameManagerEntity.originalW - MeasureText(TextFormat("Respawning in: %d", (int)(GameManagerEntity.player.respawnTime + 4 - GetTime())), 40)) / 2, GameManagerEntity.originalH / 10, 40, BLACK);
@@ -399,6 +430,8 @@ void EditorDrawer::editDraw(GameManager& GameManagerEntity, MapManager MapManage
             editMaterial = launch;
         else if (IsKeyPressed(KEY_FIVE))
             editMaterial = water;
+        else if (IsKeyPressed(KEY_SIX))
+            editMaterial = gravWall;
         else if (IsKeyPressed(KEY_D)) {
             for (std::vector <Object>::iterator it = GameManagerEntity.objectArr.begin(); it != GameManagerEntity.objectArr.end(); it++) {
                 if (CheckCollisionPointRec({ (float)x, (float)y }, { (float)it->x, (float)it->y, (float)it->width, (float)it->height })) {
@@ -423,6 +456,10 @@ void EditorDrawer::editDraw(GameManager& GameManagerEntity, MapManager MapManage
                 if (CheckCollisionPointRec({ (float)x, (float)y }, { (float)it->x, (float)it->y, (float)it->width, (float)it->height })) {
                     switch (it->label) {
                     case launch:
+                        it->rotation += 90;
+                        it->rotation %= 360;
+                        break;
+                    case gravWall:
                         it->rotation += 90;
                         it->rotation %= 360;
                         break;
@@ -471,6 +508,9 @@ void EditorDrawer::editDraw(GameManager& GameManagerEntity, MapManager MapManage
                 case water:
                     GameManagerEntity.objectArr.push_back(Water(prevX > x ? x - 2 : prevX - 2, prevY > y ? y - 2 : prevY - 2, abs(x - prevX) + 4, abs(y - prevY) + 4, 0));
                     break;
+                case gravWall:
+                    GameManagerEntity.objectArr.push_back(GravWall(prevX > x ? x - 2 : prevX - 2, prevY > y ? y - 2 : prevY - 2, abs(x - prevX) + 4, abs(y - prevY) + 4, 0));
+                    break;
                 }
                 isDrawBlock = false;
             }
@@ -478,17 +518,18 @@ void EditorDrawer::editDraw(GameManager& GameManagerEntity, MapManager MapManage
     }
     else {
         DrawText("Press tab to toggle between helper and edit", GameManagerEntity.originalW/40, GameManagerEntity.originalH/24, MENUFONT/2, BLACK);
-        DrawText("Press , to bring up a measure of player movement", GameManagerEntity.originalW / 40, GameManagerEntity.originalH * 3 / 24, MENUFONT / 2, BLACK);
-        DrawText("Press s to save the map and exit", GameManagerEntity.originalW / 40, GameManagerEntity.originalH * 5 / 24, MENUFONT / 2, BLACK);
-        DrawText("Press g to exit without saving the map", GameManagerEntity.originalW / 40, GameManagerEntity.originalH * 7 / 24, MENUFONT / 2, BLACK);
-        DrawText("Press d to delete a selected object", GameManagerEntity.originalW / 40, GameManagerEntity.originalH * 9 / 24, MENUFONT / 2, BLACK);
-        DrawText("Press r to rotate eligible objects or cycle through items", GameManagerEntity.originalW / 40, GameManagerEntity.originalH * 11 / 24, MENUFONT / 2, BLACK);
-        DrawText("Press 0 to place respawn points", GameManagerEntity.originalW / 40, GameManagerEntity.originalH * 13 / 24, MENUFONT / 2, BLACK);
-        DrawText("Press 1 to place a item", GameManagerEntity.originalW / 40, GameManagerEntity.originalH * 15 / 24, MENUFONT / 2, BLACK);
-        DrawText("Press 2 to choose wall", GameManagerEntity.originalW / 40, GameManagerEntity.originalH * 17 / 24, MENUFONT / 2, BLACK);
-        DrawText("Press 3 to choose danger zone", GameManagerEntity.originalW / 40, GameManagerEntity.originalH * 19 / 24, MENUFONT / 2, BLACK);
-        DrawText("Press 4 to choose launch pad", GameManagerEntity.originalW / 40, GameManagerEntity.originalH * 21 / 24, MENUFONT / 2, BLACK);
-        DrawText("Press 5 to choose water", GameManagerEntity.originalW / 40, GameManagerEntity.originalH * 23 / 24, MENUFONT / 2, BLACK);
+        DrawText("Press , to bring up a measure of player movement", GameManagerEntity.originalW / 40, GameManagerEntity.originalH * 3 / 26, MENUFONT / 2, BLACK);
+        DrawText("Press s to save the map and exit", GameManagerEntity.originalW / 40, GameManagerEntity.originalH * 5 / 26, MENUFONT / 2, BLACK);
+        DrawText("Press g to exit without saving the map", GameManagerEntity.originalW / 40, GameManagerEntity.originalH * 7 / 26, MENUFONT / 2, BLACK);
+        DrawText("Press d to delete a selected object", GameManagerEntity.originalW / 40, GameManagerEntity.originalH * 9 / 26, MENUFONT / 2, BLACK);
+        DrawText("Press r to rotate eligible objects or cycle through items", GameManagerEntity.originalW / 40, GameManagerEntity.originalH * 11 / 26, MENUFONT / 2, BLACK);
+        DrawText("Press 0 to place respawn points", GameManagerEntity.originalW / 40, GameManagerEntity.originalH * 13 / 26, MENUFONT / 2, BLACK);
+        DrawText("Press 1 to place a item", GameManagerEntity.originalW / 40, GameManagerEntity.originalH * 15 / 26, MENUFONT / 2, BLACK);
+        DrawText("Press 2 to choose wall", GameManagerEntity.originalW / 40, GameManagerEntity.originalH * 17 / 26, MENUFONT / 2, BLACK);
+        DrawText("Press 3 to choose danger zone", GameManagerEntity.originalW / 40, GameManagerEntity.originalH * 19 / 26, MENUFONT / 2, BLACK);
+        DrawText("Press 4 to choose launch pad", GameManagerEntity.originalW / 40, GameManagerEntity.originalH * 21 / 26, MENUFONT / 2, BLACK);
+        DrawText("Press 5 to choose water", GameManagerEntity.originalW / 40, GameManagerEntity.originalH * 23 / 26, MENUFONT / 2, BLACK);
+        DrawText("Press 6 to choose gravity wall", GameManagerEntity.originalW / 40, GameManagerEntity.originalH * 25 / 26, MENUFONT / 2, BLACK);
     }
     if (IsKeyPressed(KEY_TAB))
         isEditMode = !isEditMode;  

@@ -12,6 +12,7 @@
 #define DOUBLEJUMPCOLOR {0, 0, 255, 255}
 #define DASHCOLOR {0, 255, 0, 255}
 #define TROPHYCOLOR {255, 215, 0, 255}
+#define GRAVCOLOR {200, 200, 200, 255}
 #define MENUFONT 64
 
 class EditorDrawer {
