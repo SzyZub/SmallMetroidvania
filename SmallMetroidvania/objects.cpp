@@ -203,7 +203,7 @@ bool Player::collision(std::vector <Object>& objectArr, SoundLibrary SoundManage
 							}
 							while (moveX != 0 || moveY != 0) {
 								clear = 0;
-								if (CheckCollisionRecs({ (float)it->x, (float)it->y, (float)it->width, (float)it->height }, { (float)x, (float)y + moveY, (float)width, (float)height })) {
+								if (CheckCollisionRecs({ (float)it->x, (float)it->y, (float)it->width, (float)it->height }, { (float)x, (float)y + moveY, (float)width, (float)height }) && moveY != 0) {
 									if (y < it->y)
 										moveY--;
 									else
