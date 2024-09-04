@@ -206,7 +206,7 @@ void chooseMap(GameManager& GameManagerEntity, MapManager& MapManagerEntity) {
 }
 
 bool checkBorders(GameManager& GameManagerEntity, MapManager& MapManagerEntity) {
-    if (!(GameManagerEntity.player.x > GameManagerEntity.originalW - GameManagerEntity.player.width / 2) && !(GameManagerEntity.player.x + GameManagerEntity.player.width / 2 < 0) && !(GameManagerEntity.player.y + GameManagerEntity.player.width / 2 < 0) && !(GameManagerEntity.player.y > GameManagerEntity.originalH - GameManagerEntity.player.width / 2))
+    if (!(GameManagerEntity.player.x >= GameManagerEntity.originalW - GameManagerEntity.player.width / 2) && !(GameManagerEntity.player.x < -GameManagerEntity.player.width) && !(GameManagerEntity.player.y <= -GameManagerEntity.player.height / 2) && !(GameManagerEntity.player.y >= GameManagerEntity.originalH - GameManagerEntity.player.width / 2))
         return false;
     int tempAllowedJump = GameManagerEntity.player.allowedJumps;
     bool tempAllowedDash = GameManagerEntity.player.allowedDash;
@@ -229,9 +229,9 @@ bool checkBorders(GameManager& GameManagerEntity, MapManager& MapManagerEntity) 
         MapManagerEntity.col--;
         GameManagerEntity.player.x = GameManagerEntity.originalW - GameManagerEntity.player.width / 2;
     }
-    else if (GameManagerEntity.player.y < -GameManagerEntity.player.height) {
+    else if (GameManagerEntity.player.y < -GameManagerEntity.player.height/2) {
         MapManagerEntity.row--;
-        GameManagerEntity.player.y = GameManagerEntity.originalH - GameManagerEntity.player.width / 2;
+        GameManagerEntity.player.y = GameManagerEntity.originalH - GameManagerEntity.player.width;
     } else if (GameManagerEntity.player.y > GameManagerEntity.originalH - GameManagerEntity.player.width / 2) {
         MapManagerEntity.row++;
         GameManagerEntity.player.y = GameManagerEntity.player.width / 2;
@@ -324,10 +324,10 @@ void menuDraw(GameManager& GameManagerEntity, MapManager MapManagerEntity) {
     GameManagerEntity.player.respawnTime = GetTime();
     DrawText("Resume", (GameManagerEntity.originalW/4 - MeasureText("Resume", MENUFONT)/2), GameManagerEntity.originalH/4 - MENUFONT / 2, MENUFONT, BLACK);
     DrawText("Save & exit", (GameManagerEntity.originalW/4 - MeasureText("Save & exit", MENUFONT)/2), GameManagerEntity.originalH*3/4 - MENUFONT / 2, MENUFONT, BLACK);
-    for (int i = 0; i < 7; i++) 
+    for (int i = 0; i < 5; i++) 
         for (int j = 0; j < 7; j++) 
-            DrawTextureRec(mapCell, {0, 0, 70, 70}, {(float) 715 + j * 70, (float) 115 + i * 70}, WHITE);
-    DrawRectangle(665 + MapManagerEntity.col * 70, 65 + MapManagerEntity.row * 70, 30, 30, DARKPURPLE);
+            DrawTextureRec(mapCell, {0, 0, 70, 70}, {(float) 715 + j * 70, (float) 185 + i * 70}, WHITE);
+    DrawRectangle(665 + MapManagerEntity.col * 70, 135 + MapManagerEntity.row * 70, 30, 30, DARKPURPLE);
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
         PlaySound(GameManagerEntity.SoundManagerEntity.SelectSound);
         int y = GetMouseY();

@@ -138,9 +138,8 @@ bool MapManager::loadmap(GameManager& GameManagerEntity) {
     readFile.close();
     int bestSpawn = 0;
     for (int i = 1; i < spawnPointInc; i++) 
-        if (sqrt(pow(GameManagerEntity.player.x - spawnPoints[bestSpawn].x, 2) + pow(GameManagerEntity.player.y - spawnPoints[bestSpawn].y,2) > sqrt(pow(GameManagerEntity.player.x - spawnPoints[i].x,2) + pow(GameManagerEntity.player.y - spawnPoints[i].y, 2))))
+        if (sqrt(pow(GameManagerEntity.player.x - spawnPoints[bestSpawn].x, 2) + pow(GameManagerEntity.player.y - spawnPoints[bestSpawn].y,2)) > sqrt(pow(GameManagerEntity.player.x - spawnPoints[i].x,2) + pow(GameManagerEntity.player.y - spawnPoints[i].y, 2)))
             bestSpawn = i;
-    std::cout<<bestSpawn;
     GameManagerEntity.player.spawnPoint.x = (float)spawnPoints[bestSpawn].x;
     GameManagerEntity.player.spawnPoint.y = (float)spawnPoints[bestSpawn].y;
     return true;
