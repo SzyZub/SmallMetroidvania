@@ -305,7 +305,7 @@ void Player::friction() {
 	if (isDashed) {
 		if (moveX > 0)
 			moveX -= GRAVITY;
-		else
+		else if (moveX < 0)
 			moveX += GRAVITY;
 	}
 }
